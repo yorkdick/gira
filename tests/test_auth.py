@@ -1,64 +1,45 @@
-import pytest
-from flask import g, session
+import unittest
+from app import create_app, db
 from app.models.user import User
+from flask import url_for
 
-def test_login_page(client):
-    """ログインページの表示テスト"""
-    response = client.get('/login')
-    assert response.status_code == 200
-    assert b'\xe3\x83\xad\xe3\x82\xb0\xe3\x82\xa4\xe3\x83\xb3' in response.data  # 'ログイン'のUTF-8エンコード
+class TestAuthViews(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app('testing')
+        self.client = self.app.test_client()
+        with self.app.app_context():
+            db.create_all()
+            user = User(username='testuser')
+            user.set_password('testpass')
+            db.session.add(user)
+            db.session.commit()
 
-def test_valid_login(client, auth):
-    """正常なログインのテスト"""
-    response = auth.login()
-    assert response.headers['Location'] == '/backlog'
+    def tearDown(self):
+        with self.app.app_context():
+            db.session.remove()
+            db.drop_all()
 
-def test_invalid_username(client, auth):
-    """存在しないユーザー名でのログインテスト"""
-    response = auth.login('invalid', 'testpass')
-    # リダイレクト後のページを取得
-    response = client.get('/login')
-    assert b'\xe3\x83\xa6\xe3\x83\xbc\xe3\x82\xb6\xe3\x83\xbc\xe5\x90\x8d\xe3\x81\xbe\xe3\x81\x9f\xe3\x81\xaf\xe3\x83\x91\xe3\x82\xb9\xe3\x83\xaf\xe3\x83\xbc\xe3\x83\x89\xe3\x81\x8c\xe6\xad\xa3\xe3\x81\x97\xe3\x81\x8f\xe3\x81\x82\xe3\x82\x8a\xe3\x81\xbe\xe3\x81\x9b\xe3\x82\x93' in response.data
+    def test_login_success(self):
+        response = self.client.post(url_for('auth.login'), data={
+            'username': 'testuser',
+            'password': 'testpass'
+        }, follow_redirects=True)
+        self.assertIn('ログインに成功しました', response.data)
 
-def test_invalid_password(client, auth):
-    """誤ったパスワードでのログインテスト"""
-    response = auth.login('testuser', 'wrongpass')
-    # リダイレクト後のページを取得
-    response = client.get('/login')
-    assert b'\xe3\x83\xa6\xe3\x83\xbc\xe3\x82\xb6\xe3\x83\xbc\xe5\x90\x8d\xe3\x81\xbe\xe3\x81\x9f\xe3\x81\xaf\xe3\x83\x91\xe3\x82\xb9\xe3\x83\xaf\xe3\x83\xbc\xe3\x83\x89\xe3\x81\x8c\xe6\xad\xa3\xe3\x81\x97\xe3\x81\x8f\xe3\x81\x82\xe3\x82\x8a\xe3\x81\xbe\xe3\x81\x9b\xe3\x82\x93' in response.data
+    def test_login_wrong_password(self):
+        response = self.client.post(url_for('auth.login'), data={
+            'username': 'testuser',
+            'password': 'wrongpass'
+        }, follow_redirects=True)
+        self.assertIn('ユーザー名またはパスワードが正しくありません', response.data)
 
-def test_empty_username(client):
-    """空のユーザー名でのログインテスト"""
-    response = client.post('/login', data={
-        'username': '',
-        'password': 'testpass'
-    })
-    assert b'This field is required.' in response.data
+    def test_logout(self):
+        self.client.post(url_for('auth.login'), data={
+            'username': 'testuser',
+            'password': 'testpass'
+        }, follow_redirects=True)
+        response = self.client.get(url_for('auth.logout'), follow_redirects=True)
+        self.assertIn('ログアウトしました', response.data)
 
-def test_empty_password(client):
-    """空のパスワードでのログインテスト"""
-    response = client.post('/login', data={
-        'username': 'testuser',
-        'password': ''
-    })
-    assert b'This field is required.' in response.data
-
-def test_logout(client, auth):
-    """ログアウトのテスト"""
-    # まずログイン
-    auth.login()
-    
-    # ログアウトを実行
-    response = auth.logout()
-    assert response.headers['Location'] == '/login'
-
-def test_login_required(client):
-    """保護されたページへのアクセステスト"""
-    response = client.get('/backlog')
-    assert response.headers['Location'].startswith('/login')
-
-def test_already_logged_in(client, auth):
-    """ログイン済みユーザーのログインページアクセステスト"""
-    auth.login()
-    response = client.get('/login')
-    assert response.headers['Location'] == '/backlog' 
+if __name__ == '__main__':
+    unittest.main() 

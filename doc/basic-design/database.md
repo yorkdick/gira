@@ -123,11 +123,11 @@ erDiagram
 
 ### 3.1 Sprint.status
 
-| 値        | 説明     | 遷移可能な値 |
-| --------- | -------- | ------------ |
-| planning  | ��� 画中 | active       |
-| active    | 実行中   | completed    |
-| completed | 完了     | -            |
+| 値        | 説明   | 遷移可能な値 |
+| --------- | ------ | ------------ |
+| planning  | 計画中 | active       |
+| active    | 実行中 | completed    |
+| completed | 完了   | -            |
 
 ### 3.2 Story.status
 
