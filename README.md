@@ -141,6 +141,24 @@ flask db upgrade
 flask run
 ```
 
+### 開発サーバーの起動オプション
+
+```bash
+# 通常起動
+flask run
+
+# ホットリロード有効で起動（開発時推奨）
+flask run --debug
+
+# ホストとポートを指定して起動
+flask run --host=0.0.0.0 --port=5000
+
+# 環境変数で設定
+export FLASK_DEBUG=1  # Unix系の場合
+set FLASK_DEBUG=1     # Windowsの場合
+flask run
+```
+
 ## 詳細設計ドキュメント
 
 - [データベース設計](doc/database.md)

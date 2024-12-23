@@ -10,10 +10,20 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    first_name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
+    avatar_color = db.Column(db.String(7))  # 存储 HEX 颜色代码，如 #FF0000
     password_hash = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+
+    @property
+    def initials(self):
+        """获取用户姓名缩写"""
+        first = self.first_name[0].upper() if self.first_name else ''
+        last = self.last_name[0].upper() if self.last_name else ''
+        return f"{first}{last}" if first or last else self.username[:2].upper()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

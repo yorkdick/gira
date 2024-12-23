@@ -9,6 +9,7 @@ class Project(db.Model):
     name = db.Column(db.String(100), nullable=False)
     key = db.Column(db.String(10), unique=True, nullable=False)
     description = db.Column(db.Text)
+    status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

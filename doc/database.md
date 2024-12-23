@@ -4,172 +4,164 @@
 
 ```mermaid
 erDiagram
-    users {
+    USERS ||--o{ STORIES : assigns
+    PROJECTS ||--o{ SPRINTS : contains
+    PROJECTS ||--o{ STORIES : has
+    SPRINTS ||--o{ STORIES : includes
+
+    USERS {
         int id PK
-        string username
-        string email
-        string password_hash
-        string role
-        datetime created_at
-        datetime updated_at
+        varchar username UK
+        varchar email UK
+        varchar password_hash
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
     }
 
-    projects {
+    PROJECTS {
         int id PK
-        string name
-        string key
-        string description
-        datetime created_at
-        datetime updated_at
+        varchar name
+        varchar key UK
+        text description
+        timestamp created_at
+        timestamp updated_at
     }
 
-    sprints {
+    SPRINTS {
         int id PK
         int project_id FK
-        string name
-        string goal
+        varchar name
+        text goal
+        varchar status
         date start_date
         date end_date
-        string status
-        datetime created_at
+        timestamp created_at
+        timestamp updated_at
     }
 
-    stories {
+    STORIES {
         int id PK
         int project_id FK
         int sprint_id FK
-        string title
-        string description
-        string status
-        int points
-        string priority
+        varchar title
+        text description
+        varchar status
+        int story_points
+        int priority
         int assignee_id FK
-        datetime created_at
-        datetime updated_at
+        timestamp created_at
+        timestamp updated_at
     }
-
-    projects ||--o{ sprints : "has"
-    projects ||--o{ stories : "contains"
-    sprints ||--o{ stories : "includes"
-    users ||--o{ stories : "assigned to"
 ```
 
-## 2. テーブル構成
+## 1. テーブル一覧
 
-### users（ユーザー）テーブル
+| テーブル名 | 説明             | 補足                   |
+| ---------- | ---------------- | ---------------------- |
+| users      | ユーザー情報     | 認証・認可情報を含む   |
+| projects   | プロジェクト情報 | -                      |
+| sprints    | スプリント情報   | プロジェクトの期間管理 |
+| stories    | ストーリー情報   | タスク・課題管理       |
 
-```sql
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-```
+## 2. テーブル定義
 
-### projects（プロジェクト）テーブル
+### 2.1 users
 
-```sql
-CREATE TABLE projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    key TEXT NOT NULL UNIQUE,
-    description TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-```
+| カラム        | データ型     | NULL | キー | 初期値 | 説明               |
+| ------------- | ------------ | ---- | ---- | ------ | ------------------ |
+| id            | INTEGER      | NO   | PK   | -      | ユーザー ID        |
+| username      | VARCHAR(50)  | NO   | UQ   | -      | ユーザー名         |
+| email         | VARCHAR(120) | NO   | UQ   | -      | メールアドレス     |
+| password_hash | VARCHAR(128) | NO   | -    | -      | パスワードハッシュ |
+| is_active     | BOOLEAN      | NO   | -    | TRUE   | アクティブフラグ   |
+| created_at    | TIMESTAMP    | NO   | -    | NOW()  | 作成日時           |
+| updated_at    | TIMESTAMP    | NO   | -    | NOW()  | 更新日時           |
 
-### sprints（スプリント）テーブル
+### 2.2 projects
 
-```sql
-CREATE TABLE sprints (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    goal TEXT,
-    start_date DATE,
-    end_date DATE,
-    status TEXT NOT NULL DEFAULT 'planning',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects (id)
-);
-```
+| カラム      | データ型     | NULL | キー | 初期値 | 説明             |
+| ----------- | ------------ | ---- | ---- | ------ | ---------------- |
+| id          | INTEGER      | NO   | PK   | -      | プロジェクト ID  |
+| name        | VARCHAR(100) | NO   | -    | -      | プロジェクト名   |
+| key         | VARCHAR(10)  | NO   | UQ   | -      | プロジェクトキー |
+| description | TEXT         | YES  | -    | NULL   | 説明             |
+| created_at  | TIMESTAMP    | NO   | -    | NOW()  | 作成日時         |
+| updated_at  | TIMESTAMP    | NO   | -    | NOW()  | 更新日時         |
 
-### stories（ストーリー）テーブル
+### 2.3 sprints
 
-```sql
-CREATE TABLE stories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    sprint_id INTEGER,
-    title TEXT NOT NULL,
-    description TEXT,
-    status TEXT NOT NULL DEFAULT 'todo',
-    points INTEGER,
-    priority TEXT NOT NULL DEFAULT 'medium',
-    assignee_id INTEGER,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects (id),
-    FOREIGN KEY (sprint_id) REFERENCES sprints (id),
-    FOREIGN KEY (assignee_id) REFERENCES users (id)
-);
-```
+| カラム     | データ型    | NULL | キー | 初期値   | 説明            |
+| ---------- | ----------- | ---- | ---- | -------- | --------------- |
+| id         | INTEGER     | NO   | PK   | -        | スプリント ID   |
+| project_id | INTEGER     | NO   | FK   | -        | プロジェクト ID |
+| name       | VARCHAR(50) | NO   | -    | -        | スプリント名    |
+| goal       | TEXT        | YES  | -    | NULL     | スプリント目標  |
+| status     | VARCHAR(20) | NO   | -    | planning | 状態            |
+| start_date | DATE        | YES  | -    | NULL     | 開始日          |
+| end_date   | DATE        | YES  | -    | NULL     | 終了日          |
+| created_at | TIMESTAMP   | NO   | -    | NOW()    | 作成日時        |
+| updated_at | TIMESTAMP   | NO   | -    | NOW()    | 更新日時        |
 
-## 3. テーブル関連
+### 2.4 stories
 
-1. プロジェクトとスプリント
+| カラム       | データ型     | NULL | キー | 初期値 | 説明            |
+| ------------ | ------------ | ---- | ---- | ------ | --------------- |
+| id           | INTEGER      | NO   | PK   | -      | ストーリー ID   |
+| project_id   | INTEGER      | NO   | FK   | -      | プロジェクト ID |
+| sprint_id    | INTEGER      | YES  | FK   | NULL   | スプリント ID   |
+| title        | VARCHAR(200) | NO   | -    | -      | タイトル        |
+| description  | TEXT         | YES  | -    | NULL   | 説明            |
+| status       | VARCHAR(20)  | NO   | -    | todo   | 状態            |
+| story_points | INTEGER      | YES  | -    | NULL   | ポイント        |
+| priority     | INTEGER      | NO   | -    | 0      | 優先度          |
+| assignee_id  | INTEGER      | YES  | FK   | NULL   | 担当者 ID       |
+| created_at   | TIMESTAMP    | NO   | -    | NOW()  | 作成日時        |
+| updated_at   | TIMESTAMP    | NO   | -    | NOW()  | 更新日時        |
 
-   - 1 つのプロジェクトは複数のスプリントを持つ（1:N）
-   - スプリントは必ず 1 つのプロジェクトに属する
+## 3. ステータス定義
 
-2. プロジェクトとストーリー
+### 3.1 Sprint.status
 
-   - 1 つのプロジェクトは複数のストーリーを持つ（1:N）
-   - ストーリーは必ず 1 つのプロジェクトに属する
+| 値        | 説明     | 遷移可能な値 |
+| --------- | -------- | ------------ |
+| planning  | ��� 画中 | active       |
+| active    | 実行中   | completed    |
+| completed | 完了     | -            |
 
-3. スプリントとストーリー
+### 3.2 Story.status
 
-   - 1 つのスプリントは複数のストーリーを持つ（1:N）
-   - ストーリーは 0 または 1 つのスプリントに属する
+| 値    | 説明   | 表示色               |
+| ----- | ------ | -------------------- |
+| todo  | 未着手 | 緑 (#E3FCEF/#006644) |
+| doing | 進行中 | 赤 (#FFEBE6/#BF2600) |
+| done  | 完了   | 灰 (#EBECF0/#42526E) |
 
-4. ユーザーとストーリー
-   - 1 人のユーザーは複数のストーリーを担当できる（1:N）
-   - ストーリーは 0 または 1 人のユーザーに割り当てられる
+### 3.3 Story.priority
 
-## 4. インデックス設定
+| 値  | 説明 | 表示色  | アイコン |
+| --- | ---- | ------- | -------- |
+| 0   | なし | #6B778C | -        |
+| 1   | 低   | #2D8738 | ↓        |
+| 2   | 中   | #0052CC | =        |
+| 3   | 高   | #CD5A19 | ↑        |
+| 4   | 最高 | #CD1F1F | ↑↑       |
 
-### users
+## 4. インデックス
 
-```sql
-CREATE UNIQUE INDEX idx_users_username ON users(username);
-CREATE UNIQUE INDEX idx_users_email ON users(email);
-```
+### 4.1 stories
 
-### projects
+| インデックス名      | カラム                        | 説明                       |
+| ------------------- | ----------------------------- | -------------------------- |
+| idx_stories_sprint  | sprint_id, status, priority   | かんばんボード表示の高速化 |
+| idx_stories_project | project_id, sprint_id, status | バックログ表示の高速化     |
 
-```sql
-CREATE UNIQUE INDEX idx_projects_key ON projects(key);
-```
+### 4.2 sprints
 
-### stories
-
-```sql
-CREATE INDEX idx_stories_project_sprint ON stories(project_id, sprint_id);
-CREATE INDEX idx_stories_assignee ON stories(assignee_id);
-CREATE INDEX idx_stories_status ON stories(status);
-```
-
-### sprints
-
-```sql
-CREATE INDEX idx_sprints_project ON sprints(project_id);
-CREATE INDEX idx_sprints_status ON sprints(status);
-```
+| インデックス名      | カラム               | 説明                         |
+| ------------------- | -------------------- | ---------------------------- |
+| idx_sprints_project | project_id, status   | アクティブスプリントの �� 索 |
+| idx_sprints_dates   | start_date, end_date | 期間による検索               |
 
 ## 5. 制約条件
 

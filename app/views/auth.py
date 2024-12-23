@@ -29,9 +29,7 @@ def login():
         user.update_last_login()
         logger.info(f"User {user.username} logged in successfully")
 
-        next_page = request.args.get("next")
-        if not next_page or url_parse(next_page).netloc != "":
-            next_page = url_for("backlog.index")
+        next_page = url_for("backlog.index")
 
         flash("ログインに成功しました", "success")
         return redirect(next_page)

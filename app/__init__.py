@@ -1,32 +1,23 @@
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_migrate import Migrate
+from flask import Flask, redirect, url_for
 from config import Config
-
-# 初期化
-db = SQLAlchemy()
-login_manager = LoginManager()
-login_manager.login_view = "auth.login"
-login_manager.login_message = "このページにアクセスするにはログインが必要です。"
-migrate = Migrate()
+from app.extensions import db, migrate, login_manager
+from flask_login import login_required
 
 # ロガーの設定
 logger = logging.getLogger("gira")
 logger.setLevel(logging.INFO)
 
-
-def create_app(config_class=Config):
+def create_app(test_config=None):
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    app.config.from_object(Config)
 
     # 拡張機能の初期化
     db.init_app(app)
-    login_manager.init_app(app)
     migrate.init_app(app, db)
+    login_manager.init_app(app)
 
     # ログハンドラーの設定
     if app.config["LOG_TYPE"] == "file":
@@ -49,13 +40,31 @@ def create_app(config_class=Config):
     logger.info("GIRA application startup")
 
     # Blueprintの登録
-    from app.views import auth, main, backlog
+    from app.views import auth, main, backlog, kanban, project
 
+    # 先注册认证相关路由
     app.register_blueprint(auth.bp)
+
+    # 然后注册其他路由
     app.register_blueprint(main.bp)
     app.register_blueprint(backlog.bp)
+    app.register_blueprint(kanban.bp, url_prefix='/kanban')
+    app.register_blueprint(project.bp)
+
+    # 添加根路由重定向到 backlog
+    @app.route('/')
+    @login_required
+    def index():
+        return redirect(url_for('backlog.index'))
+
+    from . import commands
+    app.cli.add_command(commands.init_db_command)
+    app.cli.add_command(commands.create_test_data)
 
     return app
 
+# モデルの読み込み
+from app.models import user, project, story, sprint
 
-from app.models import user, project  # モデルの読み込み
+# アプリケーションインスタンスの作成
+app = create_app()

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 项目标题和操作按钮 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{{ project.name }}</h1>
+        <button onclick="openEditModal({{ project.id }})"
+                class="btn btn-primary">
+            <i class="bi bi-pencil"></i> 編集
+        </button>
+    </div>
+
+    <!-- 项目详情 -->
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-4">
+                <h5 class="card-title">説明</h5>
+                <p class="card-text text-muted">{{ project.description or '説明なし' }}</p>
+            </div>
+
+            <div>
+                <h5 class="card-title">基本情報</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <span class="text-muted">作成日:</span>
+                            <span>{{ project.created_at.strftime('%Y/%m/%d') }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <span class="text-muted">ステータス:</span>
+                            <span class="badge {{ 'bg-success' if project.status == 'active' else 'bg-secondary' }}">
+                                {{ project.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑模态框 -->
+<div class="modal fade" id="project-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">プロジェクト編集</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form" onsubmit="handleSubmit(event)">
+                    <input type="hidden" id="project-id" value="{{ project.id }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">プロジェクト名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ project.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">説明</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ project.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">ステータス</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="active" {% if project.status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="archived" {% if project.status == 'archived' %}selected{% endif %}>Archived</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="submit" form="project-form" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+let projectModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    projectModal = new bootstrap.Modal(document.getElementById('project-modal'));
+});
+
+// 打开编辑模态框
+function openEditModal(projectId) {
+    projectModal.show();
+}
+
+// 处理表单提交
+async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+    data.id = document.getElementById('project-id').value;
+    
+    try {
+        const response = await fetch('/api/project/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        
+        if (response.ok) {
+            projectModal.hide();
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+</script>
+{% endblock %}
+{% endblock %} 
