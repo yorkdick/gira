@@ -4,7 +4,7 @@
 
 GIRA は、スクラム開発チーム向けの軽量なプロジェクト管理ツールです。シンプルで使いやすい機能に絞って実装しています。
 
-![ロゴ](doc/image/logo.png)
+![ロゴ](doc/assets/image/logo.png)
 
 ## 主な機能
 
@@ -66,136 +66,35 @@ GIRA は、スクラム開発チーム向けの軽量なプロジェクト管理
 | black      | 23.7.0     | コードフォーマッター |
 | flake8     | 6.1.0      | リンター             |
 
-## プロジェクト構成
+## マニュアル
 
-```
-gira/
-├── app/                    # アプリケーションコード
-│   ├── __init__.py
-│   ├── models/            # データモデル
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   ├── project.py
-│   │   └── story.py
-│   ├── views/            # ビュー
-│   │   ├── __init__.py
-│   │   ├── auth.py
-│   │   ├── project.py
-│   │   └── board.py
-│   ├── static/           # 静的ファイル
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── img/
-│   └── templates/        # テンプレート
-│       ├── base.html
-│       ├── auth/
-│       ├── project/
-│       └── board/
-├── doc/                  # ドキュメント
-│   ├── database.md
-│   ├── ui-design.md
-│   ├── api-spec.md
-│   └── infrastructure.md
-├── tests/               # テストコード
-│   ├── __init__.py
-│   ├── test_auth.py
-│   └── test_project.py
-├── migrations/         # DBマイグレーション
-├── .env               # 環境変数
-├── config.py          # 設定ファイル
-├── requirements.txt   # 依存パッケージ
-└── run.py            # 起動スクリプト
-```
+- [開発環境のセットアップ](doc/manual/startup.md)
 
-## 開発環境のセットアップ
+## 設計ドキュメント
 
-### 前提条件
+### 基本設計書
 
-- Python 3.8 以上
-- pip
-- Git
+- [データベース設計](doc/basic-design/database.md)
+- [画面設計](doc/basic-design/ui-design.md)
+- [API 設計](doc/basic-design/api-spec.md)
+- [インフラ構成](doc/basic-design/infrastructure.md)
 
-### インストール手順
+### 詳細設計書
 
-```bash
-# リポジトリのクローン
-git clone https://github.com/your-org/gira.git
-cd gira
+- [データベース設計](doc/detail-design/database.md)
+- [画面設計](doc/detail-design/ui-design.md)
+- [API 設計](doc/detail-design/api-spec.md)
+- [インフラ構成](doc/detail-design/infrastructure.md)
 
-# 仮想環境の作成と有効化
-python -m venv venv
-source venv/bin/activate  # Linuxの場合
-.\venv\Scripts\activate   # Windowsの場合
+### テスト設計書
 
-# 依存パッケージのインストール
-pip install -r requirements.txt
-
-# 環境変数の設定
-cp .env.example .env
-# .envファイルを編集して必要な設定を行う
-
-# データベースの初期化
-flask db upgrade
-
-# 開発サーバーの起動
-flask run
-```
-
-### 開発サーバーの起動オプション
-
-```bash
-# 通常起動
-flask run
-
-# ホットリロード有効で起動（開発時推奨）
-flask run --debug
-
-# ホストとポートを指定して起動
-flask run --host=0.0.0.0 --port=5000
-
-# 環境変数で設定
-export FLASK_DEBUG=1  # Unix系の場合
-set FLASK_DEBUG=1     # Windowsの場合
-flask run
-```
-
-## 詳細設計ドキュメント
-
-- [データベース設計](doc/database.md)
-- [画面設計](doc/ui-design.md)
-- [API 設計](doc/api-spec.md)
-- [インフラ構成](doc/infrastructure.md)
-- [画面詳細設計](doc/screen-design-detail.md)
-- [テストケース](doc/test-cases.md)
+- [テストケース](doc/test-case/test-cases.md)
 
 ## 動作確認済み環境
 
 - OS: Windows 10/11, macOS, Linux
 - ブラウザ: Chrome, Firefox, Safari（最新版）
 - Python: 3.8 以上
-
-## コードフォーマット
-
-### Black の使用方法
-
-```bash
-# 単一ファイルのフォーマット
-black path/to/file.py
-
-# ディレクトリ内の全Pythonファイルをフォーマット
-black .
-
-# 変更箇所のプレビュー（実際には変更を適用しない）
-black --diff path/to/file.py
-
-# 行の最大長を指定してフォーマット（デフォルトは88文字）
-black --line-length 79 path/to/file.py
-
-# 特定のファイルやディレクトリを除外
-black . --exclude "(\.git|\.mypy_cache|\.venv|venv|\.env)"
-```
-
-Black は厳格な Python コードフォーマッターで、コードの一貫性を保つために使用します。設定不要で、常に一貫したフォーマットを適用します。
 
 ## ライセンス
 
