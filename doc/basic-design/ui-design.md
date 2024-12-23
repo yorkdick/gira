@@ -58,7 +58,7 @@
 
 ### バックログ画面
 
-![バックログレイアウト](/doc/image/JIRA-Backlog.png)
+![バックログレイアウト](/doc/assets/image/JIRA-Backlog.png)
 
 #### 構成要素
 
@@ -90,7 +90,7 @@
 
 ### かんばんボード画面
 
-![かんばんレイアウト](/doc/image/JIRA-Kanban.png)
+![かんばんレイアウト](/doc/assets/image/JIRA-Kanban.png)
 
 #### レイアウト構成
 

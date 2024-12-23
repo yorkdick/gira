@@ -125,7 +125,7 @@ graph LR
 
 ```mermaid
 graph LR
-    Dev[開���環境] --> Test[テスト環境]
+    Dev[開発環境] --> Test[テスト環境]
     Test --> Staging[ステージング環境]
     Staging --> Prod[本番環境]
 ```
