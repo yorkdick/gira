@@ -12,6 +12,34 @@ graph TB
     Web --> DB
 ```
 
+## 1.2 生産環境システム構成図
+
+```mermaid
+graph LR
+    UserBrowser[User Browser]
+    subgraph Azure
+        direction TB
+        AppGateway[Application Gateway]
+        subgraph AKS
+            direction LR
+            Pod1[Pod 1: Python Program]
+            Pod2[Pod 2: Python Program]
+            Pod3[Pod 3: Python Program]
+        end
+        PostgreSQL[(Azure PostgreSQL)]
+        AzureMonitor[Azure Monitor]
+        AzureLogging[Azure Logging]
+        AzureStorage[Azure Storage]
+    end
+
+    UserBrowser --> AppGateway
+    AppGateway --> AKS
+    AKS --> PostgreSQL
+    AzureMonitor --> AKS
+    AzureLogging --> AKS
+    AzureStorage --> AKS
+```
+
 ## 2. 環境構成
 
 ### 開発環境
@@ -97,7 +125,7 @@ graph TB
 
 ```mermaid
 graph LR
-    Dev[開発環境] --> Test[テスト環境]
+    Dev[開���環境] --> Test[テスト環境]
     Test --> Staging[ステージング環境]
     Staging --> Prod[本番環境]
 ```
@@ -177,3 +205,40 @@ gitGraph
 
 - `dev`環境は毎日 Azure にデプロイ
 - `stg`と`prod`環境はマージに基づいて自動 CD
+
+## 11. Docker と Kubernetes のセットアップ
+
+### Dockerfile
+
+Dockerfile は、Python アプリケーションの Docker イメージをビルドするために使用されます。以下の手順が含まれています：
+
+1. Docker Hub から公式の Python イメージを使用します。
+2. 作業ディレクトリを`/app`に設定します。
+3. アプリケーションコードをコンテナにコピーします。
+4. `requirements.txt`から依存関係をインストールします。
+5. アプリケーションのためにポート 8888 を公開します。
+6. `python app.py`を使用してアプリケーションを実行します。
+
+### Kubernetes マニフェスト
+
+#### デプロイメント
+
+`deployment.yaml`ファイルは、Azure Kubernetes Service (AKS)上でのアプリケーションのデプロイメントを定義します。以下の仕様が含まれています：
+
+- **レプリカ数**: 3
+- **コンテナイメージ**: `<your-docker-image>`を実際のイメージ名に置き換えてください。
+- **コンテナポート**: 8888
+
+#### サービス
+
+`service.yaml`ファイルは、LoadBalancer サービスを使用してアプリケーションを公開します。以下の仕様が含まれています：
+
+- **サービスタイプ**: LoadBalancer
+- **ポート**: 80
+- **ターゲットポート**: 8888
+
+### デプロイメント手順
+
+1. Dockerfile を使用して Docker イメージをビルドします。
+2. Docker イメージをコンテナレジストリにプッシュします。
+3. Kubernetes マニフェストを適用して、AKS にアプリケーションをデプロイします。
