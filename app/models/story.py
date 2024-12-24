@@ -45,5 +45,43 @@ class Story(db.Model):
         """获取优先级信息"""
         return self.PRIORITY_CHOICES.get(self.priority, self.PRIORITY_CHOICES[self.PRIORITY_NONE])
 
+    def to_dict(self):
+        """将故事对象转换为字典格式"""
+        data = {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'status': self.status,
+            'story_points': self.story_points,
+            'priority': self.priority,
+            'priority_info': self.priority_info,
+            'project_id': self.project_id,
+            'sprint_id': self.sprint_id,
+            'assignee_id': self.assignee_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        # 添加关联对象的信息
+        if self.assignee:
+            data['assignee'] = {
+                'id': self.assignee.id,
+                'username': self.assignee.username
+            }
+        
+        if self.project:
+            data['project'] = {
+                'id': self.project.id,
+                'name': self.project.name
+            }
+        
+        if self.sprint:
+            data['sprint'] = {
+                'id': self.sprint.id,
+                'name': self.sprint.name
+            }
+        
+        return data
+
     def __repr__(self):
         return f'<Story {self.title}>' 

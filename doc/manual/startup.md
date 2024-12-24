@@ -32,6 +32,73 @@ flask db upgrade
 flask run
 ```
 
+## データベースの管理
+
+### データベースの初期化
+
+```bash
+# データベースディレクトリの作成
+mkdir -p instance
+
+# マイグレーションの初期化（初回のみ）
+flask db init
+
+# マイグレーションファイルの作成
+flask db migrate -m "initial migration"
+
+# マイグレーションの適用
+flask db upgrade
+
+# 現在のマイグレーションバージョンの確認
+flask db current
+
+# マイグレーション履歴の表示
+flask db history
+```
+
+### マイグレーションの管理
+
+マイグレーションに問題が発生した場合の対処方法：
+
+```bash
+# 現在のマイグレーションをロールバック
+flask db downgrade
+
+# 特定のバージョンにロールバック
+flask db downgrade <revision>
+
+# マイグレーションの再適用
+flask db upgrade
+
+# マイグレーションのリセット
+rm -rf migrations
+flask db init
+flask db migrate -m "reset migration"
+flask db upgrade
+```
+
+### データベースの初期データ
+
+初期データの投入は `scripts/init_db.py` を使用します：
+
+```bash
+# 初期データの投入
+python scripts/init_db.py
+
+# テストデータの投入（開発環境のみ）
+python scripts/init_db.py --test-data
+```
+
+### データベースのバックアップ
+
+```bash
+# データベースのバックアップ
+cp instance/gira.db instance/gira.db.backup
+
+# バックアップからの復元
+cp instance/gira.db.backup instance/gira.db
+```
+
 ## 開発サーバーの起動オプション
 
 ```bash

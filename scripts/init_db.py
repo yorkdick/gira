@@ -1,5 +1,6 @@
-import sys
+#!/usr/bin/env python
 import os
+import sys
 from datetime import datetime, timedelta, UTC
 
 # 将项目根目录添加到 Python 路径
@@ -18,7 +19,7 @@ def init_db():
         # 清空现有数据
         db.drop_all()
         db.create_all()
-
+        
         # 创建管理员用户
         admin = User(
             username="admin",
@@ -29,7 +30,7 @@ def init_db():
         )
         admin.set_password("admin123")
         db.session.add(admin)
-
+        
         # 创建测试用户
         test_user = User(
             username="test",
@@ -40,7 +41,7 @@ def init_db():
         )
         test_user.set_password("test123")
         db.session.add(test_user)
-
+        
         # 创建示例项目
         gira_project = Project(
             name="GIRA開発プロジェクト",
@@ -50,7 +51,7 @@ def init_db():
             owner=admin
         )
         db.session.add(gira_project)
-
+        
         test_project = Project(
             name="テストプロジェクト",
             key="TEST",
@@ -59,7 +60,7 @@ def init_db():
             owner=test_user
         )
         db.session.add(test_project)
-
+        
         # 为GIRA项目创建Sprint和Story
         # Sprint 1（已完成）
         sprint1 = Sprint(
