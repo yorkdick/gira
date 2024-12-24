@@ -1,227 +1,236 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div class="container-fluid p-4">
-    {% if current_project %}
-        {% if active_sprint %}
-        <div class="kanban-header">
-            <div class="d-flex align-items-center">
-                <h3>{{ active_sprint.name }}</h3>
-                <span class="sprint-dates ms-3">
-                    {{ active_sprint.start_date.strftime('%Y/%m/%d') }} - {{ active_sprint.end_date.strftime('%Y/%m/%d') }}
-                </span>
-            </div>
-            {% if active_sprint.goal %}
-            <div class="sprint-goal">
-                <i class="bi bi-flag"></i> {{ active_sprint.goal }}
-            </div>
-            {% endif %}
-        </div>
-
-        <div class="kanban-board">
-            <!-- Todo Column -->
-            <div class="kanban-column">
-                <div class="column-header">
-                    <h6>Todo</h6>
-                    <span class="story-count">{{ todo_stories|length }}</span>
-                </div>
-                <div class="story-list" data-status="todo">
-                    {% for story in todo_stories %}
-                    <div class="story-card" data-story-id="{{ story.id }}">
-                        <div class="story-card-header">
-                            <span class="story-title">{{ story.title }}</span>
-                        </div>
-                        <div class="story-card-footer">
-                            <div class="story-indicators">
-                                <i class="bi bi-bookmark-fill story-type-icon"></i>
-                                {% if story.priority > 0 %}
-                                <span class="priority-icon" style="color: {{ story.priority_info.color }}">
-                                    {{ story.priority_info.icon }}
-                                </span>
-                                {% endif %}
-                                <span class="story-points">{{ story.story_points or 0 }}</span>
-                            </div>
-                            {% if story.assignee %}
-                            <div class="user-avatar" style="background-color: {{ story.assignee.avatar_color }}">
-                                {{ story.assignee.username[:2].upper() }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Doing Column -->
-            <div class="kanban-column">
-                <div class="column-header">
-                    <h6>In Progress</h6>
-                    <span class="story-count">{{ doing_stories|length }}</span>
-                </div>
-                <div class="story-list" data-status="doing">
-                    {% for story in doing_stories %}
-                    <div class="story-card" data-story-id="{{ story.id }}">
-                        <div class="story-card-header">
-                            <span class="story-title">{{ story.title }}</span>
-                        </div>
-                        <div class="story-card-footer">
-                            <div class="story-indicators">
-                                <i class="bi bi-bookmark-fill story-type-icon"></i>
-                                {% if story.priority > 0 %}
-                                <span class="priority-icon" style="color: {{ story.priority_info.color }}">
-                                    {{ story.priority_info.icon }}
-                                </span>
-                                {% endif %}
-                                <span class="story-points">{{ story.story_points or 0 }}</span>
-                            </div>
-                            {% if story.assignee %}
-                            <div class="user-avatar" style="background-color: {{ story.assignee.avatar_color }}">
-                                {{ story.assignee.username[:2].upper() }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Done Column -->
-            <div class="kanban-column">
-                <div class="column-header">
-                    <h6>Done</h6>
-                    <span class="story-count">{{ done_stories|length }}</span>
-                </div>
-                <div class="story-list" data-status="done">
-                    {% for story in done_stories %}
-                    <div class="story-card" data-story-id="{{ story.id }}">
-                        <div class="story-card-header">
-                            <span class="story-title">{{ story.title }}</span>
-                        </div>
-                        <div class="story-card-footer">
-                            <div class="story-indicators">
-                                <i class="bi bi-bookmark-fill story-type-icon"></i>
-                                {% if story.priority > 0 %}
-                                <span class="priority-icon" style="color: {{ story.priority_info.color }}">
-                                    {{ story.priority_info.icon }}
-                                </span>
-                                {% endif %}
-                                <span class="story-points">{{ story.story_points or 0 }}</span>
-                            </div>
-                            {% if story.assignee %}
-                            <div class="user-avatar" style="background-color: {{ story.assignee.avatar_color }}">
-                                {{ story.assignee.username[:2].upper() }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% else %}
-        <div class="alert alert-info">
-            アクティブなスプリントはありません
-        </div>
-        {% endif %}
-    {% else %}
-    <div class="alert alert-warning">
-        プロジェクトが選択されていません
+  {% if current_project %} {% if active_sprint %}
+  <div class="kanban-header">
+    <div class="d-flex align-items-center">
+      <h3>{{ active_sprint.name }}</h3>
+      <span class="sprint-dates ms-3">
+        {{ active_sprint.start_date.strftime('%Y/%m/%d') }} - {{
+        active_sprint.end_date.strftime('%Y/%m/%d') }}
+      </span>
+    </div>
+    {% if active_sprint.goal %}
+    <div class="sprint-goal">
+      <i class="bi bi-flag"></i> {{ active_sprint.goal }}
     </div>
     {% endif %}
-</div>
-{% endblock %}
+  </div>
 
-{% block extra_css %}
+  <div class="kanban-board">
+    <!-- Todo Column -->
+    <div class="kanban-column">
+      <div class="column-header">
+        <h6>Todo</h6>
+        <span class="story-count">{{ todo_stories|length }}</span>
+      </div>
+      <div class="story-list" data-status="todo">
+        {% for story in todo_stories %}
+        <div class="story-card" data-story-id="{{ story.id }}">
+          <div class="story-card-header">
+            <span class="story-title">{{ story.title }}</span>
+          </div>
+          <div class="story-card-footer">
+            <div class="story-indicators">
+              <i class="bi bi-bookmark-fill story-type-icon"></i>
+              {% if story.priority > 0 %}
+              <span
+                class="priority-icon"
+                style="color: {{ story.priority_info.color }}"
+              >
+                {{ story.priority_info.icon }}
+              </span>
+              {% endif %}
+              <span class="story-points">{{ story.story_points or 0 }}</span>
+            </div>
+            {% if story.assignee %}
+            <div
+              class="user-avatar"
+              style="background-color: {{ story.assignee.avatar_color }}"
+            >
+              {{ story.assignee.username[:2].upper() }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Doing Column -->
+    <div class="kanban-column">
+      <div class="column-header">
+        <h6>In Progress</h6>
+        <span class="story-count">{{ doing_stories|length }}</span>
+      </div>
+      <div class="story-list" data-status="doing">
+        {% for story in doing_stories %}
+        <div class="story-card" data-story-id="{{ story.id }}">
+          <div class="story-card-header">
+            <span class="story-title">{{ story.title }}</span>
+          </div>
+          <div class="story-card-footer">
+            <div class="story-indicators">
+              <i class="bi bi-bookmark-fill story-type-icon"></i>
+              {% if story.priority > 0 %}
+              <span
+                class="priority-icon"
+                style="color: {{ story.priority_info.color }}"
+              >
+                {{ story.priority_info.icon }}
+              </span>
+              {% endif %}
+              <span class="story-points">{{ story.story_points or 0 }}</span>
+            </div>
+            {% if story.assignee %}
+            <div
+              class="user-avatar"
+              style="background-color: {{ story.assignee.avatar_color }}"
+            >
+              {{ story.assignee.username[:2].upper() }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Done Column -->
+    <div class="kanban-column">
+      <div class="column-header">
+        <h6>Done</h6>
+        <span class="story-count">{{ done_stories|length }}</span>
+      </div>
+      <div class="story-list" data-status="done">
+        {% for story in done_stories %}
+        <div class="story-card" data-story-id="{{ story.id }}">
+          <div class="story-card-header">
+            <span class="story-title">{{ story.title }}</span>
+          </div>
+          <div class="story-card-footer">
+            <div class="story-indicators">
+              <i class="bi bi-bookmark-fill story-type-icon"></i>
+              {% if story.priority > 0 %}
+              <span
+                class="priority-icon"
+                style="color: {{ story.priority_info.color }}"
+              >
+                {{ story.priority_info.icon }}
+              </span>
+              {% endif %}
+              <span class="story-points">{{ story.story_points or 0 }}</span>
+            </div>
+            {% if story.assignee %}
+            <div
+              class="user-avatar"
+              style="background-color: {{ story.assignee.avatar_color }}"
+            >
+              {{ story.assignee.username[:2].upper() }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info">アクティブなスプリントはありません</div>
+  {% endif %} {% else %}
+  <div class="alert alert-warning">プロジェクトが選択されていません</div>
+  {% endif %}
+</div>
+{% endblock %} {% block extra_css %}
 <style>
-.kanban-board {
+  .kanban-board {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-top: 1.5rem;
-}
+  }
 
-.kanban-column {
+  .kanban-column {
     background-color: #f4f5f7;
     border-radius: 3px;
     padding: 0.5rem;
-}
+  }
 
-.column-header {
+  .column-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem;
     margin-bottom: 0.5rem;
-}
+  }
 
-.column-header h6 {
+  .column-header h6 {
     margin: 0;
-    color: #42526E;
+    color: #42526e;
     font-weight: 500;
-}
+  }
 
-.story-count {
-    background-color: rgba(0,0,0,0.1);
+  .story-count {
+    background-color: rgba(0, 0, 0, 0.1);
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 12px;
-    color: #42526E;
-}
+    color: #42526e;
+  }
 
-.story-list {
+  .story-list {
     min-height: 100px;
-}
+  }
 
-.story-card {
+  .story-card {
     background: white;
     border-radius: 3px;
     border: 1px solid #dfe1e6;
     margin-bottom: 0.5rem;
     padding: 8px 12px;
     cursor: pointer;
-}
+  }
 
-.story-card:hover {
+  .story-card:hover {
     background-color: #fafbfc;
-}
+  }
 
-.story-card-header {
+  .story-card-header {
     margin-bottom: 0.5rem;
-}
+  }
 
-.story-title {
-    color: #0052CC;
+  .story-title {
+    color: #0052cc;
     font-size: 14px;
     font-weight: 500;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-}
+  }
 
-.story-indicators {
+  .story-indicators {
     display: flex;
     align-items: center;
     gap: 8px;
-}
+  }
 
-.story-card-footer {
+  .story-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
+  }
 
-.story-type-icon {
+  .story-type-icon {
     font-size: 14px;
-    color: #36B37E;
-}
+    color: #36b37e;
+  }
 
-.priority-icon {
+  .priority-icon {
     font-size: 14px;
     line-height: 1;
-}
+  }
 
-.story-points {
+  .story-points {
     background-color: #dfe1e6;
     border-radius: 12px;
     padding: 1px 8px;
@@ -229,9 +238,9 @@
     color: #42526e;
     min-width: 24px;
     text-align: center;
-}
+  }
 
-.user-avatar {
+  .user-avatar {
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -241,73 +250,95 @@
     color: white;
     font-size: 12px;
     font-weight: 500;
-}
+  }
 
-.kanban-header {
+  .kanban-header {
     margin-bottom: 1.5rem;
-}
+  }
 
-.sprint-dates {
-    color: #6B778C;
+  .sprint-dates {
+    color: #6b778c;
     font-size: 14px;
-}
+  }
 
-.sprint-goal {
-    color: #6B778C;
+  .sprint-goal {
+    color: #6b778c;
     font-size: 14px;
     margin-top: 0.5rem;
-}
+  }
 </style>
-{% endblock %}
-
-{% block extra_js %}
+{% endblock %} {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const lists = document.querySelectorAll('.story-list');
-    
-    lists.forEach(list => {
-        new Sortable(list, {
-            group: 'stories',
-            animation: 150,
-            ghostClass: 'story-card-ghost',
-            onEnd: function(evt) {
-                const storyId = evt.item.dataset.storyId;
-                const newStatus = evt.to.dataset.status;
-                
-                updateStoryStatus(storyId, newStatus);
-            }
-        });
-    });
-});
+  document.addEventListener("DOMContentLoaded", function () {
+    const lists = document.querySelectorAll(".story-list");
 
-function updateStoryStatus(storyId, status) {
-    fetch(`{{ url_for('kanban.update_story_status', story_id=0) }}`.replace('0', storyId), {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
+    lists.forEach((list) => {
+      new Sortable(list, {
+        group: "stories",
+        animation: 150,
+        ghostClass: "story-card-ghost",
+        onEnd: function (evt) {
+          const storyId = evt.item.dataset.storyId;
+          const newStatus = evt.to.dataset.status;
+
+          updateStoryStatus(storyId, newStatus);
         },
-        body: JSON.stringify({ status: status })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status !== 'success') {
-            console.error('Failed to update story status:', data);
-            location.reload();
-            return;
-        }
-        const columns = ['todo', 'doing', 'done'];
-        columns.forEach(status => {
-            const list = document.querySelector(`.story-list[data-status="${status}"]`);
-            const count = list.children.length;
-            const countElement = list.closest('.kanban-column').querySelector('.story-count');
-            countElement.textContent = count;
-        });
-    })
-    .catch((error) => {
-        console.error('Error updating story status:', error);
-        location.reload();
+      });
     });
-}
+  });
+
+  function updateStoryStatus(storyId, status) {
+    console.log(`Updating story ${storyId} to status: ${status}`);
+    fetch(
+      `{{ url_for('kanban.update_story_status', story_id=0) }}`.replace(
+        "0",
+        storyId
+      ),
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: status }),
+      }
+    )
+      .then(async (response) => {
+        console.log("Response status:", response.status);
+        const data = await response.json();
+        console.log("Response data:", data);
+
+        if (!response.ok) {
+          throw new Error(
+            `HTTP error! status: ${response.status}, message: ${
+              data.message || "Unknown error"
+            }`
+          );
+        }
+        return data;
+      })
+      .then((data) => {
+        if (data.status !== "success") {
+          console.error("Failed to update story status:", data);
+          throw new Error(data.message || "Failed to update story status");
+        }
+        const columns = ["todo", "doing", "done"];
+        columns.forEach((status) => {
+          const list = document.querySelector(
+            `.story-list[data-status="${status}"]`
+          );
+          const count = list.children.length;
+          const countElement = list
+            .closest(".kanban-column")
+            .querySelector(".story-count");
+          countElement.textContent = count;
+        });
+      })
+      .catch((error) => {
+        console.error("Error updating story status:", error);
+        // カードを元の位置に戻す
+        location.reload();
+      });
+  }
 </script>
-{% endblock %} 
+{% endblock %}

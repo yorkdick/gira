@@ -38,3 +38,7 @@ instance/
 # OSやその他のシステムファイル
 .DS_Store
 Thumbs.db
+
+# Test results
+tests/result/
+tests/result/*

@@ -13,23 +13,29 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField("ユーザー名", validators=[
-        DataRequired(),
-        Length(min=3, max=64, message="ユーザー名は3文字以上64文字以下で入力してください")
-    ])
-    email = EmailField("メールアドレス", validators=[
-        DataRequired(),
-        Email(),
-        Length(max=120, message="メールアドレスは120文字以下で入力してください")
-    ])
-    password = PasswordField("パスワード", validators=[
-        DataRequired(),
-        Length(min=8, message="パスワードは8文字以上で入力してください")
-    ])
-    password2 = PasswordField("パスワード（確認）", validators=[
-        DataRequired(),
-        EqualTo('password', message="パスワードが一致しません")
-    ])
+    username = StringField(
+        "ユーザー名",
+        validators=[
+            DataRequired(),
+            Length(min=3, max=64, message="ユーザー名は3文字以上64文字以下で入力してください"),
+        ],
+    )
+    email = EmailField(
+        "メールアドレス",
+        validators=[
+            DataRequired(),
+            Email(),
+            Length(max=120, message="メールアドレスは120文字以下で入力してください"),
+        ],
+    )
+    password = PasswordField(
+        "パスワード",
+        validators=[DataRequired(), Length(min=8, message="パスワードは8文字以上で入力してください")],
+    )
+    password2 = PasswordField(
+        "パスワード（確認）",
+        validators=[DataRequired(), EqualTo("password", message="パスワードが一致しません")],
+    )
     submit = SubmitField("登録")
 
     def validate_username(self, username):
@@ -46,20 +52,17 @@ class RegistrationForm(FlaskForm):
 
 
 class ResetPasswordRequestForm(FlaskForm):
-    email = EmailField("メールアドレス", validators=[
-        DataRequired(),
-        Email()
-    ])
+    email = EmailField("メールアドレス", validators=[DataRequired(), Email()])
     submit = SubmitField("パスワードリセット")
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField("新しいパスワード", validators=[
-        DataRequired(),
-        Length(min=8, message="パスワードは8文字以上で入力してください")
-    ])
-    password2 = PasswordField("新しいパスワード（確認）", validators=[
-        DataRequired(),
-        EqualTo('password', message="パスワードが一致しません")
-    ])
+    password = PasswordField(
+        "新しいパスワード",
+        validators=[DataRequired(), Length(min=8, message="パスワードは8文字以上で入力してください")],
+    )
+    password2 = PasswordField(
+        "新しいパスワード（確認）",
+        validators=[DataRequired(), EqualTo("password", message="パスワードが一致しません")],
+    )
     submit = SubmitField("パスワードを変更")

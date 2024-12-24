@@ -21,8 +21,8 @@ class User(UserMixin, db.Model):
     @property
     def initials(self):
         """获取用户姓名缩写"""
-        first = self.first_name[0].upper() if self.first_name else ''
-        last = self.last_name[0].upper() if self.last_name else ''
+        first = self.first_name[0].upper() if self.first_name else ""
+        last = self.last_name[0].upper() if self.last_name else ""
         return f"{first}{last}" if first or last else self.username[:2].upper()
 
     def set_password(self, password):

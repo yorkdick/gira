@@ -18,7 +18,8 @@ class Config:
     LOG_TYPE = os.environ.get('LOG_TYPE', 'file')  # stream or file
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
     LOG_FILE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs', 'app.log')
-    LOG_FORMAT = '%(asctime)s [%(levelname)s] %(module)s:%(lineno)d - %(message)s'
+    LOG_FORMAT = '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+    LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S %z'  # タイムゾーン情報を含む
     LOG_MAX_BYTES = 10 * 1024 * 1024  # 10MB
     LOG_BACKUP_COUNT = 5
 

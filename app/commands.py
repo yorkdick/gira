@@ -7,15 +7,17 @@ from app.models.story import Story
 from app.models.sprint import Sprint
 from datetime import datetime, timedelta, UTC
 
-@click.command('init-db')
+
+@click.command("init-db")
 @with_appcontext
 def init_db_command():
     """Clear the existing data and create new tables."""
     db.drop_all()
     db.create_all()
-    click.echo('Initialized the database.')
+    click.echo("Initialized the database.")
 
-@click.command('create-test-data')
+
+@click.command("create-test-data")
 @with_appcontext
 def create_test_data():
     """Create some test data."""
@@ -25,7 +27,7 @@ def create_test_data():
         email="admin@example.com",
         first_name="管理者",
         last_name="システム",
-        avatar_color="#0052CC"
+        avatar_color="#0052CC",
     )
     admin.set_password("admin123")
     db.session.add(admin)
@@ -36,7 +38,7 @@ def create_test_data():
         email="test@example.com",
         first_name="テスト",
         last_name="ユーザー",
-        avatar_color="#00875A"
+        avatar_color="#00875A",
     )
     test_user.set_password("test123")
     db.session.add(test_user)
@@ -47,7 +49,7 @@ def create_test_data():
         key="GIRA",
         description="GIRAプロジェクトの開発用プロジェクト",
         status="active",
-        owner=admin
+        owner=admin,
     )
     db.session.add(gira_project)
 
@@ -56,7 +58,7 @@ def create_test_data():
         key="TEST",
         description="テスト用のプロジェクト",
         status="active",
-        owner=test_user
+        owner=test_user,
     )
     db.session.add(test_project)
 
@@ -68,7 +70,7 @@ def create_test_data():
         project=gira_project,
         status="completed",
         start_date=datetime.now(UTC) - timedelta(days=28),
-        end_date=datetime.now(UTC) - timedelta(days=14)
+        end_date=datetime.now(UTC) - timedelta(days=14),
     )
     db.session.add(sprint1)
 
@@ -82,7 +84,7 @@ def create_test_data():
             priority=Story.PRIORITY_HIGH,
             project=gira_project,
             sprint=sprint1,
-            assignee=admin
+            assignee=admin,
         ),
         Story(
             title="ログイン機能の実装",
@@ -92,7 +94,7 @@ def create_test_data():
             priority=Story.PRIORITY_HIGH,
             project=gira_project,
             sprint=sprint1,
-            assignee=admin
+            assignee=admin,
         ),
         Story(
             title="パスワードリセット機能の実装",
@@ -102,8 +104,8 @@ def create_test_data():
             priority=Story.PRIORITY_MEDIUM,
             project=gira_project,
             sprint=sprint1,
-            assignee=test_user
-        )
+            assignee=test_user,
+        ),
     ]
     for story in stories_sprint1:
         db.session.add(story)
@@ -115,7 +117,7 @@ def create_test_data():
         project=gira_project,
         status="active",
         start_date=datetime.now(UTC) - timedelta(days=7),
-        end_date=datetime.now(UTC) + timedelta(days=7)
+        end_date=datetime.now(UTC) + timedelta(days=7),
     )
     db.session.add(sprint2)
 
@@ -129,7 +131,7 @@ def create_test_data():
             priority=Story.PRIORITY_HIGH,
             project=gira_project,
             sprint=sprint2,
-            assignee=admin
+            assignee=admin,
         ),
         Story(
             title="プロジェクト一覧表示機能の実装",
@@ -139,7 +141,7 @@ def create_test_data():
             priority=Story.PRIORITY_HIGH,
             project=gira_project,
             sprint=sprint2,
-            assignee=admin
+            assignee=admin,
         ),
         Story(
             title="プロジェクト詳細表示機能の実装",
@@ -149,8 +151,8 @@ def create_test_data():
             priority=Story.PRIORITY_MEDIUM,
             project=gira_project,
             sprint=sprint2,
-            assignee=test_user
-        )
+            assignee=test_user,
+        ),
     ]
     for story in stories_sprint2:
         db.session.add(story)
@@ -164,7 +166,7 @@ def create_test_data():
             story_points=8,
             priority=Story.PRIORITY_HIGH,
             project=gira_project,
-            assignee=admin
+            assignee=admin,
         ),
         Story(
             title="バーンダウンチャートの実装",
@@ -173,7 +175,7 @@ def create_test_data():
             story_points=5,
             priority=Story.PRIORITY_MEDIUM,
             project=gira_project,
-            assignee=test_user
+            assignee=test_user,
         ),
         Story(
             title="チーム管理機能の実装",
@@ -181,7 +183,7 @@ def create_test_data():
             status="todo",
             story_points=5,
             priority=Story.PRIORITY_MEDIUM,
-            project=gira_project
+            project=gira_project,
         ),
         Story(
             title="アクティビティログの実装",
@@ -189,11 +191,11 @@ def create_test_data():
             status="todo",
             story_points=3,
             priority=Story.PRIORITY_LOW,
-            project=gira_project
-        )
+            project=gira_project,
+        ),
     ]
     for story in backlog_stories:
         db.session.add(story)
 
     db.session.commit()
-    click.echo('Created test data.') 
+    click.echo("Created test data.")

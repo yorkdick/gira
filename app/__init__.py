@@ -10,9 +10,10 @@ from flask_login import login_required
 logger = logging.getLogger("gira")
 logger.setLevel(logging.INFO)
 
+
 def create_app(test_config=None):
     app = Flask(__name__)
-    
+
     if test_config is None:
         app.config.from_object(Config)
     else:
@@ -32,8 +33,13 @@ def create_app(test_config=None):
             app.config["LOG_FILE"],
             maxBytes=app.config["LOG_MAX_BYTES"],
             backupCount=app.config["LOG_BACKUP_COUNT"],
+            encoding='utf-8'
         )
-        file_handler.setFormatter(logging.Formatter(app.config["LOG_FORMAT"]))
+        formatter = logging.Formatter(
+            fmt=app.config["LOG_FORMAT"],
+            datefmt=app.config["LOG_DATE_FORMAT"]
+        )
+        file_handler.setFormatter(formatter)
         file_handler.setLevel(app.config["LOG_LEVEL"])
         logger.addHandler(file_handler)
     else:
@@ -53,20 +59,22 @@ def create_app(test_config=None):
     # 然后注册其他路由
     app.register_blueprint(main.bp)
     app.register_blueprint(backlog.bp)
-    app.register_blueprint(kanban.bp, url_prefix='/kanban')
-    app.register_blueprint(project.bp, url_prefix='')
+    app.register_blueprint(kanban.bp, url_prefix="/kanban")
+    app.register_blueprint(project.bp, url_prefix="")
 
     # 添加根路由重定向到 backlog
-    @app.route('/')
+    @app.route("/")
     @login_required
     def index():
-        return redirect(url_for('backlog.index'))
+        return redirect(url_for("backlog.index"))
 
     from . import commands
+
     app.cli.add_command(commands.init_db_command)
     app.cli.add_command(commands.create_test_data)
 
     return app
+
 
 # モデルの読み込み
 from app.models import user, project, story, sprint
