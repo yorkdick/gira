@@ -42,3 +42,4 @@ Thumbs.db
 # Test results
 tests/result/
 tests/result/*
+app/gira-backend/target/

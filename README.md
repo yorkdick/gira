@@ -1,103 +1,180 @@
-# GIRA - アジャイル開発プロジェクト管理ツール
+# GIRA - 项目管理系统
 
-![Run Tests](https://github.com/rexwangyi/gira/actions/workflows/main.yml/badge.svg)
+GIRA是一个轻量级的项目管理系统，提供类似JIRA的核心功能，包括Backlog管理和看板功能。
 
-## 概要
+## 技术栈
 
-GIRA はシンプルで使いやすいアジャイル開発プロジェクト管理ツールです。
+### 后端
+- Java 17
+- Spring Boot 3.2.1
+- Spring Security 6.2.1
+- PostgreSQL 14.10
+- Redis 7.2.3
 
-## 機能
+### 前端
+- React 18.2.0
+- TypeScript 5.3.3
+- Ant Design 5.12.5
+- TailwindCSS 3.4.0
 
-- プロジェクト管理
-- バックログ管理
-- かんばんボード
-- スプリント管理
-- ユーザー管理
+## 项目结构
 
-## セットアップ
-
-1. 依存パッケージのインストール
-
-```bash
-pip install -r requirements.txt
+```
+gira/
+├── doc/                                # 文档目录
+│   ├── basic-design/                   # 基础设计文档
+│   │   ├── architecture.md            # 系统架构设计
+│   │   ├── api.md                     # API接口设计
+│   │   ├── functional.md              # 功能设计
+│   │   └── ui.md                      # UI设计
+│   │
+│   └── detail-design/                  # 详细设计文档
+│       ├── tech-stack.md              # 技术栈详细说明
+│       ├── backend-design.md          # 后端详细设计
+│       ├── frontend-design.md         # 前端详细设计
+│       ├── database-design.md         # 数据库详细设计
+│       └── business-logic.md          # 业务逻辑详细设计
+│
+├── gira-backend/                       # 后端项目目录
+│   ├── gira-common/                   # 公共模块
+│   ├── gira-core/                     # 核心业务模块
+│   ├── gira-auth/                     # 认证授权模块
+│   ├── gira-api/                      # API接口模块
+│   └── gira-admin/                    # 管理后台模块
+│
+├── gira-frontend/                      # 前端项目目录
+│   ├── src/
+│   │   ├── assets/                    # 静态资源
+│   │   ├── components/               # 通用组件
+│   │   ├── features/                 # 功能模块
+│   │   ├── hooks/                    # 自定义Hook
+│   │   ├── layouts/                  # 布局组件
+│   │   ├── pages/                    # 页面组件
+│   │   ├── services/                 # API服务
+│   │   ├── store/                    # 状态管理
+│   │   ├── styles/                   # 样式文件
+│   │   ├── types/                    # TypeScript类型
+│   │   └── utils/                    # 工具函数
+│   │
+│   ├── public/                        # 公共资源
+│   └── tests/                         # 测试文件
+│
+├── scripts/                            # 脚本目录
+│   ├── deploy/                        # 部署脚本
+│   ├── docker/                        # Docker配置
+│   └── database/                      # 数据库脚本
+│
+├── .gitignore                         # Git忽略文件
+├── docker-compose.yml                  # Docker Compose配置
+└── README.md                          # 项目说明文档
 ```
 
-2. データベースの初期化
+## 文档说明
 
+### 基础设计文档 (doc/basic-design/)
+- `architecture.md`: 系统整体架构设计，包含技术选型、系统模块划分等
+- `api.md`: API接口设计，包含接口规范、认证方式、错误码等
+- `functional.md`: 功能设计，详细描述系统的功能模块和业务流程
+- `ui.md`: UI设计，包含界面布局、组件设计、交互流程等
+
+### 详细设计文档 (doc/detail-design/)
+- `tech-stack.md`: 技术栈详细说明，包含版本、配置和使用说明
+- `backend-design.md`: 后端详细设计，包含代码结构、核心服务等
+- `frontend-design.md`: 前端详细设计，包含组件设计、状态管理等
+- `database-design.md`: 数据库设计，包含表结构、索引、优化等
+- `business-logic.md`: 业务逻辑设计，包含业务流程、规则等
+
+## 后端模块说明 (gira-backend/)
+
+### gira-common
+- 公共工具类
+- 通用配置
+- 常量定义
+- 基础组件
+
+### gira-core
+- 核心业务逻辑
+- 领域模型
+- 业务服务
+- 数据访问
+
+### gira-auth
+- 用户认证
+- 权限管理
+- 会话管理
+- 安全配置
+
+### gira-api
+- REST API接口
+- 接口文档
+- 请求处理
+- 响应封装
+
+### gira-admin
+- 管理后台功能
+- 系统配置
+- 运维管理
+
+## 前端目录说明 (gira-frontend/src/)
+
+### components
+- 通用UI组件
+- 业务组件
+- 表单组件
+- 列表组件
+
+### features
+- 认证模块
+- Backlog模块
+- 看板模块
+- 项目管理
+- 用户管理
+- 系统设置
+
+### services
+- API调用封装
+- 数据处理
+- 缓存处理
+- 工具函数
+
+## 开发指南
+
+### 环境要求
+- JDK 17
+- Node.js 18.19.0
+- PostgreSQL 14.10
+- Redis 7.2.3
+- Docker 24.0.7
+
+### 本地开发
+1. 克隆项目
 ```bash
-python init_db.py
+git clone https://github.com/your-org/gira.git
 ```
 
-3. アプリケーションの起動
-
+2. 启动后端
 ```bash
-python app.py
+cd gira-backend
+./mvnw spring-boot:run
 ```
 
-## テスト実行
-
-### 1. 単体テスト
-
+3. 启动前端
 ```bash
-# すべての単体テストを実行
-python -m pytest tests/unit
-
-# 特定のテストファイルを実行
-python -m pytest tests/unit/test_story.py
+cd gira-frontend
+npm install
+npm start
 ```
 
-### 2. UI 自動化テスト
-
-#### 前提条件
-
-- Chrome WebDriver のセットアップ（詳細は `doc/manual/startup.md` を参照）
-- アプリケーションサーバーが起動していること（http://127.0.0.1:5000）
-- テストデータが準備されていること
-
-#### テスト実行コマンド
-
+### 使用Docker
 ```bash
-# すべてのUIテストを実行
-python tests/ui_test.py
-
-# スクリーンショット付きで実行
-python tests/ui_test.py --screenshot
-
-# 特定のテストケースのみ実行
-python tests/ui_test.py -k "test_login"    # ログインテストのみ
-python tests/ui_test.py -k "test_kanban"   # かんばんテストのみ
-python tests/ui_test.py -k "test_backlog"  # バックログテストのみ
+docker-compose up -d
 ```
 
-#### テスト結果の確認
+## 贡献指南
+1. Fork 项目
+2. 创建特性分支
+3. 提交代码
+4. 创建Pull Request
 
-- テスト結果：標準出力に表示
-- スクリーンショット：`tests/result/*.png`
-- ログファイル：`logs/app.log`
-
-## ドキュメント
-
-### 設計書
-
-- 基本設計書: `doc/basic-design/`
-- 詳細設計書: `doc/detail-design/`
-
-### テスト関連
-
-- UI テスト仕様書: `doc/test-case/ui-autotest.md`
-- 単体テスト仕様書: `doc/test-case/unit-test.md`
-
-### マニュアル
-
-- セットアップ手順: `doc/manual/startup.md`
-- 運用マニュアル: `doc/manual/operation.md`
-
-## 動作確認済み環境
-
-- OS: Windows 10/11, macOS 12 以上, Ubuntu 20.04/22.04
-- Python: 3.8 以上（3.11 推奨）
-- ブラウザ: Google Chrome 最新版
-
-## ライセンス
-
-MIT License
+## 许可证
+[MIT License](LICENSE)
