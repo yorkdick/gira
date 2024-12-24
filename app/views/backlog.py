@@ -4,7 +4,7 @@ from app.models.project import Project
 from app.models.story import Story
 from app.models.sprint import Sprint
 from app.models.user import User
-from app import db
+from app import db, logger
 from datetime import datetime, timedelta
 from sqlalchemy import case
 
@@ -16,73 +16,86 @@ bp = Blueprint("backlog", __name__)
 @login_required
 def index(project_id=None):
     """バックログページを表示"""
-    projects = Project.query.all()
-    current_project = None
-    users = User.query.filter_by(is_active=True).all()
+    try:
+        logger.info(f"User {current_user.username} accessing backlog page")
+        
+        projects = Project.query.all()
+        current_project = None
+        users = User.query.filter_by(is_active=True).all()
+        logger.debug(f"Found {len(users)} active users")
 
-    if project_id:
-        current_project = Project.query.get_or_404(project_id)
-    elif projects:
-        current_project = projects[0]
+        if project_id:
+            current_project = Project.query.get_or_404(project_id)
+            logger.info(f"Viewing backlog for project: {current_project.name} (ID: {project_id})")
+        elif projects:
+            current_project = projects[0]
+            logger.info(f"No project specified, defaulting to: {current_project.name} (ID: {current_project.id})")
 
-    # 全てのスプリントを取得
-    sprints = []
-    backlog_stories = []
-    active_sprint = None
-    if current_project:
-        # アクティブなスプリントを取得
-        active_sprint = Sprint.query.filter_by(
-            project_id=current_project.id,
-            status='active'
-        ).first()
+        # 全てのスプリントを取得
+        sprints = []
+        backlog_stories = []
+        active_sprint = None
+        if current_project:
+            # アクティブなスプリントを取得
+            active_sprint = Sprint.query.filter_by(
+                project_id=current_project.id,
+                status='active'
+            ).first()
+            
+            if active_sprint:
+                logger.info(f"Found active sprint: {active_sprint.name} (ID: {active_sprint.id})")
 
-        # スプリントを番号順に取得
-        sprints = Sprint.query.filter_by(
-            project_id=current_project.id
-        ).order_by(
-            Sprint.name.asc()  # Sprint 1, Sprint 2, ... の順
-        ).all()
+            # スプリントを番号順に取得
+            sprints = Sprint.query.filter_by(
+                project_id=current_project.id
+            ).order_by(
+                Sprint.name.asc()  # Sprint 1, Sprint 2, ... の順
+            ).all()
+            logger.debug(f"Found {len(sprints)} sprints for project {current_project.name}")
 
-        # バックログのストーリーを取得
-        backlog_stories = Story.query.filter_by(
-            project_id=current_project.id,
-            sprint_id=None
-        ).order_by(Story.priority.desc()).all()
+            # バックログのストーリーを取得
+            backlog_stories = Story.query.filter_by(
+                project_id=current_project.id,
+                sprint_id=None
+            ).order_by(Story.priority.desc()).all()
+            logger.debug(f"Found {len(backlog_stories)} stories in backlog")
+        else:
+            logger.info("No projects found")
 
-        # 各スプリントに追加情報を設定
-        for sprint in sprints:
-            if sprint.status == 'planning':
-                # このスプリントが開始可能かどうかを判定
-                can_start = not active_sprint  # アクティブなスプリントがない
-                if can_start:
-                    # 番号が小さいプランニング中のスプリントがないことを確認
-                    for s in sprints:
-                        if s.status == 'planning' and s.name < sprint.name:
-                            can_start = False
-                            break
-                sprint.can_start = can_start
-
-    return render_template(
-        "backlog/index.html",
-        title="バックログ",
-        projects=projects,
-        current_project=current_project,
-        sprints=sprints,
-        backlog_stories=backlog_stories,
-        active_sprint=active_sprint,
-        users=users
-    )
+        return render_template("backlog/index.html",
+                             projects=projects,
+                             current_project=current_project,
+                             sprints=sprints,
+                             active_sprint=active_sprint,
+                             backlog_stories=backlog_stories,
+                             users=users)
+    except Exception as e:
+        logger.error(f"Error in backlog index view: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
 @bp.route("/backlog/story/create", methods=["POST"])
 @login_required
 def create_story():
     """ストーリーを作成"""
-    if request.is_json:
+    try:
+        if not request.is_json:
+            logger.warning(f"Invalid request format from user {current_user.username} - not JSON")
+            return jsonify({'status': 'error', 'message': '無効なリクエスト形式です'}), 400
+            
         data = request.get_json()
         project_id = data.get('project_id')
         if not project_id:
+            logger.warning(f"Story creation attempted without project ID by user {current_user.username}")
             return jsonify({'status': 'error', 'message': 'プロジェクトが選択されていません'}), 400
+
+        logger.info(f"Story creation requested by {current_user.username} for project ID: {project_id}")
+        
+        # 获取项目信息用于日志
+        project = Project.query.get(project_id)
+        if not project:
+            logger.error(f"Project not found - ID: {project_id}")
+            return jsonify({'status': 'error', 'message': 'プロジェクトが見つかりません'}), 404
 
         story = Story(
             title=data.get('title'),
@@ -93,225 +106,374 @@ def create_story():
             priority=data.get('priority', 0)
         )
         
+        # 记录分配信息
+        if story.assignee_id:
+            assignee = User.query.get(story.assignee_id)
+            if assignee:
+                logger.info(f"Story will be assigned to: {assignee.username}")
+        
         try:
             db.session.add(story)
             db.session.commit()
-            return jsonify({'status': 'success'})
+            logger.info(f"Story created successfully - Title: {story.title}, ID: {story.id}, Project: {project.name}")
+            return jsonify({'status': 'success', 'story': story.to_dict()})
         except Exception as e:
             db.session.rollback()
-            return jsonify({'status': 'error', 'message': str(e)}), 400
-    else:
-        project_id = request.form.get('project_id', type=int)
-        if not project_id:
-            flash('プロジェクトが選択されていません', 'error')
-            return redirect(url_for('backlog.index'))
-
-        story = Story(
-            title=request.form.get('title'),
-            description=request.form.get('description'),
-            story_points=request.form.get('story_points', 0, type=int),
-            project_id=project_id,
-            assignee_id=request.form.get('assignee_id', type=int),
-            priority=request.form.get('priority', 0, type=int)
-        )
-        
-        db.session.add(story)
-        db.session.commit()
-        
-        flash('ストーリーが作成されました', 'success')
-        return redirect(url_for('backlog.index', project_id=project_id))
+            logger.error(f"Database error while creating story: {str(e)}", exc_info=True)
+            return jsonify({'status': 'error', 'message': str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error in create_story: {str(e)}", exc_info=True)
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @bp.route("/backlog/story/<int:story_id>/update", methods=["POST"])
 @login_required
 def update_story(story_id):
     """ストーリーを更新"""
-    story = Story.query.get_or_404(story_id)
-    
-    if request.is_json:
-        data = request.get_json()
-        story.title = data.get('title', story.title)
-        story.description = data.get('description', story.description)
-        story.story_points = data.get('story_points', story.story_points)
-        story.assignee_id = data.get('assignee_id') if data.get('assignee_id') else None
-        story.priority = data.get('priority', 0)
-    else:
-        story.title = request.form.get('title', story.title)
-        story.description = request.form.get('description', story.description)
-        story.story_points = request.form.get('story_points', story.story_points, type=int)
-        story.assignee_id = request.form.get('assignee_id', type=int)
-        story.priority = request.form.get('priority', 0, type=int)
-    
     try:
-        db.session.commit()
-        return jsonify({'status': 'success'})
+        story = Story.query.get_or_404(story_id)
+        logger.info(f"Story update requested by {current_user.username} - ID: {story_id}, Title: {story.title}")
+        
+        # 记录原始值用于比较
+        old_values = {
+            'title': story.title,
+            'description': story.description,
+            'story_points': story.story_points,
+            'assignee_id': story.assignee_id,
+            'priority': story.priority
+        }
+        
+        if request.is_json:
+            data = request.get_json()
+            story.title = data.get('title', story.title)
+            story.description = data.get('description', story.description)
+            story.story_points = data.get('story_points', story.story_points)
+            story.assignee_id = data.get('assignee_id') if data.get('assignee_id') else None
+            story.priority = data.get('priority', 0)
+        else:
+            logger.warning(f"Non-JSON request received for story update - ID: {story_id}")
+            story.title = request.form.get('title', story.title)
+            story.description = request.form.get('description', story.description)
+            story.story_points = request.form.get('story_points', story.story_points, type=int)
+            story.assignee_id = request.form.get('assignee_id', type=int)
+            story.priority = request.form.get('priority', 0, type=int)
+        
+        # 记录变更
+        changes = []
+        if story.title != old_values['title']:
+            changes.append(f"title: {old_values['title']} -> {story.title}")
+        if story.description != old_values['description']:
+            changes.append("description updated")
+        if story.story_points != old_values['story_points']:
+            changes.append(f"story points: {old_values['story_points']} -> {story.story_points}")
+        if story.assignee_id != old_values['assignee_id']:
+            old_assignee = User.query.get(old_values['assignee_id']) if old_values['assignee_id'] else None
+            new_assignee = User.query.get(story.assignee_id) if story.assignee_id else None
+            changes.append(f"assignee: {old_assignee.username if old_assignee else 'None'} -> {new_assignee.username if new_assignee else 'None'}")
+        if story.priority != old_values['priority']:
+            changes.append(f"priority: {old_values['priority']} -> {story.priority}")
+        
+        try:
+            db.session.commit()
+            logger.info(f"Story updated successfully - Changes: {', '.join(changes)}")
+            return jsonify({'status': 'success', 'story': story.to_dict()})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while updating story: {str(e)}", exc_info=True)
+            return jsonify({'status': 'error', 'message': str(e)}), 500
     except Exception as e:
-        db.session.rollback()
-        return jsonify({'status': 'error', 'message': str(e)}), 400
+        logger.error(f"Error in update_story: {str(e)}", exc_info=True)
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @bp.route("/backlog/story/<int:story_id>/move", methods=["POST"])
 @login_required
 def move_story(story_id):
     """ストーリーの移動（スプリントとバックログ間）"""
-    story = Story.query.get_or_404(story_id)
-    sprint_id = request.form.get('sprint_id', type=int)
-    
-    if sprint_id:
-        story.sprint_id = sprint_id
-        story.status = Story.KANBAN_TODO
-    else:
-        story.sprint_id = None
-        story.status = Story.KANBAN_TODO
-    
-    db.session.commit()
-    return jsonify({'status': 'success'})
+    try:
+        story = Story.query.get_or_404(story_id)
+        logger.info(f"Story move requested by {current_user.username} - ID: {story_id}, Title: {story.title}")
+        
+        old_sprint_id = story.sprint_id
+        sprint_id = request.form.get('sprint_id', type=int)
+        
+        # 记录移动信息
+        if sprint_id:
+            sprint = Sprint.query.get(sprint_id)
+            if not sprint:
+                logger.error(f"Target sprint not found - ID: {sprint_id}")
+                return jsonify({'status': 'error', 'message': 'スプリントが見つかりません'}), 404
+                
+            story.sprint_id = sprint_id
+            story.status = Story.KANBAN_TODO
+            logger.info(f"Moving story to sprint: {sprint.name} (ID: {sprint_id})")
+        else:
+            story.sprint_id = None
+            logger.info("Moving story back to backlog")
+        
+        try:
+            db.session.commit()
+            
+            # 记录移动结果
+            if old_sprint_id:
+                old_sprint = Sprint.query.get(old_sprint_id)
+                from_location = f"sprint '{old_sprint.name}'" if old_sprint else f"sprint {old_sprint_id}"
+            else:
+                from_location = "backlog"
+                
+            if sprint_id:
+                to_location = f"sprint '{sprint.name}'"
+            else:
+                to_location = "backlog"
+                
+            logger.info(f"Story moved successfully - From: {from_location} -> To: {to_location}")
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while moving story: {str(e)}", exc_info=True)
+            return jsonify({'status': 'error', 'message': str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error in move_story: {str(e)}", exc_info=True)
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @bp.route("/backlog/sprint/start", methods=["POST"])
 @login_required
 def start_sprint():
     """スプリントを開始"""
-    sprint_id = request.form.get('sprint_id', type=int)
-    if not sprint_id:
-        flash('スプリントが選択されていません', 'error')
-        return redirect(url_for('backlog.index'))
+    try:
+        sprint_id = request.form.get('sprint_id', type=int)
+        if not sprint_id:
+            logger.warning(f"Sprint start attempted without sprint ID by user {current_user.username}")
+            flash('スプリントが選択されていません', 'error')
+            return redirect(url_for('backlog.index'))
 
-    sprint = Sprint.query.get_or_404(sprint_id)
-    
-    # スプリント期間を設定（デフォルト2週間）
-    sprint.start_date = datetime.utcnow()
-    sprint.end_date = sprint.start_date + timedelta(days=14)
-    sprint.status = 'active'
-    
-    db.session.commit()
-    
-    flash('スプリントが開始されました', 'success')
-    return redirect(url_for('backlog.index', project_id=sprint.project_id))
+        sprint = Sprint.query.get_or_404(sprint_id)
+        logger.info(f"Sprint start requested by {current_user.username} - ID: {sprint_id}, Name: {sprint.name}")
+        
+        # 检查是否有其他活动的Sprint
+        active_sprint = Sprint.query.filter_by(
+            project_id=sprint.project_id,
+            status='active'
+        ).first()
+        
+        if active_sprint:
+            logger.warning(f"Cannot start sprint - Another sprint is active: {active_sprint.name} (ID: {active_sprint.id})")
+            flash('他のスプリントがアクティブです', 'error')
+            return redirect(url_for('backlog.index'))
+        
+        # 记录Sprint状态变更
+        old_status = sprint.status
+        sprint.status = 'active'
+        sprint.start_date = datetime.now()
+        sprint.end_date = sprint.start_date + timedelta(days=14)  # 默认2周
+        
+        try:
+            db.session.commit()
+            logger.info(f"Sprint started successfully - Status changed: {old_status} -> active, Duration: {sprint.start_date} to {sprint.end_date}")
+            flash('スプリントが開始されました', 'success')
+            return redirect(url_for('backlog.index'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while starting sprint: {str(e)}", exc_info=True)
+            flash('スプリントの開始に失敗しました', 'error')
+            return redirect(url_for('backlog.index'))
+    except Exception as e:
+        logger.error(f"Error in start_sprint: {str(e)}", exc_info=True)
+        flash('エラーが発生しました', 'error')
+        return redirect(url_for('backlog.index'))
 
 
 @bp.route("/backlog/sprint/create", methods=["POST"])
 @login_required
 def create_sprint():
     """新しいスプリントを作成"""
-    project_id = request.form.get('project_id', type=int)
-    if not project_id:
-        flash('プロジェクトが選択されていません', 'error')
-        return redirect(url_for('backlog.index'))
+    try:
+        project_id = request.form.get('project_id', type=int)
+        if not project_id:
+            logger.warning(f"Sprint creation attempted without project ID by user {current_user.username}")
+            flash('プロジェクトが選択されていません', 'error')
+            return redirect(url_for('backlog.index'))
 
-    project = Project.query.get_or_404(project_id)
-    
-    # スプリント名を生成（Sprint n の形）
-    sprint_number = len(project.sprints) + 1
-    name = f"Sprint {sprint_number}"
-    
-    # 日付文字列をdatetimeオブジェクトに変換
-    start_date_str = request.form.get('start_date')
-    end_date_str = request.form.get('end_date')
-    
-    start_date = datetime.strptime(start_date_str, '%Y-%m-%d') if start_date_str else None
-    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else None
-    
-    sprint = Sprint(
-        name=name,
-        project_id=project_id,
-        status='planning',
-        start_date=start_date,
-        end_date=end_date,
-        goal=request.form.get('goal')
-    )
-    
-    db.session.add(sprint)
-    db.session.commit()
-    
-    flash('新しいスプリントが作成されました', 'success')
-    return redirect(url_for('backlog.index', project_id=project_id))
+        project = Project.query.get_or_404(project_id)
+        logger.info(f"Sprint creation requested by {current_user.username} for project: {project.name} (ID: {project_id})")
+        
+        # スプリント名を生成（Sprint n の形）
+        sprint_number = len(project.sprints) + 1
+        name = f"Sprint {sprint_number}"
+        
+        sprint = Sprint(
+            name=name,
+            project_id=project_id,
+            status='planning'
+        )
+        
+        try:
+            db.session.add(sprint)
+            db.session.commit()
+            logger.info(f"Sprint created successfully - Name: {sprint.name}, ID: {sprint.id}, Project: {project.name}")
+            flash('スプリントが作成されました', 'success')
+            return redirect(url_for('backlog.index', project_id=project_id))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while creating sprint: {str(e)}", exc_info=True)
+            flash('スプリントの作成に失敗しました', 'error')
+            return redirect(url_for('backlog.index'))
+    except Exception as e:
+        logger.error(f"Error in create_sprint: {str(e)}", exc_info=True)
+        flash('エラーが発生しました', 'error')
+        return redirect(url_for('backlog.index'))
 
 
 @bp.route('/api/sprints/create', methods=['POST'])
 @login_required
 def create_sprint_api():
-    data = request.get_json()
-    name = data.get('name', '')
-    goal = data.get('goal', '')
+    """API経由でスプリントを作成"""
+    try:
+        data = request.get_json()
+        name = data.get('name', '')
+        goal = data.get('goal', '')
+        project_id = data.get('project_id')
 
-    if not name:
-        return jsonify({'error': 'スプリント名は必須です'}), 400
+        logger.info(f"Sprint API creation requested by {current_user.username} - Name: {name}, Project ID: {project_id}")
 
-    # 新しい Sprint を作成
-    sprint = Sprint(
-        name=name,
-        goal=goal,
-        status='planning'
-    )
-    db.session.add(sprint)
-    db.session.commit()
+        if not name:
+            logger.warning("Sprint creation attempted without name")
+            return jsonify({'error': 'スプリント名は必須です'}), 400
+        if not project_id:
+            logger.warning("Sprint creation attempted without project ID")
+            return jsonify({'error': 'プロジェクトIDは必須です'}), 400
 
-    return jsonify({
-        'id': sprint.id,
-        'name': sprint.name,
-        'goal': sprint.goal,
-        'status': sprint.status
-    })
+        # 获取项目信息用于日志
+        project = Project.query.get(project_id)
+        if not project:
+            logger.error(f"Project not found - ID: {project_id}")
+            return jsonify({'error': 'プロジェクトが見つかりません'}), 404
+
+        # 新しい Sprint を作成
+        sprint = Sprint(
+            name=name,
+            goal=goal,
+            project_id=project_id,
+            status='planning'
+        )
+        
+        try:
+            db.session.add(sprint)
+            db.session.commit()
+            logger.info(f"Sprint created successfully via API - Name: {sprint.name}, ID: {sprint.id}, Project: {project.name}")
+            return jsonify({
+                'status': 'success',
+                'sprint': sprint.to_dict()
+            })
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while creating sprint via API: {str(e)}", exc_info=True)
+            return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error in create_sprint_api: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
 @bp.route('/api/sprints/<int:sprint_id>/start', methods=['POST'])
 @login_required
 def start_sprint_api(sprint_id):
-    sprint = Sprint.query.get_or_404(sprint_id)
-    
-    # 检查是否已经有进行中的 Sprint
-    active_sprint = Sprint.query.filter_by(
-        project_id=sprint.project_id,
-        status='active'
-    ).first()
-    
-    if active_sprint and active_sprint.id != sprint.id:
-        return jsonify({'status': 'error', 'error': '他のスプリントが進行中です'}), 400
-    
-    if sprint.status != 'planning':
-        return jsonify({'status': 'error', 'error': 'このスプリントは開始できません'}), 400
+    """API経由でスプリントを開始"""
+    try:
+        sprint = Sprint.query.get_or_404(sprint_id)
+        logger.info(f"Sprint API start requested by {current_user.username} - ID: {sprint_id}, Name: {sprint.name}")
+        
+        # 检查是否已经有进行中的 Sprint
+        active_sprint = Sprint.query.filter_by(
+            project_id=sprint.project_id,
+            status='active'
+        ).first()
+        
+        if active_sprint and active_sprint.id != sprint.id:
+            logger.warning(f"Cannot start sprint - Another sprint is active: {active_sprint.name} (ID: {active_sprint.id})")
+            return jsonify({'status': 'error', 'error': '他のスプリントが進行中です'}), 400
+        
+        if sprint.status != 'planning':
+            logger.warning(f"Cannot start sprint - Invalid status: {sprint.status}")
+            return jsonify({'status': 'error', 'error': 'このスプリントは開始できません'}), 400
 
-    # 检查是否有编号更小的未完成 Sprint
-    earlier_sprints = Sprint.query.filter(
-        Sprint.project_id == sprint.project_id,
-        Sprint.name < sprint.name,
-        Sprint.status == 'planning'
-    ).first()
-    
-    if earlier_sprints:
-        return jsonify({'status': 'error', 'error': '前のスプリントを先に開始してください'}), 400
+        # 检查是否有编号更小的未完成 Sprint
+        earlier_sprints = Sprint.query.filter(
+            Sprint.project_id == sprint.project_id,
+            Sprint.name < sprint.name,
+            Sprint.status == 'planning'
+        ).first()
+        
+        if earlier_sprints:
+            logger.warning(f"Cannot start sprint - Earlier sprints are not completed: {earlier_sprints.name}")
+            return jsonify({
+                'status': 'error',
+                'error': '前のスプリントが完了していません'
+            }), 400
 
-    sprint.status = 'active'
-    sprint.start_date = datetime.now()
-    sprint.end_date = sprint.start_date + timedelta(days=14)
-    db.session.commit()
-
-    return jsonify({
-        'status': 'success',
-        'data': {
-            'id': sprint.id,
-            'status': sprint.status
-        }
-    })
+        # 记录Sprint状态变更
+        old_status = sprint.status
+        sprint.status = 'active'
+        sprint.start_date = datetime.now()
+        sprint.end_date = sprint.start_date + timedelta(days=14)  # 默认2周
+        
+        try:
+            db.session.commit()
+            logger.info(f"Sprint started successfully via API - Status changed: {old_status} -> active, Duration: {sprint.start_date} to {sprint.end_date}")
+            return jsonify({
+                'status': 'success',
+                'sprint': sprint.to_dict()
+            })
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while starting sprint via API: {str(e)}", exc_info=True)
+            return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error in start_sprint_api: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
 @bp.route('/api/sprints/<int:sprint_id>/complete', methods=['POST'])
 @login_required
 def complete_sprint_api(sprint_id):
-    sprint = Sprint.query.get_or_404(sprint_id)
-    
-    if sprint.status != 'active':
-        return jsonify({'status': 'error', 'error': 'このスプリントは完了できません'}), 400
+    """API経由でスプリントを完了"""
+    try:
+        sprint = Sprint.query.get_or_404(sprint_id)
+        logger.info(f"Sprint completion requested by {current_user.username} - ID: {sprint_id}, Name: {sprint.name}")
+        
+        if sprint.status != 'active':
+            logger.warning(f"Cannot complete sprint - Invalid status: {sprint.status}")
+            return jsonify({'status': 'error', 'error': 'このスプリントは完了できません'}), 400
 
-    sprint.status = 'completed'
-    sprint.completed_at = datetime.now()
-    db.session.commit()
+        # 获取完成情况统计
+        stories = Story.query.filter_by(sprint_id=sprint_id).all()
+        total_stories = len(stories)
+        completed_stories = len([s for s in stories if s.status == Story.KANBAN_DONE])
+        completion_rate = (completed_stories / total_stories * 100) if total_stories > 0 else 0
+        
+        logger.info(f"Sprint completion stats - Total stories: {total_stories}, Completed: {completed_stories}, Rate: {completion_rate:.1f}%")
 
-    return jsonify({
-        'status': 'success',
-        'data': {
-            'id': sprint.id,
-            'status': sprint.status
-        }
-    })
+        # 记录Sprint状态变更
+        old_status = sprint.status
+        sprint.status = 'completed'
+        sprint.completed_at = datetime.now()
+        
+        try:
+            db.session.commit()
+            logger.info(f"Sprint completed successfully - Status changed: {old_status} -> completed, Completion time: {sprint.completed_at}")
+            return jsonify({
+                'status': 'success',
+                'sprint': sprint.to_dict(),
+                'stats': {
+                    'total_stories': total_stories,
+                    'completed_stories': completed_stories,
+                    'completion_rate': completion_rate
+                }
+            })
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while completing sprint: {str(e)}", exc_info=True)
+            return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error in complete_sprint_api: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500

@@ -5,7 +5,7 @@ from app.models.user import User
 from app.models.project import Project
 from app.models.story import Story
 from app.models.sprint import Sprint
-import random
+from datetime import datetime, timedelta, UTC
 
 @click.command('init-db')
 @with_appcontext
@@ -18,138 +18,182 @@ def init_db_command():
 @click.command('create-test-data')
 @with_appcontext
 def create_test_data():
-    """Create test data."""
-    # 创建用户
-    users_data = [
-        {
-            'username': 'yamada',
-            'email': 'yamada@example.com',
-            'password': 'password',
-            'first_name': 'Taro',
-            'last_name': 'Yamada',
-            'avatar_color': '#2D8738'
-        },
-        {
-            'username': 'tanaka',
-            'email': 'tanaka@example.com',
-            'password': 'password',
-            'first_name': 'Hanako',
-            'last_name': 'Tanaka',
-            'avatar_color': '#0052CC'
-        },
-        {
-            'username': 'suzuki',
-            'email': 'suzuki@example.com',
-            'password': 'password',
-            'first_name': 'Ichiro',
-            'last_name': 'Suzuki',
-            'avatar_color': '#CD1F1F'
-        }
-    ]
+    """Create some test data."""
+    # 创建管理员用户
+    admin = User(
+        username="admin",
+        email="admin@example.com",
+        first_name="管理者",
+        last_name="システム",
+        avatar_color="#0052CC"
+    )
+    admin.set_password("admin123")
+    db.session.add(admin)
 
-    for user_data in users_data:
-        user = User.query.filter_by(email=user_data['email']).first()
-        if not user:
-            user = User(
-                username=user_data['username'],
-                email=user_data['email'],
-                first_name=user_data['first_name'],
-                last_name=user_data['last_name'],
-                avatar_color=user_data['avatar_color']
-            )
-            user.set_password(user_data['password'])
-            db.session.add(user)
+    # 创建测试用户
+    test_user = User(
+        username="test",
+        email="test@example.com",
+        first_name="テスト",
+        last_name="ユーザー",
+        avatar_color="#00875A"
+    )
+    test_user.set_password("test123")
+    db.session.add(test_user)
 
-    # 创建项目
-    project = Project.query.filter_by(key='DEMO').first()
-    if not project:
-        project = Project(
-            key='DEMO',
-            name='Demo Project'
+    # 创建示例项目
+    gira_project = Project(
+        name="GIRA開発プロジェクト",
+        key="GIRA",
+        description="GIRAプロジェクトの開発用プロジェクト",
+        status="active",
+        owner=admin
+    )
+    db.session.add(gira_project)
+
+    test_project = Project(
+        name="テストプロジェクト",
+        key="TEST",
+        description="テスト用のプロジェクト",
+        status="active",
+        owner=test_user
+    )
+    db.session.add(test_project)
+
+    # 为GIRA项目创建Sprint和Story
+    # Sprint 1（已完成）
+    sprint1 = Sprint(
+        name="Sprint 1",
+        goal="基本的なユーザー認証システムの実装",
+        project=gira_project,
+        status="completed",
+        start_date=datetime.now(UTC) - timedelta(days=28),
+        end_date=datetime.now(UTC) - timedelta(days=14)
+    )
+    db.session.add(sprint1)
+
+    # Sprint 1的故事
+    stories_sprint1 = [
+        Story(
+            title="ユーザー登録機能の実装",
+            description="ユーザー名、メールアドレス、パスワードによる新規ユーザー登録機能を実装する",
+            status="done",
+            story_points=5,
+            priority=Story.PRIORITY_HIGH,
+            project=gira_project,
+            sprint=sprint1,
+            assignee=admin
+        ),
+        Story(
+            title="ログイン機能の実装",
+            description="メールアドレスとパスワードによるログイン機能を実装する",
+            status="done",
+            story_points=3,
+            priority=Story.PRIORITY_HIGH,
+            project=gira_project,
+            sprint=sprint1,
+            assignee=admin
+        ),
+        Story(
+            title="パスワードリセット機能の実装",
+            description="メールアドレスによるパスワードリセット機能を実装する",
+            status="done",
+            story_points=3,
+            priority=Story.PRIORITY_MEDIUM,
+            project=gira_project,
+            sprint=sprint1,
+            assignee=test_user
         )
-        db.session.add(project)
-        db.session.commit()
-
-    # 创建 Sprint
-    sprint_names = ['Sprint 1', 'Sprint 2', 'Sprint 3']
-    sprints = []
-    for name in sprint_names:
-        sprint = Sprint.query.filter_by(name=name, project_id=project.id).first()
-        if not sprint:
-            sprint = Sprint(
-                name=name,
-                project_id=project.id,
-                status='planning'
-            )
-            db.session.add(sprint)
-            sprints.append(sprint)
-    
-    db.session.commit()
-
-    # 创建 Story
-    story_titles = [
-        'ユーザー登録機能の実装',
-        'ログイン機能の実装',
-        'プロフィール編集機能の実装',
-        'パスワードリセット機能の実装',
-        'メール通知機能の実装',
-        'ダッシュボード画面の作成',
-        '管理者画面の作成',
-        'レポート機能の実装',
-        'API認証の実装',
-        'パフォーマンス最適化'
     ]
+    for story in stories_sprint1:
+        db.session.add(story)
 
-    priorities = [Story.PRIORITY_NONE, Story.PRIORITY_LOW, Story.PRIORITY_MEDIUM, 
-                 Story.PRIORITY_HIGH, Story.PRIORITY_HIGHEST]
-    users = User.query.all()
+    # Sprint 2（进行中）
+    sprint2 = Sprint(
+        name="Sprint 2",
+        goal="プロジェクト管理機能の実装",
+        project=gira_project,
+        status="active",
+        start_date=datetime.now(UTC) - timedelta(days=7),
+        end_date=datetime.now(UTC) + timedelta(days=7)
+    )
+    db.session.add(sprint2)
 
-    for i, title in enumerate(story_titles):
-        story = Story.query.filter_by(title=title, project_id=project.id).first()
-        if not story:
-            story = Story(
-                title=title,
-                description=f'{title}の詳細説明です。',
-                project_id=project.id,
-                story_points=random.randint(1, 8),
-                priority=random.choice(priorities),
-                assignee=random.choice(users) if random.random() > 0.3 else None
-            )
-            if i < 6:  # 前6个故事分配到Sprint中
-                story.sprint_id = sprints[i // 2].id if sprints else None
-                story.status = 'sprint'
-            db.session.add(story)
+    # Sprint 2的故事
+    stories_sprint2 = [
+        Story(
+            title="プロジェクト作成機能の実装",
+            description="プロジェクト名、キー、説明を入力して新規プロジェクトを作成する機能を実装する",
+            status="done",
+            story_points=5,
+            priority=Story.PRIORITY_HIGH,
+            project=gira_project,
+            sprint=sprint2,
+            assignee=admin
+        ),
+        Story(
+            title="プロジェクト一覧表示機能の実装",
+            description="ユーザーが参加しているプロジェクトの一覧を表示する機能を実装する",
+            status="doing",
+            story_points=3,
+            priority=Story.PRIORITY_HIGH,
+            project=gira_project,
+            sprint=sprint2,
+            assignee=admin
+        ),
+        Story(
+            title="プロジェクト詳細表示機能の実装",
+            description="プロジェクトの詳細情報（メンバー、進捗状況など）を表示する機能を実装する",
+            status="todo",
+            story_points=5,
+            priority=Story.PRIORITY_MEDIUM,
+            project=gira_project,
+            sprint=sprint2,
+            assignee=test_user
+        )
+    ]
+    for story in stories_sprint2:
+        db.session.add(story)
+
+    # Backlog中的故事
+    backlog_stories = [
+        Story(
+            title="スプリントボード機能の実装",
+            description="カンバンボード形式でスプリント内のストーリーを管理する機能を実装する",
+            status="todo",
+            story_points=8,
+            priority=Story.PRIORITY_HIGH,
+            project=gira_project,
+            assignee=admin
+        ),
+        Story(
+            title="バーンダウンチャートの実装",
+            description="スプリントの進捗を可視化するバーンダウンチャートを実装する",
+            status="todo",
+            story_points=5,
+            priority=Story.PRIORITY_MEDIUM,
+            project=gira_project,
+            assignee=test_user
+        ),
+        Story(
+            title="チーム管理機能の実装",
+            description="プロジェクトメンバーの追加、削除、権限管理機能を実装する",
+            status="todo",
+            story_points=5,
+            priority=Story.PRIORITY_MEDIUM,
+            project=gira_project
+        ),
+        Story(
+            title="アクティビティログの実装",
+            description="プロジェクト内の活動履歴を記録・表示する機能を実装する",
+            status="todo",
+            story_points=3,
+            priority=Story.PRIORITY_LOW,
+            project=gira_project
+        )
+    ]
+    for story in backlog_stories:
+        db.session.add(story)
 
     db.session.commit()
     click.echo('Created test data.') 
-
-@click.command('create-test-projects')
-def create_test_projects():
-    """创建测试项目数据"""
-    projects = [
-        {
-            'name': 'テストプロジェクト1',
-            'key': 'PRJ-0001',
-            'description': 'テスト用プロジェクト1の説明文',
-            'status': 'active'
-        },
-        {
-            'name': 'テストプロジェクト2',
-            'key': 'PRJ-0002',
-            'description': 'テスト用プロジェクト2の説明文',
-            'status': 'active'
-        },
-        {
-            'name': 'アーカイブプロジェクト',
-            'key': 'PRJ-0003',
-            'description': 'アーカイブされたプロジェクト',
-            'status': 'archived'
-        }
-    ]
-    
-    for project_data in projects:
-        project = Project(**project_data)
-        db.session.add(project)
-    
-    db.session.commit()
-    print('テストプロジェクトを作成しました') 

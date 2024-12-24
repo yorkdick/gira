@@ -1,0 +1,373 @@
+2024-12-23 23:45:27,799 [INFO] __init__: GIRA application startup
+2024-12-23 23:45:31,494 [INFO] __init__: GIRA application startup
+2024-12-23 23:45:54,332 [INFO] __init__: GIRA application startup
+2024-12-23 23:46:41,861 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:46:54,516 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:46:55,572 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:48:04,991 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:48:30,875 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:48:50,804 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:49:45,114 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:50:04,861 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:50:42,854 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:01,761 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:06,229 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:08,634 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:24,346 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:26,988 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:54,876 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:51:56,271 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:52:18,056 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:52:22,504 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:52:40,238 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:52:57,998 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:53:00,482 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:53:20,230 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:53:27,809 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:53:42,512 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:53:43,909 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:54:10,790 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:54:18,371 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:54:33,108 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:54:36,546 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:55:25,664 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:55:56,581 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:56:06,217 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:56:53,331 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:57:13,322 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:57:21,971 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-23 23:57:21,974 [INFO] backlog:32 - No project specified, defaulting to: GIRA開発プロジェクト (ID: 1)
+2024-12-23 23:57:21,976 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-23 23:57:34,199 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:57:44,788 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:59:02,336 [INFO] __init__:45 - GIRA application startup
+2024-12-23 23:59:29,134 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:00:48,838 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:01:07,816 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:01:40,956 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:01:52,588 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:01:57,035 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:02:05,981 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:02:05,982 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:05,984 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:02:05,985 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:02:09,084 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:02:09,087 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:09,088 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:02:10,488 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:02:10,489 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:10,490 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:02:10,491 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:02:11,944 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:02:11,947 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:12,036 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:02:12,037 [ERROR] project:65 - Error in list_projects API: 'Project' object has no attribute 'to_dict'
+Traceback (most recent call last):
+  File "/Users/infony/prj/gira-new/app/views/project.py", line 63, in list_projects
+    return jsonify({'projects': [project.to_dict() for project in projects]})
+                                 ^^^^^^^^^^^^^^^
+AttributeError: 'Project' object has no attribute 'to_dict'
+2024-12-24 00:02:14,870 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:02:14,871 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:14,872 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:02:14,874 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:02:16,011 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:02:16,013 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:16,014 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:02:21,433 [INFO] auth:81 - User logged out - Username: admin, ID: 1
+2024-12-24 00:02:21,434 [ERROR] auth:87 - Error in logout view: unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'
+Traceback (most recent call last):
+  File "/Users/infony/prj/gira-new/app/views/auth.py", line 82, in logout
+    logger.debug(f"Logout details - Last login: {last_login}, Session duration: {datetime.now() - last_login}")
+                                                                                 ~~~~~~~~~~~~~~~^~~~~~~~~~~~
+TypeError: unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'
+2024-12-24 00:02:21,446 [INFO] auth:23 - Login page accessed from IP: 127.0.0.1
+2024-12-24 00:02:24,685 [INFO] auth:28 - Login attempt for user: admin from IP: 127.0.0.1
+2024-12-24 00:02:24,782 [INFO] auth:54 - User admin logged in successfully - Previous login: None
+2024-12-24 00:02:24,787 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:02:24,788 [INFO] backlog:32 - No project specified, defaulting to: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:02:24,788 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:03:00,416 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:03:00,417 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:03:00,474 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:03:00,475 [ERROR] project:65 - Error in list_projects API: 'Project' object has no attribute 'to_dict'
+Traceback (most recent call last):
+  File "/Users/infony/prj/gira-new/app/views/project.py", line 63, in list_projects
+    return jsonify({'projects': [project.to_dict() for project in projects]})
+                                 ^^^^^^^^^^^^^^^
+AttributeError: 'Project' object has no attribute 'to_dict'
+2024-12-24 00:03:01,817 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:03:01,818 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:03:01,819 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:03:01,820 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:03:03,211 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:03:03,213 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:03:03,215 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:03:33,517 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:03:33,519 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:03:33,582 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:03:33,585 [ERROR] project:65 - Error in list_projects API: 'Project' object has no attribute 'to_dict'
+Traceback (most recent call last):
+  File "/Users/infony/prj/gira-new/app/views/project.py", line 63, in list_projects
+    return jsonify({'projects': [project.to_dict() for project in projects]})
+                                 ^^^^^^^^^^^^^^^
+AttributeError: 'Project' object has no attribute 'to_dict'
+2024-12-24 00:03:53,410 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:04:04,079 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:04:31,991 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:04:35,533 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:06,513 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:10,997 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:16,446 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:16,578 [INFO] project:16 - User testuser accessing projects page
+2024-12-24 00:05:16,690 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:05:16,942 [INFO] project:74 - Project creation requested by testuser - name: Test Project
+2024-12-24 00:05:16,947 [INFO] project:91 - Project created successfully - ID: 1, Key: TEST, Name: Test Project
+2024-12-24 00:05:29,691 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:50,489 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:57,350 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:05:57,490 [INFO] project:16 - User testuser accessing projects page
+2024-12-24 00:05:57,605 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:05:57,684 [INFO] project:74 - Project creation requested by testuser - name: Test Project
+2024-12-24 00:05:57,688 [INFO] project:91 - Project created successfully - ID: 1, Key: TEST, Name: Test Project
+2024-12-24 00:05:57,852 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:06:06,512 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:06:09,177 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:06:09,178 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:06:09,294 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:06:12,144 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:06:12,146 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:06:12,149 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:06:12,153 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:06:13,269 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:06:13,269 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:06:13,319 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:06:24,270 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:06:24,277 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:06:24,422 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:06:59,974 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:07:08,590 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:07:11,196 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:07:11,329 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:07:31,371 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:07:39,571 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:07:39,717 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:08:13,966 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:08:13,969 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:08:14,096 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:08:15,398 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:08:15,399 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:08:15,451 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:08:15,554 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:08:15,555 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:08:15,595 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:08:30,811 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:08:40,574 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:08:43,217 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:08:43,351 [INFO] project:16 - User testuser accessing projects page
+2024-12-24 00:08:43,460 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:08:43,542 [INFO] project:49 - Project list requested by testuser - filters: name='Test', status=''
+2024-12-24 00:08:43,544 [INFO] project:49 - Project list requested by testuser - filters: name='', status='active'
+2024-12-24 00:08:43,545 [INFO] project:49 - Project list requested by testuser - filters: name='Test', status='active'
+2024-12-24 00:08:43,625 [INFO] project:74 - Project creation requested by testuser - name: New Test Project
+2024-12-24 00:08:43,628 [INFO] project:91 - Project created successfully - ID: 1, Key: NEW-TEST, Name: New Test Project
+2024-12-24 00:08:43,712 [INFO] project:106 - Project update requested by testuser - ID: 1, Name: Test Project
+2024-12-24 00:08:43,713 [INFO] project:123 - Project updated successfully - Changes: name: Test Project -> Updated Project, description updated, status: active -> archived
+2024-12-24 00:08:43,798 [INFO] project:138 - Project deletion requested by testuser - ID: 1, Name: Test Project
+2024-12-24 00:08:43,799 [INFO] project:145 - Project marked as deleted - Status changed: active -> deleted
+2024-12-24 00:08:43,881 [INFO] project:16 - User testuser accessing projects page
+2024-12-24 00:08:43,881 [INFO] project:23 - Selected project: Test Project (ID: 1)
+2024-12-24 00:08:44,041 [INFO] project:49 - Project list requested by testuser - filters: name='', status=''
+2024-12-24 00:08:54,149 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:08:54,152 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:08:54,239 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:08:54,288 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:08:54,289 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:08:54,331 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:09:41,918 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:09:52,687 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:09:55,623 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:09:55,626 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:09:55,712 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:09:55,713 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:09:55,713 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:09:55,713 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:09:56,748 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:09:56,748 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:09:56,795 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:09:56,796 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:09:56,796 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:09:56,796 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:09:57,276 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:09:57,319 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:09:57,320 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:09:57,362 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:09:57,363 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:09:57,363 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:09:57,363 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:10:02,797 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:10:05,337 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:10:05,339 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:10:05,421 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:10:05,422 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:10:05,422 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:10:05,422 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:10:06,347 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:10:06,348 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:10:06,398 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:10:06,398 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:10:06,399 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:10:06,399 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:10:06,503 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:10:06,504 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:10:06,543 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:10:06,543 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:10:06,543 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:10:06,543 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:10:06,656 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:10:06,658 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:10:06,689 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:10:06,690 [INFO] project:53 - Total projects in database: 2
+2024-12-24 00:10:06,690 [INFO] project:55 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:10:06,690 [INFO] project:55 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:10:45,945 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:11:03,648 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:11:11,265 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:11:16,835 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:11:35,579 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:11:36,983 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:11:46,445 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:12:23,533 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:12:23,535 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:12:23,536 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:12:23,538 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:12:24,716 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:12:24,717 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:12:24,775 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:12:24,775 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:12:24,776 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:12:24,776 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:12:24,776 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:12:24,776 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:14:07,802 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:14:07,804 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:14:07,887 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:14:07,888 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:14:07,888 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:14:07,888 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:14:07,889 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:14:07,889 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:14:09,000 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:14:09,000 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:14:09,053 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:14:09,054 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:14:09,055 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:14:09,055 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:14:09,055 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:14:09,056 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:14:09,194 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:14:09,195 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:14:09,226 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:14:09,227 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:14:09,227 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:14:09,227 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:14:09,228 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:14:09,228 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:16:27,320 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:16:27,322 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:16:27,436 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:16:27,436 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:16:27,437 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:16:27,437 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:16:27,437 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:16:27,437 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:16:37,837 [INFO] __init__:45 - GIRA application startup
+2024-12-24 00:16:58,267 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:16:58,267 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:16:58,268 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:16:58,269 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:17:00,054 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:17:00,059 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:00,059 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:01,335 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:17:01,337 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:01,337 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:01,339 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:17:02,461 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:17:02,462 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:02,517 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:17:02,517 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:17:02,517 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:17:02,517 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:17:02,518 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:17:02,518 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:17:03,814 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:17:03,814 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:03,815 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:03,815 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:17:05,258 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:17:05,260 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:05,261 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:13,384 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:17:13,386 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:13,386 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:13,388 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:17:17,619 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:17:17,620 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:17,621 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:21,683 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:17:21,684 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:21,684 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:21,686 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 33.3%
+2024-12-24 00:17:24,393 [INFO] kanban:90 - Story status update requested by admin - Story ID: 4, Title: プロジェクト作成機能の実装
+2024-12-24 00:17:24,408 [INFO] kanban:130 - Updated sprint progress - Total: 3, Completed: 0, Rate: 0.0%
+2024-12-24 00:17:24,409 [INFO] kanban:132 - Story status updated successfully - Status changed: done -> doing
+2024-12-24 00:17:24,409 [ERROR] kanban:144 - Database error while updating story status: 'Story' object has no attribute 'to_dict'
+Traceback (most recent call last):
+  File "/Users/infony/prj/gira-new/app/views/kanban.py", line 135, in update_story_status
+    'story': story.to_dict(),
+             ^^^^^^^^^^^^^
+AttributeError: 'Story' object has no attribute 'to_dict'
+2024-12-24 00:17:24,431 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:17:24,432 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:24,432 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:24,433 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 0.0%
+2024-12-24 00:17:26,143 [INFO] backlog:20 - User admin accessing backlog page
+2024-12-24 00:17:26,144 [INFO] backlog:29 - Viewing backlog for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:26,144 [INFO] backlog:46 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:28,610 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:17:28,612 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:28,661 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:17:28,661 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:17:28,662 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:17:28,662 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:17:28,662 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:17:28,663 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:17:32,143 [INFO] kanban:18 - User admin accessing kanban board
+2024-12-24 00:17:32,144 [INFO] kanban:31 - Viewing kanban for project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:32,145 [INFO] kanban:39 - Found active sprint: Sprint 2 (ID: 2)
+2024-12-24 00:17:32,148 [INFO] kanban:64 - Sprint progress - Total stories: 3, Completion rate: 0.0%
+2024-12-24 00:17:33,809 [INFO] project:16 - User admin accessing projects page
+2024-12-24 00:17:33,811 [INFO] project:23 - Selected project: GIRA開発プロジェクト (ID: 1)
+2024-12-24 00:17:33,858 [INFO] project:49 - Project list requested by admin - filters: name='', status=''
+2024-12-24 00:17:33,858 [INFO] project:53 - All projects SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects
+2024-12-24 00:17:33,859 [INFO] project:55 - Total projects in database: 2
+2024-12-24 00:17:33,859 [INFO] project:57 - Project: ID=1, Name=GIRA開発プロジェクト, Status=active
+2024-12-24 00:17:33,859 [INFO] project:57 - Project: ID=2, Name=テストプロジェクト, Status=active
+2024-12-24 00:17:33,859 [INFO] project:70 - Final SQL: SELECT projects.id AS projects_id, projects.name AS projects_name, projects."key" AS projects_key, projects.description AS projects_description, projects.status AS projects_status, projects.owner_id AS projects_owner_id, projects.created_at AS projects_created_at, projects.updated_at AS projects_updated_at 
+FROM projects

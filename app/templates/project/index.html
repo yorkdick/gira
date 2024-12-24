@@ -116,15 +116,30 @@ async function fetchProjects(filters = {}) {
         url += '?' + new URLSearchParams(filters).toString();
     }
     
-    const response = await fetch(url);
-    const projects = await response.json();
-    renderProjects(projects);
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        renderProjects(data.projects || []);
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        // 显示错误信息给用户
+        const container = document.getElementById('project-list');
+        container.innerHTML = `<tr><td colspan="6" class="text-center text-danger">プロジェクトの取得に失敗しました</td></tr>`;
+    }
 }
 
 // 渲染项目列表
 function renderProjects(projects) {
     const container = document.getElementById('project-list');
     container.innerHTML = '';
+    
+    if (projects.length === 0) {
+        container.innerHTML = `<tr><td colspan="6" class="text-center">プロジェクトがありません</td></tr>`;
+        return;
+    }
     
     projects.forEach(project => {
         const row = document.createElement('tr');

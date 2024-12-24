@@ -61,6 +61,26 @@
             display: flex;
         }
 
+        /* 登录页面特殊样式 */
+        .login-page .content-area {
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+        }
+
+        .login-page .main-container {
+            background-color: #f8f9fa;
+        }
+
+        /* 登录页面图标样式 */
+        .login-page .login-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 2rem;
+        }
+
         /* 左侧边栏固定 */
         .sidebar {
             width: 250px;
@@ -274,7 +294,7 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body{% if request.endpoint == 'auth.login' %} class="login-page"{% endif %}>
     <!-- Flash Messages -->
     <div class="flash-messages">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -292,6 +312,7 @@
     <!-- Main Container -->
     <div class="main-container">
         <!-- Left Sidebar -->
+        {% if not request.endpoint == 'auth.login' %}
         <div class="sidebar">
             <div class="p-3 border-bottom">
                 <div class="project-selector" onclick="toggleProjectDropdown()">
@@ -354,6 +375,7 @@
             <div class="user-section border-top">
                 <div class="user-info p-3">
                     <div class="d-flex align-items-center justify-content-between">
+                        {% if current_user.is_authenticated %}
                         <div class="user-info-left">
                             <div class="user-avatar" style="background-color: {{ current_user.avatar_color }}">
                                 {% if current_user.username|length >= 2 %}
@@ -369,10 +391,12 @@
                         <a href="{{ url_for('auth.logout') }}" class="logout-link">
                             <i class="bi bi-box-arrow-right"></i>
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <!-- Main Content Area -->
         <div class="content-area">

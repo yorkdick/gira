@@ -78,17 +78,20 @@ Black は厳格な Python コードフォーマッターで、コードの一貫
 ```
 gira/
 ├── app/                    # アプリケーションコード
-│   ├── __init__.py
+│   ├── __init__.py        # アプリケーション初期化
 │   ├── models/            # データモデル
 │   │   ├── __init__.py
-│   │   ├── user.py
-│   │   ├── project.py
-│   │   └── story.py
+│   │   ├── user.py       # ユーザーモデル
+│   │   ├── project.py    # プロジェクトモデル
+│   │   ├── story.py      # ストーリーモデル
+│   │   └── sprint.py     # スプリントモデル
 │   ├── views/            # ビュー
 │   │   ├── __init__.py
-│   │   ├── auth.py
-│   │   ├── project.py
-│   │   └── board.py
+│   │   ├── auth.py      # 認証関連
+│   │   ├── project.py   # プロジェクト管理
+│   │   ├── backlog.py   # バックログ管理
+│   │   ├── kanban.py    # カンバンボード
+│   │   └── main.py      # メインページ
 │   ├── static/           # 静的ファイル
 │   │   ├── css/
 │   │   ├── js/
@@ -98,26 +101,99 @@ gira/
 │       ├── auth/
 │       ├── project/
 │       └── board/
-├── doc/                  # ドキュメント
-│   ├── basic-design/
-│   │   ├── database.md
-│   │   ├── ui-design.md
-│   │   ├── api-spec.md
-│   │   └── infrastructure.md
-│   ├── detail-design/
-│   │   ├── database.md
-│   │   ├── ui-design.md
-│   │   ├── api-spec.md
-│   │   └── infrastructure.md
-│   ├── test-case/
-│   │   └── test-cases.md
+├── instance/             # インスタンス固有のファイル
+│   ├── gira.db          # 本番用データベース
+│   └── giratest.db      # テスト用データベース
 ├── tests/               # テストコード
 │   ├── __init__.py
-│   ├── test_auth.py
-│   └── test_project.py
-├── migrations/         # DBマイグレーション
-├── .env               # 環境変数
-├── config.py          # 設定ファイル
-├── requirements.txt   # 依存パッケージ
-└── run.py            # 起動スクリプト
+│   ├── test_project.py  # プロジェクト機能のテスト
+│   ├── test_backlog.py  # バックログ機能のテスト
+│   └── test_kanban.py   # カンバンボード機能のテスト
+├── doc/                 # ドキュメント
+│   ├── basic-design/    # 基本設計書
+│   │   ├── database.md      # データベース設計
+│   │   ├── ui-design.md     # UI設計
+│   │   ├── api-spec.md      # API仕様
+│   │   └── infrastructure.md # インフラ設計
+│   ├── detail-design/   # 詳細設計書
+│   │   ├── database.md      # データベース詳細設計
+│   │   ├── ui-design.md     # UI詳細設計
+│   │   ├── api-spec.md      # API詳細仕様
+│   │   └── infrastructure.md # インフラ詳細設計
+│   ├── manual/         # マニュアル
+│   │   ├── startup.md       # 開発環境セットアップ
+│   │   └── operation.md     # 運用マニュアル
+│   └── test-case/      # テストケース
+│       ├── unit-test/       # 単体テスト仕様
+│       └── integration-test/ # 結合テスト仕様
+├── migrations/          # DBマイグレーション
+│   ├── versions/       # マイグレーションファイル
+│   ├── env.py         # マイグレーション環境設定
+│   ├── README         # マイグレーション説明
+│   └── alembic.ini    # Alembic設定
+├── scripts/            # 各種スクリプト
+│   └── init_db.py     # DB初期化スクリプト
+├── logs/              # ログファイル
+├── htmlcov/           # カバレッジレポート
+├── .env              # 環境変数
+├── config.py         # 設定ファイル
+├── pytest.ini        # pytestの設定
+├── requirements.txt  # 依存パッケージ
+└── wsgi.py          # WSGIエントリーポイント
 ```
+
+## 自動化テスト
+
+### テストの実行
+
+```bash
+# 全テストの実行
+pytest
+
+# 特定のテストファイルの実行
+pytest tests/test_project.py
+
+# 特定のテスト関数の実行
+pytest tests/test_project.py::test_create_project
+
+# 詳細なテスト結果を表示
+pytest -v
+
+# テストカバレッジレポートの生成
+pytest --cov=app --cov-report=html
+```
+
+### テストデータベース
+
+テストでは本番データベースとは別の専用データベースを使用します：
+
+- 本番用 DB: `instance/gira.db`
+- テスト用 DB: `instance/giratest.db`
+
+### テストの設定
+
+`pytest.ini` にテストの基本設定が記述されています：
+
+```ini
+[pytest]
+addopts = --strict-markers --cov=app --cov-report=term-missing --cov-report=html -v --tb=short
+filterwarnings =
+    ignore::DeprecationWarning
+    ignore::PendingDeprecationWarning
+```
+
+この設定により：
+
+- コードカバレッジレポートが自動生成されます（HTML 形式）
+- 未テストのコード行が表示されます
+- 詳細なテスト結果が表示されます
+
+### テストレポート
+
+テスト実行後、以下のレポートが生成されます：
+
+- ターミナル出力：テスト結果の概要と未テスト行の情報
+- HTML レポート：`htmlcov/index.html` に詳細なカバレッジ情報
+  - ファイルごとのカバレッジ率
+  - 未テスト行のハイライト表示
+  - カバレッジの詳細な統計情報

@@ -12,7 +12,12 @@ logger.setLevel(logging.INFO)
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    
+    if test_config is None:
+        app.config.from_object(Config)
+    else:
+        # 如果传入了测试配置，使用测试配置
+        app.config.from_object(test_config)
 
     # 拡張機能の初期化
     db.init_app(app)
@@ -49,7 +54,7 @@ def create_app(test_config=None):
     app.register_blueprint(main.bp)
     app.register_blueprint(backlog.bp)
     app.register_blueprint(kanban.bp, url_prefix='/kanban')
-    app.register_blueprint(project.bp)
+    app.register_blueprint(project.bp, url_prefix='')
 
     # 添加根路由重定向到 backlog
     @app.route('/')
@@ -65,6 +70,3 @@ def create_app(test_config=None):
 
 # モデルの読み込み
 from app.models import user, project, story, sprint
-
-# アプリケーションインスタンスの作成
-app = create_app()
