@@ -1,0 +1,40 @@
+# Pythonのキャッシュディレクトリ
+__pycache__/
+*.py[cod]
+
+# Pythonの仮想環境
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# pytestのテスト結果
+.pytest_cache/
+*.pytest_cache/
+
+# ログファイル
+logs/
+*.log
+
+# インスタンスディレクトリ
+instance/
+
+# その他の一般的な無視ファイル
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.temp
+*.old
+
+# IDEやエディタの設定
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OSやその他のシステムファイル
+.DS_Store
+Thumbs.db
