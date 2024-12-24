@@ -1,5 +1,7 @@
 # GIRA - アジャイル開発プロジェクト管理ツール
 
+![Run Tests](https://github.com/rexwangyi/gira/actions/workflows/main.yml/badge.svg)
+
 ## 概要
 
 GIRA はシンプルで使いやすいアジャイル開発プロジェクト管理ツールです。
