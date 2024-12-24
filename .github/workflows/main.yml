@@ -22,19 +22,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Install Chrome and ChromeDriver
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y chromium-browser chromium-chromedriver
-        export PATH=$PATH:/usr/lib/chromium-browser/
-        sudo rm -f /usr/bin/google-chrome
-        sudo ln -s /usr/lib/chromium-browser/chromium-browser /usr/bin/google-chrome
         
-    - name: Verify chromium installation
-      run: |
-        which chromium-browser
-        chromium-browser --version 
+    - name: Setup Chrome
+      uses: browser-actions/setup-chrome@v1.7.2
         
     - name: Run Pytest
       run: pytest
