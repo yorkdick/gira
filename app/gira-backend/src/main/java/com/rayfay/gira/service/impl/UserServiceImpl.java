@@ -5,11 +5,11 @@ import com.rayfay.gira.entity.User;
 import com.rayfay.gira.exception.ResourceNotFoundException;
 import com.rayfay.gira.mapper.UserMapper;
 import com.rayfay.gira.repository.UserRepository;
+import com.rayfay.gira.security.SecurityUtils;
 import com.rayfay.gira.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityUtils.getCurrentUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return userMapper.toDto(user);
@@ -65,8 +65,8 @@ public class UserServiceImpl implements UserService {
         if (userDto.getFullName() != null) {
             user.setFullName(userDto.getFullName());
         }
-        if (userDto.getAvatar() != null) {
-            user.setAvatar(userDto.getAvatar());
+        if (userDto.getAvatarUrl() != null) {
+            user.setAvatarUrl(userDto.getAvatarUrl());
         }
         if (userDto.getStatus() > 0) {
             user.setStatus(userDto.getStatus());
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     public UserDto updateAvatar(Long id, String avatarUrl) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        user.setAvatar(avatarUrl);
+        user.setAvatarUrl(avatarUrl);
         user = userRepository.save(user);
         return userMapper.toDto(user);
     }
@@ -118,7 +118,7 @@ public class UserServiceImpl implements UserService {
     public UserDto enableUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        user.setEnabled(true);
+        user.setStatus(1);
         user = userRepository.save(user);
         return userMapper.toDto(user);
     }
@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
     public UserDto disableUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        user.setEnabled(false);
+        user.setStatus(0);
         user = userRepository.save(user);
         return userMapper.toDto(user);
     }

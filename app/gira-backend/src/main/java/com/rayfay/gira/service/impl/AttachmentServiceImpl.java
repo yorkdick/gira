@@ -50,6 +50,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        if (file.getOriginalFilename() == null) {
+            throw new IllegalArgumentException("File name cannot be null");
+        }
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
         String uniqueFilename = UUID.randomUUID().toString() + "_" + filename;
         Path uploadPath = Paths.get(uploadLocation);
@@ -147,11 +150,8 @@ public class AttachmentServiceImpl implements AttachmentService {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
-        dto.setAvatar(user.getAvatar());
-        dto.setRoles(user.getRoles());
-        dto.setEnabled(user.isEnabled());
+        dto.setStatus(user.getStatus());
         return dto;
     }
 }

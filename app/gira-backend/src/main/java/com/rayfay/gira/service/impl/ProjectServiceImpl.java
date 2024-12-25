@@ -79,9 +79,6 @@ public class ProjectServiceImpl implements ProjectService {
         if (projectDto.getKey() != null) {
             project.setKey(projectDto.getKey());
         }
-        if (projectDto.getAvatar() != null) {
-            project.setAvatar(projectDto.getAvatar());
-        }
         if (projectDto.getStatus() > 0) {
             project.setStatus(projectDto.getStatus());
         }
@@ -104,7 +101,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDto archiveProject(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-        project.setArchived(true);
+        project.setStatus(0); // 0 for archived
         project = projectRepository.save(project);
         return projectMapper.toDto(project);
     }
@@ -114,7 +111,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDto unarchiveProject(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-        project.setArchived(false);
+        project.setStatus(1); // 1 for active
         project = projectRepository.save(project);
         return projectMapper.toDto(project);
     }

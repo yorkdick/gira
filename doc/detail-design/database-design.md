@@ -53,14 +53,15 @@ CREATE TABLE roles (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255),
+    is_system BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 初始数据
-INSERT INTO roles (name, description) VALUES
-('ROLE_ADMIN', '系统管理员'),
-('ROLE_USER', '普通用户'),
-('ROLE_MANAGER', '项目经理');
+INSERT INTO roles (name, description, is_system) VALUES
+('ROLE_ADMIN', '系统管理员', true),
+('ROLE_USER', '普通用户', true),
+('ROLE_MANAGER', '项目经理', true);
 ```
 
 #### 2.1.3 用户角色关联表 (user_roles)

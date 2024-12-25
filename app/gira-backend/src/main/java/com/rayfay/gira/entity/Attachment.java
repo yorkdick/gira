@@ -9,9 +9,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Attachment extends BaseEntity {
+    @Column(nullable = false)
     private String filename;
+
+    @Column(nullable = false)
     private String contentType;
+
     private Long size;
+
+    @Column(nullable = false)
     private String path;
 
     @ManyToOne(fetch = FetchType.LAZY)
