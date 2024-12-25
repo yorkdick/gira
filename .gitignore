@@ -43,3 +43,37 @@ Thumbs.db
 tests/result/
 tests/result/*
 app/gira-backend/target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Compiled files
+target/
+build/
+dist/
+*.class
+*.jar
+*.war
+
+# Dependencies
+node_modules/
+.mvn/
+
+# Data directories
+data/
+data/postgres/
+data/redis/
+
+# Environment files
+.env
+.env.local
+*.env.local
+
+# Application specific
+uploads/
+temp/

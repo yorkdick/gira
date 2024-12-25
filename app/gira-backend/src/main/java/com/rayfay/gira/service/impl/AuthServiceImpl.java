@@ -6,6 +6,7 @@ import com.rayfay.gira.dto.auth.RegisterRequest;
 import com.rayfay.gira.entity.User;
 import com.rayfay.gira.repository.UserRepository;
 import com.rayfay.gira.security.JwtService;
+import com.rayfay.gira.security.UserPrincipal;
 import com.rayfay.gira.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
+        var jwtToken = jwtService.generateToken(UserPrincipal.create(user));
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -54,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
                         request.getPassword()));
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        var jwtToken = jwtService.generateToken(user);
+        var jwtToken = jwtService.generateToken(UserPrincipal.create(user));
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -71,8 +72,8 @@ public class AuthServiceImpl implements AuthService {
         if (username == null) {
             return false;
         }
-        var user = userRepository.findByUsername(username)
-                .orElse(null);
-        return user != null && jwtService.isTokenValid(token, user);
+        return userRepository.findByUsername(username)
+                .map(user -> jwtService.isTokenValid(token, UserPrincipal.create(user)))
+                .orElse(false);
     }
 }

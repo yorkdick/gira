@@ -85,25 +85,64 @@ CREATE TABLE permissions (
     description VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
--- 初始数据
-INSERT INTO permissions (name, description) VALUES
-('CREATE_PROJECT', '创建项目'),
-('MANAGE_USERS', '管理用户'),
-('MANAGE_ROLES', '管理角色');
 ```
 
-### 2.2 项目管理模块
+#### 2.1.5 角色权限关联表 (role_permissions)
+```sql
+CREATE TABLE role_permissions (
+    role_id BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    permission_id BIGINT NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
+);
 
-#### 2.2.1 项目表 (projects)
+-- 索引
+CREATE INDEX idx_role_permissions_role_id ON role_permissions(role_id);
+CREATE INDEX idx_role_permissions_permission_id ON role_permissions(permission_id);
+```
+
+### 2.2 团队管理模块
+
+#### 2.2.1 团队表 (teams)
+```sql
+CREATE TABLE teams (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_by BIGINT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE INDEX idx_teams_created_by ON teams(created_by);
+```
+
+#### 2.2.2 团队成员表 (team_members)
+```sql
+CREATE TABLE team_members (
+    id BIGSERIAL PRIMARY KEY,
+    team_id BIGINT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(50) NOT NULL,
+    joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE INDEX idx_team_members_team_id ON team_members(team_id);
+CREATE INDEX idx_team_members_user_id ON team_members(user_id);
+```
+
+### 2.3 项目管理模块
+
+#### 2.3.1 项目表 (projects)
 ```sql
 CREATE TABLE projects (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     key VARCHAR(10) NOT NULL UNIQUE,
     description TEXT,
-    owner_id BIGINT NOT NULL REFERENCES users(id),
     status SMALLINT NOT NULL DEFAULT 1,
+    owner_id BIGINT NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
@@ -115,13 +154,11 @@ CREATE INDEX idx_projects_key ON projects(key);
 CREATE INDEX idx_projects_status ON projects(status);
 ```
 
-#### 2.2.2 项目成员表 (project_members)
+#### 2.3.2 项目成员表 (project_members)
 ```sql
 CREATE TABLE project_members (
     project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role VARCHAR(20) NOT NULL, -- OWNER, ADMIN, MEMBER
-    joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (project_id, user_id)
 );
 
@@ -130,252 +167,192 @@ CREATE INDEX idx_project_members_project ON project_members(project_id);
 CREATE INDEX idx_project_members_user ON project_members(user_id);
 ```
 
-### 2.3 任务管理模块
+### 2.4 看板管理模块
 
-#### 2.3.1 问题类型表 (issue_types)
+#### 2.4.1 看板表 (boards)
 ```sql
-CREATE TABLE issue_types (
+CREATE TABLE boards (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    icon VARCHAR(255),
-    description VARCHAR(255),
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    archived BOOLEAN NOT NULL DEFAULT FALSE,
     project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- 初始数据
-INSERT INTO issue_types (name, description, project_id) VALUES
-('Story', '用户故事', 1),
-('Task', '任务', 1),
-('Bug', '缺陷', 1);
-```
-
-#### 2.3.2 问题状态表 (issue_status)
-```sql
-CREATE TABLE issue_status (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    category VARCHAR(20) NOT NULL, -- TODO, IN_PROGRESS, DONE
-    project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    order_index INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50)
 );
 
 -- 索引
-CREATE INDEX idx_issue_status_project ON issue_status(project_id);
-CREATE INDEX idx_issue_status_category ON issue_status(category);
+CREATE INDEX idx_boards_project ON boards(project_id);
 ```
 
-#### 2.3.3 问题表 (issues)
+#### 2.4.2 看板列表 (board_columns)
+```sql
+CREATE TABLE board_columns (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    position INTEGER,
+    board_id BIGINT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50)
+);
+
+-- 索引
+CREATE INDEX idx_board_columns_board ON board_columns(board_id);
+```
+
+### 2.5 任务管理模块
+
+#### 2.5.1 任务表 (tasks)
+```sql
+CREATE TABLE tasks (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    type VARCHAR(20) NOT NULL,
+    column_id BIGINT NOT NULL REFERENCES board_columns(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50)
+);
+
+-- 索引
+CREATE INDEX idx_tasks_column ON tasks(column_id);
+```
+
+#### 2.5.2 问题表 (issues)
 ```sql
 CREATE TABLE issues (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    type_id BIGINT NOT NULL REFERENCES issue_types(id),
-    status_id BIGINT NOT NULL REFERENCES issue_status(id),
-    project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    reporter_id BIGINT NOT NULL REFERENCES users(id),
+    priority INTEGER NOT NULL,
     assignee_id BIGINT REFERENCES users(id),
-    priority SMALLINT NOT NULL DEFAULT 3,
     due_date TIMESTAMP,
-    estimated_hours DECIMAL(10,2),
-    spent_hours DECIMAL(10,2),
+    status VARCHAR(50) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    story_points INTEGER,
+    project_id BIGINT NOT NULL REFERENCES projects(id),
+    sprint_id BIGINT REFERENCES sprints(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 索引
-CREATE INDEX idx_issues_project ON issues(project_id);
-CREATE INDEX idx_issues_type ON issues(type_id);
-CREATE INDEX idx_issues_status ON issues(status_id);
 CREATE INDEX idx_issues_assignee ON issues(assignee_id);
-CREATE INDEX idx_issues_reporter ON issues(reporter_id);
-CREATE INDEX idx_issues_priority ON issues(priority);
-CREATE INDEX idx_issues_created ON issues(created_at);
+CREATE INDEX idx_issues_project ON issues(project_id);
+CREATE INDEX idx_issues_sprint ON issues(sprint_id);
 ```
 
-#### 2.3.4 问题评论表 (issue_comments)
+#### 2.5.3 问题标签表 (issue_labels)
 ```sql
-CREATE TABLE issue_comments (
-    id BIGSERIAL PRIMARY KEY,
+CREATE TABLE issue_labels (
     issue_id BIGINT NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES users(id),
-    content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    label VARCHAR(100) NOT NULL
 );
 
 -- 索引
-CREATE INDEX idx_comments_issue ON issue_comments(issue_id);
-CREATE INDEX idx_comments_user ON issue_comments(user_id);
+CREATE INDEX idx_issue_labels_issue ON issue_labels(issue_id);
 ```
 
-### 2.4 附件管理模块
+#### 2.5.4 问题附件关联表 (issue_attachments)
+```sql
+CREATE TABLE issue_attachments (
+    issue_id BIGINT NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
+    attachment VARCHAR(255) NOT NULL
+);
 
-#### 2.4.1 附件表 (attachments)
+-- 索引
+CREATE INDEX idx_issue_attachments_issue ON issue_attachments(issue_id);
+```
+
+### 2.6 评论模块
+
+#### 2.6.1 评论表 (comments)
+```sql
+CREATE TABLE comments (
+    id BIGSERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    author_id BIGINT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE INDEX idx_comments_task ON comments(task_id);
+CREATE INDEX idx_comments_author ON comments(author_id);
+```
+
+### 2.7 附件模块
+
+#### 2.7.1 附件表 (attachments)
 ```sql
 CREATE TABLE attachments (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    size BIGINT,
     path VARCHAR(255) NOT NULL,
-    size BIGINT NOT NULL,
-    mime_type VARCHAR(100) NOT NULL,
-    issue_id BIGINT NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
-    uploader_id BIGINT NOT NULL REFERENCES users(id),
+    task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50)
 );
 
 -- 索引
-CREATE INDEX idx_attachments_issue ON attachments(issue_id);
-CREATE INDEX idx_attachments_uploader ON attachments(uploader_id);
+CREATE INDEX idx_attachments_task ON attachments(task_id);
+CREATE INDEX idx_attachments_user ON attachments(user_id);
+```
+
+### 2.8 标签模块
+
+#### 2.8.1 标签表 (labels)
+```sql
+CREATE TABLE labels (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    color VARCHAR(50),
+    project_id BIGINT REFERENCES projects(id) ON DELETE CASCADE
+);
+
+-- 索引
+CREATE INDEX idx_labels_project ON labels(project_id);
 ```
 
 ## 3. 数据库优化
 
 ### 3.1 索引策略
+- 对所有外键字段创建索引
 - 对常用查询字段创建索引
-- 对外键字段创建索引
-- 对排序字段创建索引
-- 使用复合索引优化多字段查询
+- 对需要排序的字段创建索引
+- 对唯一约束字段创建唯一索引
 
-### 3.2 分区策略
-```sql
--- 按时间分区的示例（issues表）
-CREATE TABLE issues_partition OF issues
-PARTITION BY RANGE (created_at);
+### 3.2 审计字段
+所有主要表都包含以下审计字段：
+- created_at：创建时间
+- updated_at：更新时间
+- created_by：创建者（部分表）
+- updated_by：更新者（部分表）
 
--- 创建月度分区
-CREATE TABLE issues_y2024m01 
-PARTITION OF issues_partition
-FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+### 3.3 软删除
+某些重要表（如projects）使用deleted_at字段实现软删除功能。
 
-CREATE TABLE issues_y2024m02 
-PARTITION OF issues_partition
-FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
-```
+### 3.4 数据类型选择
+- 使用BIGSERIAL作为ID类型，支持大量数据
+- 使用TEXT类型存储长文本内容
+- 使用TIMESTAMP类型存储时间信息
+- 使用VARCHAR类型存储有长度限制的字符串
 
-### 3.3 视图定义
-```sql
--- 项目统计视图
-CREATE VIEW project_statistics AS
-SELECT 
-    p.id AS project_id,
-    p.name AS project_name,
-    COUNT(DISTINCT i.id) AS total_issues,
-    COUNT(DISTINCT CASE WHEN i.status_id IN (SELECT id FROM issue_status WHERE category = 'DONE') THEN i.id END) AS completed_issues,
-    COUNT(DISTINCT pm.user_id) AS member_count
-FROM projects p
-LEFT JOIN issues i ON p.id = i.project_id
-LEFT JOIN project_members pm ON p.id = pm.project_id
-GROUP BY p.id, p.name;
-
--- 用户工作量视图
-CREATE VIEW user_workload AS
-SELECT 
-    u.id AS user_id,
-    u.username,
-    COUNT(i.id) AS assigned_issues,
-    SUM(i.estimated_hours) AS total_estimated_hours,
-    SUM(i.spent_hours) AS total_spent_hours
-FROM users u
-LEFT JOIN issues i ON u.id = i.assignee_id
-WHERE i.deleted_at IS NULL
-GROUP BY u.id, u.username;
-```
-
-## 4. 数据迁移
-
-### 4.1 Flyway配置
-```yaml
-spring:
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-    baseline-version: 0
-    validate-on-migrate: true
-```
-
-### 4.2 迁移脚本示例
-```sql
--- V1__init_schema.sql
-CREATE TABLE users (
-    -- 表结构定义
-);
-
--- V2__add_indexes.sql
-CREATE INDEX idx_users_email ON users(email);
-
--- V3__add_foreign_keys.sql
-ALTER TABLE issues
-ADD CONSTRAINT fk_issues_project
-FOREIGN KEY (project_id) REFERENCES projects(id);
-```
-
-## 5. 数据备份策略
-
-### 5.1 备份脚本
-```bash
-#!/bin/bash
-BACKUP_DIR="/backup/postgres"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-DB_NAME="gira"
-
-# 创建备份
-pg_dump -Fc -U postgres $DB_NAME > $BACKUP_DIR/$DB_NAME_$TIMESTAMP.dump
-
-# 保留最近30天的备份
-find $BACKUP_DIR -type f -mtime +30 -delete
-```
-
-### 5.2 恢复脚本
-```bash
-#!/bin/bash
-BACKUP_FILE=$1
-DB_NAME="gira"
-
-# 恢复数据库
-pg_restore -U postgres -d $DB_NAME $BACKUP_FILE
-```
-
-## 6. 监控和维护
-
-### 6.1 性能监控视图
-```sql
--- 慢查询监控
-CREATE VIEW slow_queries AS
-SELECT 
-    query,
-    calls,
-    total_time,
-    mean_time,
-    rows
-FROM pg_stat_statements
-ORDER BY total_time DESC;
-
--- 表空间使用情况
-CREATE VIEW table_sizes AS
-SELECT
-    relname as table_name,
-    pg_size_pretty(pg_total_relation_size(relid)) as total_size,
-    pg_size_pretty(pg_relation_size(relid)) as table_size,
-    pg_size_pretty(pg_total_relation_size(relid) - pg_relation_size(relid)) as index_size
-FROM pg_catalog.pg_statio_user_tables
-ORDER BY pg_total_relation_size(relid) DESC;
-```
-
-### 6.2 维护任务
-```sql
--- 定期VACUUM
-VACUUM ANALYZE;
-
--- 更新统计信息
-ANALYZE;
-
--- 重建索引
-REINDEX TABLE issues;
+### 3.5 约束设计
+- 使用外键约束确保数据完整性
+- 使用NOT NULL约束确保必要字段有值
+- 使用UNIQUE约束确保字段唯一性
+- 使用DEFAULT值设置默认数据
 ``` 

@@ -1,6 +1,7 @@
 package com.rayfay.gira.config;
 
 import com.rayfay.gira.repository.UserRepository;
+import com.rayfay.gira.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByUsername(username)
+                .map(UserPrincipal::create)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 

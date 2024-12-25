@@ -180,9 +180,9 @@ public class ColumnServiceImpl implements ColumnService {
         dto.setDescription(task.getDescription());
         dto.setColumnId(task.getColumn().getId());
         dto.setPosition(task.getPosition());
-        dto.setPriority(task.getPriority());
-        dto.setStatus(task.getStatus());
-        dto.setType(task.getType());
+        dto.setPriority(task.getPriority().name());
+        dto.setStatus(task.getStatus().name());
+        dto.setType(task.getType().name());
         dto.setCreatedAt(task.getCreatedAt());
         dto.setUpdatedAt(task.getUpdatedAt());
         dto.setCreatedBy(task.getCreatedBy());
