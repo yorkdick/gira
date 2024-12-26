@@ -31,7 +31,7 @@ AND p.name IN ('USER_READ');
 INSERT INTO users (username, password, email, full_name, status)
 VALUES (
     'admin',
-    '$2a$10$KXQpxKHQe8YuCGj3dJxsZOJEcA5Y6xvQr1yMAcWqsX8TXsYA8h0eO',  -- 1qaz@WSX
+    '$2a$10$LBx6KA39mAuz3VaI6Iu8..AkhwTnubluGn2QwKgFCOQROUhktV2lW',  -- 1qaz@WSX
     'admin@gira.com',
     'System Administrator',
     1
