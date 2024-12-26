@@ -2,6 +2,9 @@ package com.rayfay.gira.mapper;
 
 import com.rayfay.gira.dto.TaskDto;
 import com.rayfay.gira.entity.Task;
+import com.rayfay.gira.entity.TaskPriority;
+import com.rayfay.gira.entity.TaskStatus;
+import com.rayfay.gira.entity.TaskType;
 import org.mapstruct.*;
 import java.util.List;
 
@@ -28,9 +31,9 @@ public interface TaskMapper {
     @Mapping(target = "column", ignore = true)
     @Mapping(target = "assignee", ignore = true)
     @Mapping(target = "reporter", ignore = true)
-    @Mapping(target = "priority", expression = "java(TaskPriority.valueOf(dto.getPriority()))")
-    @Mapping(target = "status", expression = "java(TaskStatus.valueOf(dto.getStatus()))")
-    @Mapping(target = "type", expression = "java(TaskType.valueOf(dto.getType()))")
+    @Mapping(target = "priority", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "type", ignore = true)
     Task toEntity(TaskDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -39,8 +42,8 @@ public interface TaskMapper {
     @Mapping(target = "column", ignore = true)
     @Mapping(target = "assignee", ignore = true)
     @Mapping(target = "reporter", ignore = true)
-    @Mapping(target = "priority", expression = "java(dto.getPriority() != null ? TaskPriority.valueOf(dto.getPriority()) : null)")
-    @Mapping(target = "status", expression = "java(dto.getStatus() != null ? TaskStatus.valueOf(dto.getStatus()) : null)")
-    @Mapping(target = "type", expression = "java(dto.getType() != null ? TaskType.valueOf(dto.getType()) : null)")
+    @Mapping(target = "priority", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "type", ignore = true)
     void updateEntity(TaskDto dto, @MappingTarget Task task);
 }

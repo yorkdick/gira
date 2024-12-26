@@ -22,7 +22,7 @@ public class Role {
     private String description;
 
     @Column(name = "is_system", nullable = false)
-    private boolean isSystem;
+    private boolean isSystem = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

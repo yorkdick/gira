@@ -17,10 +17,23 @@ GIRA是一个轻量级的项目管理系统，提供类似JIRA的核心功能，
 - Ant Design 5.12.5
 - TailwindCSS 3.4.0
 
+## 安装说明
+
+详细的安装和部署说明请参考 [安装文档](app/INSTALL.md)。
+
 ## 项目结构
 
 ```
 gira/
+├── app/                                # 应用目录
+│   ├── gira-backend/                  # 后端项目
+│   ├── gira-frontend/                 # 前端项目
+│   └── install/                       # 安装部署相关
+│       ├── docker/                    # Docker配置
+│       │   ├── postgres/             # PostgreSQL配置
+│       │   ├── docker-compose.yml    # 开发环境配置
+│       │   └── docker-compose.prod.yml # 生产环境配置
+│
 ├── doc/                                # 文档目录
 │   ├── basic-design/                   # 基础设计文档
 │   │   ├── architecture.md            # 系统架构设计
@@ -35,37 +48,10 @@ gira/
 │       ├── database-design.md         # 数据库详细设计
 │       └── business-logic.md          # 业务逻辑详细设计
 │
-├── gira-backend/                       # 后端项目目录
-│   ├── gira-common/                   # 公共模块
-│   ├── gira-core/                     # 核心业务模块
-│   ├── gira-auth/                     # 认证授权模块
-│   ├── gira-api/                      # API接口模块
-│   └── gira-admin/                    # 管理后台模块
-│
-├── gira-frontend/                      # 前端项目目录
-│   ├── src/
-│   │   ├── assets/                    # 静态资源
-│   │   ├── components/               # 通用组件
-│   │   ├── features/                 # 功能模块
-│   │   ├── hooks/                    # 自定义Hook
-│   │   ├── layouts/                  # 布局组件
-│   │   ├── pages/                    # 页面组件
-│   │   ├── services/                 # API服务
-│   │   ├── store/                    # 状态管理
-│   │   ├── styles/                   # 样式文件
-│   │   ├── types/                    # TypeScript类型
-│   │   └── utils/                    # 工具函数
-│   │
-│   ├── public/                        # 公共资源
-│   └── tests/                         # 测试文件
-│
 ├── scripts/                            # 脚本目录
-│   ├── deploy/                        # 部署脚本
-│   ├── docker/                        # Docker配置
 │   └── database/                      # 数据库脚本
 │
 ├── .gitignore                         # Git忽略文件
-├── docker-compose.yml                  # Docker Compose配置
 └── README.md                          # 项目说明文档
 ```
 

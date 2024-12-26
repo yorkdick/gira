@@ -28,14 +28,13 @@ WHERE r.name = 'ROLE_USER'
 AND p.name IN ('USER_READ');
 
 -- 插入管理员用户 (密码: 1qaz@WSX)
-INSERT INTO users (username, password, email, full_name, is_active, is_admin)
+INSERT INTO users (username, password, email, full_name, status)
 VALUES (
     'admin',
     '$2a$10$KXQpxKHQe8YuCGj3dJxsZOJEcA5Y6xvQr1yMAcWqsX8TXsYA8h0eO',  -- 1qaz@WSX
     'admin@gira.com',
     'System Administrator',
-    true,
-    true
+    1
 )
 ON CONFLICT (username) DO NOTHING;
 

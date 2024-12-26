@@ -27,17 +27,18 @@ cd gira
 
 #### 2.1 创建必要的目录
 ```bash
-# 创建数据目录
-mkdir -p data/postgres data/redis
+# 进入Docker配置目录
+cd app/install/docker
 
 # 创建日志和上传文件目录
-mkdir -p logs uploads
+mkdir logs uploads
+
+# 注意：PostgreSQL和Redis的数据将使用Docker命名卷存储，无需手动创建目录
 ```
 
 #### 2.2 设置目录权限（Linux/MacOS）
 ```bash
-# 设置数据目录权限
-chmod -R 777 data
+# 设置日志和上传目录权限
 chmod -R 777 logs
 chmod -R 777 uploads
 ```
@@ -46,7 +47,11 @@ chmod -R 777 uploads
 
 #### 3.1 开发环境
 ```bash
-# 启动所有服务
+# 进入Docker配置目录
+cd app/install/docker
+
+# 构建并启动所有服务
+docker-compose build
 docker-compose up -d
 
 # 查看服务状态
@@ -59,15 +64,39 @@ docker-compose logs -f
 #### 3.2 生产环境
 1. 修改环境变量
    ```bash
+   # 进入Docker配置目录
+   cd app/install/docker
+   
    # 复制示例配置
    cp .env.example .env
    
-   # 编辑配置文件，设置生产环境的密码和密钥
+   # 编辑配置文件，设置生产环境的配置
    vim .env
    ```
 
-2. 启动服务
+   主要配置项说明：
+   - 数据库配置：
+     - `POSTGRES_DB`: 数据库名称（默认：gira）
+     - `POSTGRES_USER`: 数据库用户名（默认：postgres）
+     - `POSTGRES_PASSWORD`: 数据库密码（默认：changeme）
+   - Redis配置：
+     - `REDIS_PASSWORD`: Redis密码（默认：changeme）
+     - `REDIS_PORT`: Redis端口（默认：6379）
+   - 后端配置：
+     - `JAVA_VERSION`: Java版本（默认：17）
+     - `MAVEN_VERSION`: Maven版本（默认：3.9.6）
+     - `BACKEND_PORT`: 后端端口（默认：8080）
+   - 系统配置：
+     - `TZ`: 时区设置（默认：Asia/Shanghai）
+     - `LOG_PATH`: 日志目录（默认：./logs）
+     - `UPLOAD_PATH`: 上传文件目录（默认：./uploads）
+
+2. 构建和启动服务
    ```bash
+   # 构建服务
+   docker-compose -f docker-compose.prod.yml build
+
+   # 启动服务
    docker-compose -f docker-compose.prod.yml up -d
    ```
 
@@ -77,7 +106,7 @@ docker-compose logs -f
    ```bash
    docker-compose ps
    ```
-   确保所有服务都��� `healthy` 状态
+   确保所有服务都是 `healthy` 状态
 
 2. 访问API文档：
    - 地址：http://localhost:8080/api/swagger-ui.html
@@ -147,7 +176,7 @@ tar -xzf data_backup_[日期].tar.gz
 
 ## 更新说明
 
-### ��新步骤
+### 更新步骤
 1. 拉取最新代码：
    ```bash
    git pull origin main

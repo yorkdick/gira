@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14.10
+    container_name: gira-postgres-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gira}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./postgres/init/02-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./postgres/init/03-data.sql:/docker-entrypoint-initdb.d/02-data.sql
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2.3
+    container_name: gira-redis-prod
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme} --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../../gira-backend
+      dockerfile: Dockerfile
+      args:
+        - JAVA_VERSION=${JAVA_VERSION:-17}
+        - MAVEN_VERSION=${MAVEN_VERSION:-3.9.6}
+    container_name: gira-backend-prod
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-gira}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-changeme}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ${LOG_PATH:-./logs}:/app/logs
+      - ${UPLOAD_PATH:-./uploads}:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: gira-network-prod 

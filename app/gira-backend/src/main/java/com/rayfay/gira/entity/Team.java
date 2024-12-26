@@ -24,7 +24,7 @@ public class Team {
     private String description;
 
     @Column(name = "created_by", nullable = false)
-    private Long createdBy;
+    private String createdBy;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> members = new ArrayList<>();

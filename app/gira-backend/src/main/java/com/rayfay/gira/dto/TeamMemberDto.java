@@ -2,10 +2,12 @@ package com.rayfay.gira.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 public class TeamMemberDto {
     private Long id;
 

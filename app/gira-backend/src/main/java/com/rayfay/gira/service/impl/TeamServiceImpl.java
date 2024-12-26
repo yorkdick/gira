@@ -34,7 +34,7 @@ public class TeamServiceImpl implements TeamService {
     @Transactional
     public TeamDto createTeam(TeamDto teamDto) {
         Team team = teamMapper.toEntity(teamDto);
-        team.setCreatedBy(SecurityUtils.getCurrentUserId());
+        team.setCreatedBy(SecurityUtils.getCurrentUserId().toString());
         team = teamRepository.save(team);
 
         // Add creator as team admin

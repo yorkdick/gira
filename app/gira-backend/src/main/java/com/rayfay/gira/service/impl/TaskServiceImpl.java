@@ -47,7 +47,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskDto> getTasksByColumnId(Long columnId) {
-        return taskMapper.toDto(taskRepository.findByBoardColumnId(columnId));
+        return taskMapper.toDto(taskRepository.findByColumnId(columnId));
     }
 
     @Override
