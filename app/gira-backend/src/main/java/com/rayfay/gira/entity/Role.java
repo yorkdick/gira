@@ -28,10 +28,8 @@ public class Role {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<Permission> permissions = new HashSet<>();
 
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users = new HashSet<>();
 }

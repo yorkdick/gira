@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rayfay.gira.api.dto.BoardColumnRequest;
 import com.rayfay.gira.api.dto.BoardRequest;
 import com.rayfay.gira.api.dto.LoginRequest;
-import com.rayfay.gira.api.dto.ProjectRequest;
+import com.rayfay.gira.dto.ProjectDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.*;
@@ -13,49 +13,31 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BoardApiTest {
+public class BoardApiTest extends BaseApiTest {
 
-    private final String BASE_URL = "http://localhost:8080/api/v1";
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private String validToken;
     private Long projectId;
     private Long boardId;
 
     @BeforeEach
     void setUp() throws Exception {
-        // 获取有效token
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername("admin");
-        loginRequest.setPassword("1qaz@WSX");
-        loginRequest.setRememberMe(false);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                BASE_URL + "/auth/login",
-                loginRequest,
-                String.class);
-
-        JsonNode jsonNode = objectMapper.readTree(response.getBody());
-        validToken = jsonNode.get("token").asText();
-
         // 创建测试项目
-        ProjectRequest projectRequest = new ProjectRequest();
-        projectRequest.setName("测试项目_" + System.currentTimeMillis());
-        projectRequest.setKey("TEST" + System.currentTimeMillis());
-        projectRequest.setDescription("这是一个测试项目");
+        ProjectDto projectDto = new ProjectDto();
+        projectDto.setName("测试项目_" + System.currentTimeMillis());
+        projectDto.setKey("TEST" + System.currentTimeMillis());
+        projectDto.setDescription("这是一个测试项目");
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<ProjectRequest> entity = new HttpEntity<>(projectRequest, headers);
+        HttpEntity<ProjectDto> entity = new HttpEntity<>(projectDto, headers);
 
-        response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 BASE_URL + "/projects",
                 HttpMethod.POST,
                 entity,
                 String.class);
 
-        jsonNode = objectMapper.readTree(response.getBody());
+        JsonNode jsonNode = objectMapper.readTree(response.getBody());
         projectId = jsonNode.get("id").asLong();
     }
 
@@ -68,7 +50,7 @@ public class BoardApiTest {
         request.setProjectId(projectId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<BoardRequest> entity = new HttpEntity<>(request, headers);
 
@@ -91,7 +73,7 @@ public class BoardApiTest {
 
         // 获取看板详情
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
@@ -115,7 +97,7 @@ public class BoardApiTest {
         request.setDescription("更新的看板描述");
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<BoardRequest> entity = new HttpEntity<>(request, headers);
 
@@ -141,7 +123,7 @@ public class BoardApiTest {
         request.setBoardId(boardId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<BoardColumnRequest> entity = new HttpEntity<>(request, headers);
 
@@ -163,7 +145,7 @@ public class BoardApiTest {
 
         // 获取看板列列表
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
@@ -190,7 +172,7 @@ public class BoardApiTest {
         request.setPosition(1);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<BoardColumnRequest> entity = new HttpEntity<>(request, headers);
 
@@ -212,7 +194,7 @@ public class BoardApiTest {
 
         // 删除看板列
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
@@ -231,7 +213,7 @@ public class BoardApiTest {
 
         // 归档看板
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(validToken);
+        headers.setBearerAuth(token);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(

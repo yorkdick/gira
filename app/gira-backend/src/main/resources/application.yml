@@ -45,8 +45,6 @@ spring:
 
 server:
   port: 8088
-  servlet:
-    context-path: /api
   compression:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
@@ -66,7 +64,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "*"
+      base-path: /actuator
+      cors:
+        allowed-origins: "*"
   endpoint:
     health:
       show-details: always

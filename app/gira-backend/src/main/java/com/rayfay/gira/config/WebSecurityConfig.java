@@ -24,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -60,13 +61,30 @@ public class WebSecurityConfig {
                                                                 "/api/public/**",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui/**",
-                                                                "/swagger-ui.html")
+                                                                "/swagger-ui.html",
+                                                                "/actuator/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authenticationProvider(authenticationProvider())
-                                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                                        response.getWriter().write(
+                                                                        "{\"error\":\"Unauthorized\",\"message\":\""
+                                                                                        + authException.getMessage()
+                                                                                        + "\"}");
+                                                })
+                                                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                                        response.setStatus(HttpStatus.FORBIDDEN.value());
+                                                        response.getWriter()
+                                                                        .write("{\"error\":\"Forbidden\",\"message\":\""
+                                                                                        + accessDeniedException
+                                                                                                        .getMessage()
+                                                                                        + "\"}");
+                                                }));
 
                 return http.build();
         }
