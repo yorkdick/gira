@@ -37,19 +37,19 @@ public class UserServiceImpl implements UserService {
         String username = SecurityUtils.getCurrentUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
     public UserDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
     public Page<UserDto> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(userMapper::toDto);
+        return clearPasswords(userRepository.findAll(pageable).map(userMapper::toDto));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user = userRepository.save(user);
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         user = userRepository.save(user);
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setAvatarUrl(avatarUrl);
         user = userRepository.save(user);
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setStatus(1);
         user = userRepository.save(user);
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setStatus(0);
         user = userRepository.save(user);
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
     }
 
     @Override
@@ -151,8 +151,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isCurrentUser(Long id) {
-        UserDto currentUser = getCurrentUser();
-        return currentUser != null && currentUser.getId().equals(id);
+        String username = SecurityUtils.getCurrentUsername();
+        return userRepository.findById(id)
+                .map(user -> user.getUsername().equals(username))
+                .orElse(false);
     }
 
     @Override
@@ -164,6 +166,29 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }
         user = userRepository.save(user);
-        return userMapper.toDto(user);
+        return clearPassword(userMapper.toDto(user));
+    }
+
+    @Override
+    public Page<UserDto> searchUsers(String keyword, Pageable pageable) {
+        return userRepository
+                .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrFullNameContainingIgnoreCase(
+                        keyword, pageable)
+                .map(userMapper::toDto)
+                .map(this::clearPassword);
+    }
+
+    private UserDto clearPassword(UserDto userDto) {
+        if (userDto != null) {
+            userDto.setPassword(null);
+        }
+        return userDto;
+    }
+
+    private Page<UserDto> clearPasswords(Page<UserDto> page) {
+        if (page != null) {
+            page.getContent().forEach(this::clearPassword);
+        }
+        return page;
     }
 }

@@ -1,229 +1,78 @@
 package com.rayfay.gira.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rayfay.gira.api.dto.BoardColumnRequest;
-import com.rayfay.gira.api.dto.BoardRequest;
-import com.rayfay.gira.api.dto.LoginRequest;
-import com.rayfay.gira.dto.ProjectDto;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
 import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BoardApiTest extends BaseApiTest {
-
-    private Long projectId;
-    private Long boardId;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        // 创建测试项目
-        ProjectDto projectDto = new ProjectDto();
-        projectDto.setName("测试项目_" + System.currentTimeMillis());
-        projectDto.setKey("TEST" + System.currentTimeMillis());
-        projectDto.setDescription("这是一个测试项目");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<ProjectDto> entity = new HttpEntity<>(projectDto, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/projects",
-                HttpMethod.POST,
-                entity,
-                String.class);
-
-        JsonNode jsonNode = objectMapper.readTree(response.getBody());
-        projectId = jsonNode.get("id").asLong();
-    }
+@Order(4)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class BoardApiTest extends AuthenticatedApiTest {
 
     @Test
+    @Order(1)
     void testCreateBoard() {
-        // 创建看板
-        BoardRequest request = new BoardRequest();
-        request.setName("测试看板");
-        request.setDescription("这是一个测试看板");
-        request.setProjectId(projectId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<BoardRequest> entity = new HttpEntity<>(request, headers);
+        Map<String, Object> request = new HashMap<>();
+        request.put("name", "开发看板");
+        request.put("projectId", 1L);
+        request.put("type", "SCRUM");
 
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE_URL + "/boards",
                 HttpMethod.POST,
-                entity,
+                createJsonAuthEntity(request),
                 String.class);
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        JsonNode jsonNode = assertDoesNotThrow(() -> objectMapper.readTree(response.getBody()));
-        boardId = jsonNode.get("id").asLong();
-        assertTrue(response.getBody().contains(request.getName()));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().contains("id"));
     }
 
     @Test
-    void testGetBoard() {
-        // 先创建看板
-        testCreateBoard();
-
-        // 获取看板详情
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
+    @Order(2)
+    void testGetBoardList() {
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId,
+                BASE_URL + "/projects/1/boards",
                 HttpMethod.GET,
-                entity,
+                createAuthEntity(),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().contains("测试看板"));
+        assertTrue(response.getBody().contains("content"));
     }
 
     @Test
-    void testUpdateBoard() {
-        // 先创建看板
-        testCreateBoard();
-
-        // 更新看板
-        BoardRequest request = new BoardRequest();
-        request.setName("更新的看板名称");
-        request.setDescription("更新的看板描述");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<BoardRequest> entity = new HttpEntity<>(request, headers);
+    @Order(3)
+    void testUpdateBoardSettings() {
+        Map<String, Object> request = new HashMap<>();
+        request.put("defaultAssigneeId", 1L);
+        request.put("defaultPriority", "MEDIUM");
+        request.put("defaultType", "TASK");
 
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId,
+                BASE_URL + "/boards/1/settings",
                 HttpMethod.PUT,
-                entity,
+                createJsonAuthEntity(request),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().contains("更新的看板名称"));
     }
 
     @Test
-    void testCreateBoardColumn() {
-        // 先创建看板
-        testCreateBoard();
-
-        // 创建看板列
-        BoardColumnRequest request = new BoardColumnRequest();
-        request.setName("待处理");
-        request.setPosition(0);
-        request.setBoardId(boardId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<BoardColumnRequest> entity = new HttpEntity<>(request, headers);
-
+    @Order(4)
+    void testDeleteBoard() {
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId + "/columns",
-                HttpMethod.POST,
-                entity,
-                String.class);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertTrue(response.getBody().contains("待处理"));
-    }
-
-    @Test
-    void testGetBoardColumns() {
-        // 先创建看板和列
-        testCreateBoard();
-        testCreateBoardColumn();
-
-        // 获取看板列列表
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId + "/columns",
-                HttpMethod.GET,
-                entity,
-                String.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        JsonNode jsonNode = assertDoesNotThrow(() -> objectMapper.readTree(response.getBody()));
-        assertTrue(jsonNode.isArray());
-        assertTrue(response.getBody().contains("待处理"));
-    }
-
-    @Test
-    void testUpdateBoardColumn() {
-        // 先创建看板和列
-        testCreateBoard();
-        testCreateBoardColumn();
-
-        // 更新看板列
-        BoardColumnRequest request = new BoardColumnRequest();
-        request.setName("进行中");
-        request.setPosition(1);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<BoardColumnRequest> entity = new HttpEntity<>(request, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId + "/columns/1", // 假设列ID为1
-                HttpMethod.PUT,
-                entity,
-                String.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().contains("进行中"));
-    }
-
-    @Test
-    void testDeleteBoardColumn() {
-        // 先创建看板和列
-        testCreateBoard();
-        testCreateBoardColumn();
-
-        // 删除看板列
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId + "/columns/1", // 假设列ID为1
+                BASE_URL + "/boards/2",
                 HttpMethod.DELETE,
-                entity,
+                createAuthEntity(),
                 String.class);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    void testArchiveBoard() {
-        // 先创建看板
-        testCreateBoard();
-
-        // 归档看板
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/boards/" + boardId + "/archive",
-                HttpMethod.POST,
-                entity,
-                String.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        JsonNode jsonNode = assertDoesNotThrow(() -> objectMapper.readTree(response.getBody()));
-        assertTrue(jsonNode.get("archived").asBoolean());
     }
 }

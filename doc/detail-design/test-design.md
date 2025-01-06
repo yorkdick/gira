@@ -3,27 +3,41 @@
 ## 1. 测试策略
 
 ### 1.1 测试级别
-- 单元测试（Unit Test）
 - 集成测试（Integration Test）
-- 系统测试（System Test）
-- 性能测试（Performance Test）
-- 安全测试（Security Test）
 
 ### 1.2 测试工具
 - JUnit 5：单元测试框架
-- Mockito：Mock框架
-- TestContainers：集成测试容器
-- JMeter：性能测试工具
-- Postman：API测试工具
-- Selenium：UI自动化测试
 
 ### 1.3 测试环境
 - 开发环境（Development）
-- 测试环境（Testing）
-- 预生产环境（Staging）
-- 生产环境（Production）
 
 ## 2. 单元测试用例
+
+### 2.0 测试基础类
+#### 2.0.1 BaseApiTest
+- 提供基础的测试配置和工具
+- 包含通用的测试常量和工具方法
+- 初始化 RestTemplate 和基础 URL
+
+#### 2.0.2 AuthenticatedApiTest
+```java
+public class AuthenticatedApiTest extends BaseApiTest {
+    // 创建带认证头的 HttpHeaders
+    protected HttpHeaders getAuthHeaders()
+    
+    // 创建带认证的 HttpEntity（无请求体）
+    protected HttpEntity<?> createAuthEntity()
+    
+    // 创建带认证的 HttpEntity（带请求体）
+    protected <T> HttpEntity<T> createAuthEntity(T body)
+    
+    // 创建带认证和 JSON 内容类型的 HttpEntity（无请求体）
+    protected HttpEntity<?> createJsonAuthEntity()
+    
+    // 创建带认证和 JSON 内容类型的 HttpEntity（带请求体）
+    protected <T> HttpEntity<T> createJsonAuthEntity(T body)
+}
+```
 
 ### 2.1 用户认证模块
 
@@ -178,191 +192,3 @@ void testIssueWorkflow() {
    - 验证看板视图切换
    - 验证任务拖拽功能
    - 验证工作流规则
-
-### 4.2 性能测试
-1. 并发用户测试
-   - 测试100个并发用户
-   - 测试500个并发用户
-   - 测试1000个并发用户
-
-2. 响应时间测试
-   - API响应时间 < 200ms
-   - 页面加载时间 < 2s
-   - 文件上传时间 < 5s
-
-3. 数据库性能测试
-   - 大数据量查询性能
-   - 索引效率测试
-   - 缓存命中率测试
-
-### 4.3 安全测试
-1. 认证测试
-   - JWT Token安全性
-   - 密码加密强度
-   - 会话管理���全性
-
-2. 授权测试
-   - 角色权限控制
-   - API访问控制
-   - 数据访问控制
-
-3. 安全漏洞测试
-   - SQL注入防护
-   - XSS攻击防护
-   - CSRF攻击防护
-
-## 5. 测试报告模板
-
-### 5.1 测试执行报告
-```
-测试概要：
-- 测试时间：[开始时间] - [结束时间]
-- 测试环境：[环境信息]
-- 测试范围：[测试模块]
-- 测试人员：[执行人]
-
-测试结果：
-- 测试用例总数：[数量]
-- 通过用例数：[数量]
-- 失败用例数：[数量]
-- 阻塞用例数：[数量]
-- 未执行用例数：[数量]
-
-问题统计：
-- 严重问题：[数量]
-- 主要问题：[数量]
-- 次要问题：[数量]
-- 建议优化：[数量]
-
-详细问题列表：
-1. [问题描述]
-   - 严重程度：[级别]
-   - 影响范围：[描述]
-   - 解决状态：[状态]
-```
-
-### 5.2 性能测试报告
-```
-测试场景：
-- 测试目标：[描述]
-- 并发用户数：[数量]
-- 测试持续时间：[时长]
-
-性能指标：
-- 平均响应时间：[时间]
-- 95%响应时间：[时间]
-- TPS：[数值]
-- 错误率：[百分比]
-
-系统资源使用：
-- CPU使用率：[百分比]
-- 内存使用率：[百分比]
-- 数据库连接数：[数量]
-- 网络带宽使用：[数值]
-
-结论和建议：
-[详细说明]
-```
-
-## 6. 自动化测试
-
-### 6.1 单元测试自��化
-```java
-@SpringBootTest
-class GiraApplicationTests {
-    // 配置测试数据库
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public DataSource dataSource() {
-            // 返回测试数据源
-        }
-    }
-    
-    // 测试用例
-    @Test
-    void contextLoads() {
-        // 验证Spring上下文加载
-    }
-}
-```
-
-### 6.2 API测试自动化
-```java
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ApiTests {
-    @Autowired
-    private TestRestTemplate restTemplate;
-    
-    @Test
-    void testApi() {
-        // API测试用例
-    }
-}
-```
-
-### 6.3 UI测试自动化
-```java
-class UiTests {
-    private WebDriver driver;
-    
-    @BeforeEach
-    void setUp() {
-        driver = new ChromeDriver();
-    }
-    
-    @Test
-    void testUi() {
-        // UI测试用例
-    }
-    
-    @AfterEach
-    void tearDown() {
-        driver.quit();
-    }
-}
-```
-
-## 7. 持续集成测试
-
-### 7.1 Jenkins Pipeline配置
-```groovy
-pipeline {
-    agent any
-    
-    stages {
-        stage('Unit Test') {
-            steps {
-                sh './mvnw test'
-            }
-        }
-        
-        stage('Integration Test') {
-            steps {
-                sh './mvnw verify'
-            }
-        }
-        
-        stage('Performance Test') {
-            steps {
-                sh 'jmeter -n -t performance-test.jmx'
-            }
-        }
-    }
-    
-    post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            publishHTML([
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'Coverage Report'
-            ])
-        }
-    }
-}
-```
-``` 

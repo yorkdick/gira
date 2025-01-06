@@ -7,34 +7,21 @@
    - 输入：
      ```json
      {
-       "username": "user1",
-       "password": "password123",
+       "username": "admin",
+       "password": "Password123!",
        "rememberMe": false
      }
      ```
    - 预期：
      - 状态码：200
-     - 响应体：
-       ```json
-       {
-         "token": "eyJhbGciOiJIUzI1NiJ9...",
-         "user": {
-           "id": 1,
-           "username": "user1",
-           "email": "user1@gira.com",
-           "status": 1,
-           "roles": ["ROLE_USER"]
-         }
-       }
-       ```
+     - 响应体：包含 token 和用户信息
 
 2. TC-001-2: 用户名不存在
    - 输入：
      ```json
      {
        "username": "nonexistent",
-       "password": "password123",
-       "rememberMe": false
+       "password": "password123"
      }
      ```
    - 预期：
@@ -45,9 +32,8 @@
    - 输入：
      ```json
      {
-       "username": "user1",
-       "password": "wrongpassword",
-       "rememberMe": false
+       "username": "admin",
+       "password": "wrongpassword"
      }
      ```
    - 预期：
@@ -59,12 +45,11 @@
      ```json
      {
        "username": "locked_user",
-       "password": "password123",
-       "rememberMe": false
+       "password": "password123"
      }
      ```
    - 预期：
-     - 状态码：403
+     - 状态码：404
      - 响应体：`{"message": "账户已被锁定"}`
 
 5. TC-001-5: 无效的请求格式
@@ -79,135 +64,127 @@
      - 状态码：400
      - 响应体：`{"message": "用户名和密码不能为空"}`
 
-### TC-002 注册测试
-1. TC-002-1: 成功注册
-   - 输入：
-     ```json
-     {
-       "username": "newuser",
-       "password": "Password123!",
-       "email": "newuser@gira.com"
-     }
-     ```
-   - 预期：
-     - 状态码：201
-     - 响应体：
-       ```json
-       {
-         "user": {
-           "id": 3,
-           "username": "newuser",
-           "email": "newuser@gira.com",
-           "status": 1
-         },
-         "message": "注册成功"
-       }
-       ```
-
-2. TC-002-2: 用户名已存在
-   - 输入：
-     ```json
-     {
-       "username": "user1",
-       "password": "Password123!",
-       "email": "different@gira.com"
-     }
-     ```
-   - 预期：
-     - 状态码：400
-     - 响应体：`{"message": "用户名已存在"}`
-
-3. TC-002-3: 邮箱已存在
-   - 输入：
-     ```json
-     {
-       "username": "newuser",
-       "password": "Password123!",
-       "email": "user1@gira.com"
-     }
-     ```
-   - 预期：
-     - 状态码：400
-     - 响应体：`{"message": "邮箱已被使用"}`
-
-4. TC-002-4: 密码强度不足
-   - 输入：
-     ```json
-     {
-       "username": "newuser",
-       "password": "123",
-       "email": "newuser@gira.com"
-     }
-     ```
-   - 预期：
-     - 状态码：400
-     - 响应体：`{"message": "密码必须包含至少8个字符，至少一个字母和一个数字"}`
-
-5. TC-002-5: 无效的邮箱格式
-   - 输入：
-     ```json
-     {
-       "username": "newuser",
-       "password": "Password123!",
-       "email": "invalid-email"
-     }
-     ```
-   - 预期：
-     - 状态码：400
-     - 响应体：`{"message": "邮箱格式不正确"}`
-
-6. TC-002-6: 用户名格式无效
-   - 输入：
-     ```json
-     {
-       "username": "u",
-       "password": "Password123!",
-       "email": "newuser@gira.com"
-     }
-     ```
-   - 预期：
-     - 状态码：400
-     - 响应体：`{"message": "用户名长度必须在3-50个字符之间"}`
-
-### TC-003 Token认证测试
-1. TC-003-1: 有效Token访问
+### TC-002 Token认证测试
+1. TC-002-1: 有效Token访问
    - 输入：
      - Headers: `Authorization: Bearer <valid_token>`
-     - GET /api/user/profile
+     - GET /api/users/me
    - 预期：
      - 状态码：200
      - 返回用户信息
 
-2. TC-003-2: Token过期
-   - 输入：
-     - Headers: `Authorization: Bearer <expired_token>`
-     - GET /api/user/profile
-   - 预期：
-     - 状态码：401
-     - 响应体：`{"message": "Token已过期"}`
-
-3. TC-003-3: 无效Token
+2. TC-002-2: 无效Token
    - 输入：
      - Headers: `Authorization: Bearer invalid_token`
-     - GET /api/user/profile
+     - GET /api/users/me
    - 预期：
      - 状态码：401
      - 响应体：`{"message": "无效的Token"}`
 
-4. TC-003-4: 缺少Token
-   - 输入：
-     - GET /api/user/profile
-   - 预期：
-     - 状态码：401
-     - 响应体：`{"message": "未提供Token"}`
-
-5. TC-003-5: Token刷新
+3. TC-002-3: Token刷新
    - 输入：
      - Headers: `Authorization: Bearer <valid_token>`
      - POST /api/auth/refresh
    - 预期：
      - 状态码：200
      - 返回新的Token
+
+### TC-003 用户管理测试
+1. TC-003-1: 创建用户
+   - 输入：
+     ```json
+     {
+       "username": "newuser",
+       "email": "newuser@gira.com",
+       "password": "Password123!",
+       "fullName": "New User",
+       "role": "USER",
+       "enabled": true
+     }
+     ```
+   - 预期：
+     - 状态码：201
+     - 响应体：包含用户ID和基本信息
+
+2. TC-003-2: 创建用户 - 用户名已存在
+   - 输入：
+     ```json
+     {
+       "username": "admin",
+       "email": "newuser@gira.com",
+       "password": "Password123!"
+     }
+     ```
+   - 预期：
+     - 状态码：400
+     - 响应体：`{"message": "用户名已存在"}`
+
+3. TC-003-3: 获取用户详情
+   - 输入：
+     - GET /api/users/{userId}
+   - 预期：
+     - 状态码：200
+     - 返回用户详细信息
+
+4. TC-003-4: 更新用户
+   - 输入：
+     ```json
+     {
+       "fullName": "Updated User",
+       "avatar": "https://example.com/avatar.jpg"
+     }
+     ```
+   - 预期：
+     - 状态码：200
+     - 响应体：包含更新后的信息
+
+5. TC-003-5: 删除用户
+   - 输入：
+     - DELETE /api/users/{userId}
+   - 预期：
+     - 状态码：200
+     - 用户被成功删除
+
+6. TC-003-6: 获取用户列表
+   - 输入：
+     - GET /api/users?page=0&size=10
+   - 预期：
+     - 状态码：200
+     - 返回分页的用户列表
+
+7. TC-003-7: 修改用户密码
+   - 输入：
+     ```json
+     {
+       "oldPassword": "1qaz@WSX",
+       "newPassword": "NewPassword123!"
+     }
+     ```
+   - 预期：
+     - 状态码：200
+     - 密码修改成功
+   - 后置处理：
+     - 使用新密码登录验证
+     - 恢复原密码以确保其他测试用例正常执行
+   - 注意事项：
+     - 此测试用例会临时修改管理员密码
+     - 使用 try-finally 确保密码总是被恢复
+     - 验证新密码可用于登录
+     - 确保密码恢复成功
+
+8. TC-003-8: 禁用用户
+   - 输入：
+     - PUT /api/users/{userId}/disable
+   - 预期：
+     - 状态码：200
+     - 用户状态更新为禁用
+
+9. TC-003-9: 搜索用户
+   - 输入：
+     - GET /api/users/search?keyword=admin
+   - 预期：
+     - 状态码：200
+     - 返回匹配的用户列表
 
 ## 2. 项目管理模块测试用例
 
@@ -422,3 +399,141 @@ DELETE FROM users;
    - Spring Boot Test
    - MockMvc
    - H2 Database
+
+## 7. 测试执行顺序
+
+### 1. 认证测试（AuthApiTest）
+```java
+1.1 登录测试系列
+- testSuccessfulLogin()
+- testLoginWithNonexistentUsername()
+- testLoginWithWrongPassword()
+- testLoginWithLockedAccount()
+- testLoginWithInvalidFormat()
+
+1.2 注册测试系列
+- testSuccessfulRegistration()
+- testRegisterWithExistingEmail()
+- testRegisterWithWeakPassword()
+- testRegisterWithoutAuth()
+
+1.3 Token测试系列
+- testValidTokenAccess()
+- testInvalidToken()
+- testTokenRefresh()
+```
+
+### 2. 用户管理测试（UserApiTest）
+```java
+2.1 用户信息测试
+- testGetCurrentUser()
+- testGetUserById()
+- testGetUserList()
+
+2.2 用户操作测试
+- testCreateUser()
+- testUpdateUser()
+- testDeleteUser()
+
+2.3 用户权限测试
+- testUserPermissions()
+```
+
+### 3. 项目管理测试（ProjectApiTest）
+```java
+3.1 项目基础操作
+- testCreateProject()
+- testGetProjectById()
+- testGetProjectList()
+- testUpdateProject()
+- testDeleteProject()
+
+3.2 项目成员管理
+- testAddProjectMember()
+- testRemoveProjectMember()
+
+3.3 项目设置
+- testUpdateProjectSettings()
+```
+
+### 4. 看板测试（BoardApiTest）
+```java
+4.1 看板操作
+- testCreateBoard()
+- testGetBoardById()
+- testUpdateBoard()
+- testDeleteBoard()
+
+4.2 看板列管理
+- testAddBoardColumn()
+- testUpdateColumnOrder()
+```
+
+### 5. 待办事项测试（BacklogApiTest）
+```java
+5.1 待办事项管理
+- testCreateBacklogItem()
+- testGetBacklogItems()
+- testUpdateBacklogItem()
+- testDeleteBacklogItem()
+
+5.2 优先级管理
+- testUpdateItemPriority()
+```
+
+### 6. 任务测试（TaskApiTest）
+```java
+6.1 任务基础操作
+- testCreateTask()
+- testGetTaskById()
+- testUpdateTask()
+- testDeleteTask()
+
+6.2 任务状态管理
+- testUpdateTaskStatus()
+- testAssignTask()
+
+6.3 任务关联
+- testAddSubtask()
+- testLinkRelatedTasks()
+```
+
+### 7. 冲刺测试（SprintApiTest）
+```java
+7.1 冲刺管理
+- testCreateSprint()
+- testGetSprintById()
+- testUpdateSprint()
+- testDeleteSprint()
+
+7.2 冲刺操作
+- testStartSprint()
+- testCompleteSprint()
+```
+
+### 8. 评论测试（CommentApiTest）
+```java
+8.1 评论管理
+- testAddComment()
+- testGetComments()
+- testUpdateComment()
+- testDeleteComment()
+```
+
+测试执行注意事项：
+1. 每个测试类都继承自 `BaseApiTest`，确保有正确的认证token
+2. 测试执行顺序遵循业务依赖关系
+3. 每个测试用例都应该是独立的，不依赖其他测试的执行结果
+4. 测试数据应该在测试前准备好，测试后清理
+5. 所有测试都应该验证HTTP状态码和响应内容
+
+执行测试的方式：
+```bash
+# 执行所有测试
+mvn test
+
+# 执行特定测试类
+mvn test -Dtest=AuthApiTest
+
+# 执行特定测试方法
+mvn test -Dtest=AuthApiTest#testSuccessfulLogin

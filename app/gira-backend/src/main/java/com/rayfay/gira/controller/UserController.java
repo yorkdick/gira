@@ -1,6 +1,7 @@
 package com.rayfay.gira.controller;
 
 import com.rayfay.gira.dto.UserDto;
+import com.rayfay.gira.dto.auth.ChangePasswordRequest;
 import com.rayfay.gira.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -56,25 +57,34 @@ public class UserController {
     }
 
     @Operation(summary = "Enable user")
-    @PatchMapping("/{id}/enable")
+    @PutMapping("/{id}/enable")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> enableUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.enableUser(id));
     }
 
     @Operation(summary = "Disable user")
-    @PatchMapping("/{id}/disable")
+    @PutMapping("/{id}/disable")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> disableUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.disableUser(id));
     }
 
     @Operation(summary = "Change password")
-    @PatchMapping("/{id}/password")
+    @PutMapping("/{id}/password")
     @PreAuthorize("hasRole('ADMIN') or @userService.isCurrentUser(#id)")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestParam String oldPassword,
-            @RequestParam String newPassword) {
-        userService.changePassword(id, oldPassword, newPassword);
+    public ResponseEntity<Void> changePassword(@PathVariable Long id,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(id, request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Search users")
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<UserDto>> searchUsers(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+        return ResponseEntity.ok(userService.searchUsers(keyword, pageable));
     }
 }

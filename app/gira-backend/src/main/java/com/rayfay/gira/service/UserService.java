@@ -29,4 +29,6 @@ public interface UserService extends UserDetailsService {
     void changePassword(Long id, String oldPassword, String newPassword);
 
     UserDto createUser(UserDto userDto);
+
+    Page<UserDto> searchUsers(String keyword, Pageable pageable);
 }

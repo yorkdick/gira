@@ -1,5 +1,6 @@
 package com.rayfay.gira.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rayfay.gira.api.dto.LoginRequest;
@@ -11,20 +12,19 @@ import lombok.extern.slf4j.Slf4j;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-public abstract class BaseApiTest {
-    protected static final String BASE_URL = "http://localhost:8088/api/v1";
-    protected final RestTemplate restTemplate = new RestTemplate();
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+public class BaseApiTest {
+    protected static final String BASE_URL = "http://localhost:8080/api/v1";
+    protected static final RestTemplate restTemplate = new RestTemplate();
+    protected static final ObjectMapper objectMapper = new ObjectMapper();
     protected String token;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() throws JsonProcessingException {
         try {
             // 登录获取token
             LoginRequest loginRequest = new LoginRequest();
             loginRequest.setUsername("admin");
-            loginRequest.setPassword("1qaz@WSX");
-            loginRequest.setRememberMe(false);
+            loginRequest.setPassword("NewPassword123!");
 
             log.info("Attempting to login with credentials: {}", loginRequest);
 

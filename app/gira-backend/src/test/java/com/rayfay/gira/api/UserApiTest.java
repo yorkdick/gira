@@ -1,32 +1,34 @@
 package com.rayfay.gira.api;
 
+import com.rayfay.gira.api.dto.LoginRequest;
 import com.rayfay.gira.api.dto.UserRequest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Order;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserApiTest extends BaseApiTest {
+@Order(2)
+class UserApiTest extends AuthenticatedApiTest {
 
     @Test
     void testCreateUser() {
         // TC-004-1: 创建用户
         UserRequest request = new UserRequest();
-        request.setUsername("newuser");
-        request.setEmail("newuser@gira.com");
+        request.setUsername("newuser" + System.currentTimeMillis());
+        request.setEmail("newuser" + System.currentTimeMillis() + "@gira.com");
         request.setPassword("Password123!");
         request.setFullName("New User");
         request.setRole("USER");
         request.setEnabled(true);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<UserRequest> entity = new HttpEntity<>(request, headers);
-
         ResponseEntity<String> response = restTemplate.postForEntity(
-                BASE_URL + "/users",
-                entity,
+                BASE_URL + "/auth/register",
+                createJsonAuthEntity(request),
                 String.class);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -38,40 +40,32 @@ class UserApiTest extends BaseApiTest {
     void testCreateUserWithExistingUsername() {
         // TC-004-2: 创建用户 - 用户名已存在
         UserRequest request = new UserRequest();
-        request.setUsername("user1");
-        request.setEmail("newuser@gira.com");
+        request.setUsername("admin");
+        request.setEmail("newuser" + System.currentTimeMillis() + "@gira.com");
         request.setPassword("Password123!");
         request.setFullName("New User");
         request.setRole("USER");
         request.setEnabled(true);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<UserRequest> entity = new HttpEntity<>(request, headers);
-
         try {
             restTemplate.postForEntity(
-                    BASE_URL + "/users",
-                    entity,
+                    BASE_URL + "/auth/register",
+                    createJsonAuthEntity(request),
                     String.class);
             fail("Expected HttpClientErrorException.BadRequest");
         } catch (HttpClientErrorException e) {
             assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
-            assertTrue(e.getResponseBodyAsString().contains("用户名已存在"));
+            assertTrue(e.getResponseBodyAsString().contains("Username is already taken"));
         }
     }
 
     @Test
     void testGetUserDetails() {
         // TC-004-3: 获取用户详情
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE_URL + "/users/1",
                 HttpMethod.GET,
-                entity,
+                createAuthEntity(),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -87,14 +81,10 @@ class UserApiTest extends BaseApiTest {
         request.setFullName("Updated User");
         request.setAvatar("https://example.com/avatar.jpg");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<UserRequest> entity = new HttpEntity<>(request, headers);
-
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE_URL + "/users/2",
                 HttpMethod.PUT,
-                entity,
+                createJsonAuthEntity(request),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -104,30 +94,46 @@ class UserApiTest extends BaseApiTest {
     @Test
     void testDeleteUser() {
         // TC-004-5: 删除用户
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
+        // 先创建一个新用户
+        UserRequest createRequest = new UserRequest();
+        createRequest.setUsername("userToDelete" + System.currentTimeMillis());
+        createRequest.setEmail("userToDelete" + System.currentTimeMillis() + "@gira.com");
+        createRequest.setPassword("Password123!");
+        createRequest.setFullName("User To Delete");
+        createRequest.setRole("USER");
+        createRequest.setEnabled(true);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/users/3",
-                HttpMethod.DELETE,
-                entity,
+        ResponseEntity<String> createResponse = restTemplate.postForEntity(
+                BASE_URL + "/auth/register",
+                createJsonAuthEntity(createRequest),
                 String.class);
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, createResponse.getStatusCode());
+        assertTrue(createResponse.getBody().contains("id"));
+
+        // 从响应中提取用户ID
+        String responseBody = createResponse.getBody();
+        int idStart = responseBody.indexOf("\"id\":") + 5;
+        int idEnd = responseBody.indexOf(",", idStart);
+        String userId = responseBody.substring(idStart, idEnd);
+
+        // 删除创建的用户
+        ResponseEntity<String> deleteResponse = restTemplate.exchange(
+                BASE_URL + "/users/" + userId,
+                HttpMethod.DELETE,
+                createAuthEntity(),
+                String.class);
+
+        assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
     }
 
     @Test
     void testGetUserList() {
         // TC-004-6: 获取用户列表
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE_URL + "/users",
                 HttpMethod.GET,
-                entity,
+                createAuthEntity(),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -138,57 +144,77 @@ class UserApiTest extends BaseApiTest {
     @Test
     void testChangeUserPassword() {
         // TC-004-7: 修改用户密码
-        UserRequest request = new UserRequest();
-        request.setPassword("NewPassword123!");
+        String oldPassword = "NewPassword123!";
+        String newPassword = "1qaz@WSX";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<UserRequest> entity = new HttpEntity<>(request, headers);
+        try {
+            // 1. 修改密码
+            Map<String, String> changeRequest = new HashMap<>();
+            changeRequest.put("oldPassword", oldPassword);
+            changeRequest.put("newPassword", newPassword);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/users/2/password",
-                HttpMethod.PUT,
-                entity,
-                String.class);
+            ResponseEntity<String> changeResponse = restTemplate.exchange(
+                    BASE_URL + "/users/1/password",
+                    HttpMethod.PUT,
+                    createJsonAuthEntity(changeRequest),
+                    String.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals(HttpStatus.OK, changeResponse.getStatusCode());
+
+            // 2. 使用新密码登录验证
+            LoginRequest loginRequest = new LoginRequest();
+            loginRequest.setUsername("admin");
+            loginRequest.setPassword(newPassword);
+
+            ResponseEntity<String> loginResponse = restTemplate.postForEntity(
+                    BASE_URL + "/auth/login",
+                    loginRequest,
+                    String.class);
+
+            assertEquals(HttpStatus.OK, loginResponse.getStatusCode());
+            assertTrue(loginResponse.getBody().contains("token"));
+
+        } finally {
+            // 3. 恢复原密码
+            Map<String, String> restoreRequest = new HashMap<>();
+            restoreRequest.put("oldPassword", newPassword);
+            restoreRequest.put("newPassword", oldPassword);
+
+            ResponseEntity<String> restoreResponse = restTemplate.exchange(
+                    BASE_URL + "/users/1/password",
+                    HttpMethod.PUT,
+                    createJsonAuthEntity(restoreRequest),
+                    String.class);
+
+            assertEquals(HttpStatus.OK, restoreResponse.getStatusCode());
+        }
     }
 
     @Test
     void testDisableUser() {
         // TC-004-8: 禁用用户
-        UserRequest request = new UserRequest();
-        request.setEnabled(false);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<UserRequest> entity = new HttpEntity<>(request, headers);
-
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/users/2/status",
+                BASE_URL + "/users/2/disable",
                 HttpMethod.PUT,
-                entity,
+                createAuthEntity(),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().contains("\"enabled\":false"));
+        assertTrue(response.getBody().contains("\"status\":0"));
     }
 
     @Test
     void testSearchUsers() {
         // TC-004-9: 搜索用户
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE_URL + "/users/search?keyword=user&role=USER",
+                BASE_URL + "/users/search?keyword=admin",
                 HttpMethod.GET,
-                entity,
+                createAuthEntity(),
                 String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("content"));
         assertTrue(response.getBody().contains("totalElements"));
+        assertTrue(response.getBody().contains("admin"));
     }
 }
