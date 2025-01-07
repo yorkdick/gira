@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rayfay.gira.api.dto.LoginRequest;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -12,14 +13,15 @@ import lombok.extern.slf4j.Slf4j;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BaseApiTest {
     protected static final String BASE_URL = "http://localhost:8080/api/v1";
     protected static final RestTemplate restTemplate = new RestTemplate();
     protected static final ObjectMapper objectMapper = new ObjectMapper();
     protected String token;
 
-    @BeforeEach
-    void setUp() throws JsonProcessingException {
+    @BeforeAll
+    void initToken() throws JsonProcessingException {
         try {
             // 登录获取token
             LoginRequest loginRequest = new LoginRequest();

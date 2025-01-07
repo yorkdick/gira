@@ -35,7 +35,7 @@ public class Project {
 
     @ManyToMany
     @JoinTable(name = "project_members", joinColumns = @JoinColumn(name = "project_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> members = new HashSet<>();
+    private Set<User> members;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -47,4 +47,15 @@ public class Project {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    public Project() {
+        this.members = new HashSet<>();
+    }
+
+    public Set<User> getMembers() {
+        if (members == null) {
+            members = new HashSet<>();
+        }
+        return members;
+    }
 }

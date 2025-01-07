@@ -12,43 +12,23 @@
 - 方法和变量名使用 camelCase（如 findUserById、isOrderValid）。
 - 常量使用 ALL_CAPS（如 MAX_RETRY_ATTEMPTS、DEFAULT_PAGE_SIZE）。
 
-配置与属性管理
-- 使用 application.properties 或 application.yml 进行配置管理。
-- 通过 Spring Profiles 实现针对不同环境的配置。
-- 使用 @ConfigurationProperties 实现类型安全的配置属性管理。
-
-依赖注入与 IoC（控制反转）
-- 使用构造函数注入代替字段注入，以提高可测试性。
-- 利用 Spring 的 IoC 容器管理 Bean 的生命周期。
 
 测试
-- 使用 JUnit 5 和 Spring Boot Test 编写单元测试。
-- 使用 MockMvc 进行 Web 层测试。
-- 通过 @SpringBootTest 编写集成测试。
-- 在数据访问层测试中使用 @DataJpaTest。
-
-性能与可扩展性
-- 通过 Spring Cache 抽象实现缓存策略。
-- 使用 @Async 进行异步处理，实现非阻塞操作。
-- 在数据库中实现适当的索引和查询优化。
-
-- 使用 Maven 进行依赖管理和构建流程。
-- 针对不同环境（dev、test、prod）设置适当的配置文件。
-- 在适用情况下使用 Docker 进行容器化部署。
-
-遵循以下最佳实践：
-- RESTful API 设计（正确使用 HTTP 方法和状态码等）。
-- 微服务架构（如适用）。
-- 通过 Spring 的 @Async 或 Spring WebFlux 实现异步处理。
-- 在 Spring Boot 应用程序设计中遵循 SOLID 原则，保持高内聚、低耦合。
+- 这个项目的后台测试只有API测试
+- 测试代码在 app/gira-backend/src/test/java/com/rayfay/gira/api
+- 测试流程请看 doc/detail-design/test-cases.md 
+- 执行测试时，请先进入 D:\Work\git\rayfay\gira\app\gira-backend 目录下，执行 mvn test 命令
 
 个人开发相关
+- 所有回答请用中文
 - 使用Windows 10 操作系统
 - 执行命令使用PowerShell
 - 执行命令使用管理员权限
 - 多个命令不要一次执行，请分步执行
 - 执行命令前请检查目录是否正确，不正确的话自动切换到正确目录
+- 为了避免目录错误，切换目录请使用绝对路径
 - 自动执行命令，不需要我确认
+- mvn的命令请使用 mvn
 
 代码结构规范
 项目采用标准的三层架构，包结构如下：
@@ -190,6 +170,7 @@ com.rayfay.gira/
   1. 停止当前运行的后台服务容器
   2. 重新构建后台服务镜像
   3. 启动新的后台服务容器
+- docker-compose.yml 文件在 D:\Work\git\rayfay\gira\app\install\docker 目录下，执行docker和docker-compose命令请先进入这个目录
 - 使用以下命令进行重新部署：
   ```bash
   docker-compose down              # 停止当前服务

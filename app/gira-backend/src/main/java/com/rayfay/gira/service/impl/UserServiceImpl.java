@@ -73,9 +73,9 @@ public class UserServiceImpl implements UserService {
         if (userDto.getStatus() > 0) {
             user.setStatus(userDto.getStatus());
         }
-        if (userDto.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        }
+        // if (userDto.getPassword() != null) {
+        // user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        // }
 
         user = userRepository.save(user);
         return clearPassword(userMapper.toDto(user));

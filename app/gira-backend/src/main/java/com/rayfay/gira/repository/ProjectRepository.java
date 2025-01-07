@@ -17,5 +17,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Optional<Project> findByKey(String key);
 
+    Optional<Project> findByName(String name);
+
     Page<Project> findByMembersContaining(User user, Pageable pageable);
 }

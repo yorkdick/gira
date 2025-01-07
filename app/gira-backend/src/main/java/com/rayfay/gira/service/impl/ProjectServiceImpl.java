@@ -29,10 +29,56 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDto createProject(ProjectDto projectDto) {
+        // Check if project name already exists
+        if (projectRepository.findByName(projectDto.getName()).isPresent()) {
+            throw new IllegalArgumentException("项目名称已存在");
+        }
+
         Project project = projectMapper.toEntity(projectDto);
         project.setStatus(1); // Set default status
+
+        // Generate project key if not provided
+        if (project.getKey() == null || project.getKey().isEmpty()) {
+            String key = generateProjectKey(project.getName());
+            project.setKey(key);
+        }
+
+        // Set current user as project owner
+        UserDto currentUser = userService.getCurrentUser();
+        User owner = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        project.setOwner(owner);
+
+        // Add owner to members
+        project.getMembers().add(owner);
+
         project = projectRepository.save(project);
         return projectMapper.toDto(project);
+    }
+
+    private String generateProjectKey(String projectName) {
+        if (projectName == null || projectName.trim().isEmpty()) {
+            return "PRJ";
+        }
+        // Generate key from project name (first 3 letters uppercase)
+        String baseKey = projectName.replaceAll("[^a-zA-Z0-9]", "")
+                .toUpperCase();
+
+        // If the baseKey is empty after removing non-alphanumeric characters
+        if (baseKey.isEmpty()) {
+            baseKey = "PRJ";
+        } else {
+            // Take first 3 characters, or all if less than 3
+            baseKey = baseKey.substring(0, Math.min(3, baseKey.length()));
+        }
+
+        // Find next available key
+        String key = baseKey;
+        int suffix = 1;
+        while (projectRepository.findByKey(key).isPresent()) {
+            key = baseKey + suffix++;
+        }
+        return key;
     }
 
     @Override
@@ -90,10 +136,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public void deleteProject(Long id) {
-        Project project = projectRepository.findById(id)
+        projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-        project.setDeletedAt(LocalDateTime.now());
-        projectRepository.save(project);
+        projectRepository.deleteById(id);
+        // projectRepository.save(project);
     }
 
     @Override
