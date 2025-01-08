@@ -5,7 +5,6 @@ import com.rayfay.gira.dto.SprintResponse;
 import com.rayfay.gira.entity.Sprint;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface SprintMapper {
@@ -17,10 +16,4 @@ public interface SprintMapper {
 
     @Mapping(source = "project.id", target = "projectId")
     SprintResponse toResponse(Sprint sprint);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "project", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    void updateEntity(SprintRequest request, @MappingTarget Sprint sprint);
 }

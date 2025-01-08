@@ -1,38 +1,5 @@
-你是Java 编程、Spring Boot、Spring Framework、Maven、JUnit 及相关 Java 技术的专家。
-
-代码风格与结构
-- 编写简洁、高效且文档完善的 Java 代码，并提供准确的 Spring Boot 示例。
-- 在代码中贯彻 Spring Boot 的最佳实践和规范。
-- 创建 Web 服务时，实现 RESTful API 设计模式。
-- 使用符合 camelCase 规范的描述性方法和变量名。
-- 按照以下结构组织 Spring Boot 应用程序：控制器（controllers）、服务层（services）、数据访问层（repositories）、模型层（models）、配置层（configurations）。
-
-命名约定
-- 类名使用 PascalCase（如 UserController、OrderService）。
-- 方法和变量名使用 camelCase（如 findUserById、isOrderValid）。
-- 常量使用 ALL_CAPS（如 MAX_RETRY_ATTEMPTS、DEFAULT_PAGE_SIZE）。
-
-
-测试
-- 这个项目的后台测试只有API测试
-- 测试代码在 app/gira-backend/src/test/java/com/rayfay/gira/api
-- 测试流程请看 doc/detail-design/test-cases.md 
-- 执行测试时，请先进入 D:\Work\git\rayfay\gira\app\gira-backend 目录下，执行 mvn test 命令
-
-个人开发相关
-- 所有回答请用中文
-- 使用Windows 10 操作系统
-- 执行命令使用PowerShell
-- 执行命令使用管理员权限
-- 多个命令不要一次执行，请分步执行
-- 执行命令前请检查目录是否正确，不正确的话自动切换到正确目录
-- 为了避免目录错误，切换目录请使用绝对路径
-- 自动执行命令，不需要我确认
-- mvn的命令请使用 mvn
-
 代码结构规范
 项目采用标准的三层架构，包结构如下：
-
 com.rayfay.gira/
 ├── auth/           # 认证授权相关
 ├── config/         # 配置类
@@ -177,3 +144,40 @@ com.rayfay.gira/
   docker-compose build backend # 重新构建后台服务
   docker-compose up -d             # 启动服务
   ```
+
+代码风格与结构
+- 编写简洁、高效且文档完善的 Java 代码，并提供准确的 Spring Boot 示例。
+- 在代码中贯彻 Spring Boot 的最佳实践和规范。
+- 创建 Web 服务时，实现 RESTful API 设计模式。
+- 使用符合 camelCase 规范的描述性方法和变量名。
+- 按照以下结构组织 Spring Boot 应用程序：控制器（controllers）、服务层（services）、数据访问层（repositories）、模型层（models）、配置层（configurations）。
+
+命名约定
+- 类名使用 PascalCase（如 UserController、OrderService）。
+- 方法和变量名使用 camelCase（如 findUserById、isOrderValid）。
+- 常量使用 ALL_CAPS（如 MAX_RETRY_ATTEMPTS、DEFAULT_PAGE_SIZE）。
+
+个人开发相关
+- 所有回答请用中文
+- 使用Windows 10 操作系统
+- 执行命令使用PowerShell
+- 多个命令之间使用';'连接
+- 执行命令前请检查目录是否正确，不正确的话自动切换到正确目录
+- 为了避免目录错误，切换目录请使用绝对路径
+- 自动执行命令，不需要我确认
+- mvn的命令请使用 mvn
+
+
+测试
+- 这个项目的后台测试只有API测试
+- 测试代码在 app/gira-backend/src/test/java/com/rayfay/gira/api
+- 测试流程请看 doc/detail-design/test-cases.md 
+- 执行测试时，请先进入 D:\Work\git\rayfay\gira\app\gira-backend 目录下，执行 mvn test 命令
+
+测试问题修复
+- 测试过程中，如果发现问题，请先修复问题，然后重新执行测试
+- 优先查看后台日志，请执行以下命令：
+  cd "D:\Work\git\rayfay\gira\app\install\docker"
+  docker logs gira-backend --tail 300
+- 优先修改测试代码，然后修改后台代码
+- 修改后台代码后，请重新执行测试

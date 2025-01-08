@@ -15,4 +15,6 @@ public interface SprintService {
     SprintResponse startSprint(Long id);
 
     SprintResponse completeSprint(Long id);
+
+    void deleteSprint(Long id);
 }

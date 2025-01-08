@@ -4,13 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.*;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 @Order(7)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -18,13 +21,18 @@ class SprintApiTest extends AuthenticatedApiTest {
 
     private Long projectId;
     private Long sprintId;
+    private static final String TEST_PROJECT_NAME = "Test Project " + UUID.randomUUID().toString();
+    private static final String TEST_PROJECT_KEY = "TEST" + UUID.randomUUID().toString().substring(0, 5);
 
-    @BeforeEach
+    @BeforeAll
     void init() {
+        // 先清理可能存在的测试数据
+        cleanup();
+
         // 创建测试项目
         Map<String, Object> projectRequest = new HashMap<>();
-        projectRequest.put("name", "Test Project");
-        projectRequest.put("key", "TEST");
+        projectRequest.put("name", TEST_PROJECT_NAME);
+        projectRequest.put("key", TEST_PROJECT_KEY);
         projectRequest.put("description", "Test Project Description");
         Map<String, Object> owner = new HashMap<>();
         owner.put("id", 1L);
@@ -49,15 +57,66 @@ class SprintApiTest extends AuthenticatedApiTest {
         }
     }
 
-    @AfterEach
+    @AfterAll
     void cleanup() {
-        // 删除测试项目
-        if (projectId != null) {
-            restTemplate.exchange(
-                    BASE_URL + "/projects/" + projectId,
-                    HttpMethod.DELETE,
+        try {
+            // 获取项目列表并查找测试项目
+            ResponseEntity<String> response = restTemplate.exchange(
+                    BASE_URL + "/projects?page=0&size=100",
+                    HttpMethod.GET,
                     createAuthEntity(),
                     String.class);
+
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            JsonNode content = jsonNode.get("content");
+            if (content.isArray()) {
+                for (JsonNode project : content) {
+                    if (project.get("name").asText().startsWith("Test Project ")) {
+                        Long pid = project.get("id").asLong();
+
+                        // 1. 先获取项目的所有sprint
+                        ResponseEntity<String> sprintsResponse = restTemplate.exchange(
+                                BASE_URL + "/projects/" + pid + "/sprints",
+                                HttpMethod.GET,
+                                createAuthEntity(),
+                                String.class);
+
+                        // 2. 删除所有sprint
+                        JsonNode sprintsJson = objectMapper.readTree(sprintsResponse.getBody());
+                        JsonNode sprintsContent = sprintsJson.get("content");
+                        if (sprintsContent.isArray()) {
+                            for (JsonNode sprint : sprintsContent) {
+                                Long sprintId = sprint.get("id").asLong();
+                                try {
+                                    restTemplate.exchange(
+                                            BASE_URL + "/sprints/" + sprintId,
+                                            HttpMethod.DELETE,
+                                            createAuthEntity(),
+                                            String.class);
+                                    log.info("Deleted sprint with id: {}", sprintId);
+                                } catch (Exception e) {
+                                    log.error("Error deleting sprint {}: {}", sprintId, e.getMessage());
+                                }
+                            }
+                        }
+
+                        // 3. 删除项目
+                        try {
+                            restTemplate.exchange(
+                                    BASE_URL + "/projects/" + pid,
+                                    HttpMethod.DELETE,
+                                    createAuthEntity(),
+                                    String.class);
+                            log.info("Deleted test project with id: {}", pid);
+                        } catch (Exception e) {
+                            log.error("Error deleting project {}: {}", pid, e.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 如果清理失败，记录日志但不影响测试
+            log.error("Error during cleanup: {}", e.getMessage());
         }
     }
 

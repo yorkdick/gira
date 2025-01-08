@@ -30,7 +30,7 @@ public class Sprint {
     @Column(nullable = false, length = 20)
     private String status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id")
     private Project project;
 
