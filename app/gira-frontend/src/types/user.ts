@@ -1,17 +1,15 @@
 // 用户基本信息
 export enum UserRole {
   ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  USER = 'USER',
+  DEVELOPER = 'DEVELOPER',
 }
 
 export interface User {
   id: number;
-  username: string;
   name: string;
   email: string;
-  avatar?: string;
   role: UserRole;
+  avatar?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,18 +33,19 @@ export interface UserListResult {
 // 创建用户参数
 export interface CreateUserParams {
   username: string;
-  name: string;
   email: string;
   password: string;
   role: UserRole;
+  avatar?: string;
 }
 
 // 更新用户参数
 export interface UpdateUserParams {
-  name?: string;
+  username?: string;
   email?: string;
-  avatar?: string;
+  password?: string;
   role?: UserRole;
+  avatar?: string;
 }
 
 export interface UpdatePasswordParams {
@@ -59,4 +58,14 @@ export enum UserStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   LOCKED = 'locked'
+}
+
+export interface LoginParams {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: User;
 } 

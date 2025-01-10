@@ -1,20 +1,20 @@
-import { User } from './user';
+import { Task } from './task';
 
 export enum SprintStatus {
   PLANNING = 'PLANNING',
   ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 
 export interface Sprint {
   id: number;
   name: string;
-  goal: string;
+  description?: string;
   startDate: string;
   endDate: string;
   status: SprintStatus;
-  taskIds: number[];
-  createdBy: User;
+  tasks: Task[];
   createdAt: string;
   updatedAt: string;
 }
@@ -37,16 +37,15 @@ export interface SprintListResult {
 
 export interface CreateSprintParams {
   name: string;
-  goal: string;
+  description?: string;
   startDate: string;
   endDate: string;
 }
 
 export interface UpdateSprintParams {
   name?: string;
-  goal?: string;
+  description?: string;
   startDate?: string;
   endDate?: string;
   status?: SprintStatus;
-  taskIds?: number[];
 } 

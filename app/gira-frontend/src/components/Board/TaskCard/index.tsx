@@ -14,7 +14,6 @@ const priorityColorMap: Record<TaskPriority, string> = {
   [TaskPriority.LOW]: '#52c41a',
   [TaskPriority.MEDIUM]: '#faad14',
   [TaskPriority.HIGH]: '#f5222d',
-  [TaskPriority.URGENT]: '#ff4d4f',
 };
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, index, onClick }) => {

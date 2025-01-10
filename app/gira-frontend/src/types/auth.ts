@@ -1,3 +1,9 @@
+// 用户角色
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  DEVELOPER = 'DEVELOPER'
+}
+
 // 登录请求参数
 export interface LoginParams {
   username: string;
@@ -12,7 +18,7 @@ export interface LoginResult {
     id: number;
     username: string;
     email: string;
-    role: string;
+    role: UserRole;
   };
 }
 
@@ -28,6 +34,7 @@ export interface RegisterResult {
   id: number;
   username: string;
   email: string;
+  role: UserRole;
 }
 
 // 修改密码请求参数
@@ -40,14 +47,15 @@ export interface ChangePasswordParams {
 export interface TokenPayload {
   sub: string; // 用户ID
   username: string;
-  role: string;
+  role: UserRole;
   exp: number; // 过期时间
 }
 
 // 权限相关
-export type Permission = 'read' | 'write' | 'admin';
-
-export interface PermissionConfig {
-  resource: string;
-  actions: Permission[];
+export interface Permission {
+  canManageBoard: boolean;
+  canConfigureWIP: boolean;
+  canManageSprint: boolean;
+  canViewAllTasks: boolean;
+  canUpdateTask: (taskUserId: number) => boolean;
 } 

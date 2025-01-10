@@ -41,6 +41,7 @@ const statusColorMap: Record<SprintStatus, string> = {
   [SprintStatus.PLANNING]: '#faad14',
   [SprintStatus.ACTIVE]: '#52c41a',
   [SprintStatus.COMPLETED]: '#8c8c8c',
+  [SprintStatus.CANCELLED]: '#ff4d4f',
 };
 
 const SprintCard: React.FC<SprintCardProps> = ({
@@ -49,7 +50,6 @@ const SprintCard: React.FC<SprintCardProps> = ({
   onStart,
   onComplete,
   onDelete,
-  tasks,
 }) => {
   const { drop, isOver } = useDropSprint(sprint);
 
@@ -107,7 +107,7 @@ const SprintCard: React.FC<SprintCardProps> = ({
   };
 
   const getSprintTasks = () => {
-    return sprint.taskIds.map(id => tasks[id]).filter(Boolean);
+    return sprint.tasks || [];
   };
 
   return (
@@ -129,7 +129,7 @@ const SprintCard: React.FC<SprintCardProps> = ({
         extra={<Space>{renderActions()}</Space>}
       >
         <div className={styles.content}>
-          <div className={styles.goal}>{sprint.goal}</div>
+          <div className={styles.goal}>{sprint.description}</div>
           <Space className={styles.dates}>
             <Space>
               <CalendarOutlined />

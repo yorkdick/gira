@@ -1,30 +1,38 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from '../index';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { User } from '@/types/user';
 
-interface AuthState {
+export interface AuthState {
+  user: User | null;
   token: string | null;
+  loading: boolean;
 }
 
 const initialState: AuthState = {
-  token: null,
+  user: null,
+  token: localStorage.getItem('token'),
+  loading: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setToken: (state, action) => {
-      state.token = action.payload;
+    setUser: (state, action: PayloadAction<User | null>) => {
+      state.user = action.payload;
     },
-    clearToken: (state) => {
-      state.token = null;
+    setToken: (state, action: PayloadAction<string | null>) => {
+      state.token = action.payload;
+      if (action.payload) {
+        localStorage.setItem('token', action.payload);
+      } else {
+        localStorage.removeItem('token');
+      }
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
   },
 });
 
-export const { setToken, clearToken } = authSlice.actions;
-
-// 选择器
-export const selectIsAuthenticated = (state: RootState) => Boolean(state.auth.token);
-
+export const { setUser, setToken, setLoading } = authSlice.actions;
 export default authSlice.reducer; 

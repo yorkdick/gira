@@ -267,6 +267,128 @@ export const useAsyncHook = () => {
 };
 ```
 
+### 2.4 权限管理实现
+
+#### 2.4.1 角色定义 (types/auth.ts)
+```typescript
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  DEVELOPER = 'DEVELOPER'
+}
+
+export interface User {
+  id: string;
+  username: string;
+  role: UserRole;
+}
+```
+
+#### 2.4.2 权限Hook (hooks/usePermission.ts)
+```typescript
+import { useSelector } from 'react-redux';
+import { UserRole } from '@/types/auth';
+import type { RootState } from '@/store';
+
+export const usePermission = () => {
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const isDeveloper = user?.role === UserRole.DEVELOPER;
+
+  const canManageBoard = isAdmin;
+  const canConfigureWIP = isAdmin;
+  const canManageSprint = isAdmin;
+  const canViewAllTasks = isAdmin;
+  const canUpdateTask = (taskUserId: string) => isAdmin || user?.id === taskUserId;
+
+  return {
+    isAdmin,
+    isDeveloper,
+    canManageBoard,
+    canConfigureWIP,
+    canManageSprint,
+    canViewAllTasks,
+    canUpdateTask,
+  };
+};
+```
+
+#### 2.4.3 权限组件 (components/PermissionGuard/index.tsx)
+```typescript
+import React from 'react';
+import { usePermission } from '@/hooks/usePermission';
+
+interface PermissionGuardProps {
+  children: React.ReactNode;
+  permission: (perms: ReturnType<typeof usePermission>) => boolean;
+}
+
+export const PermissionGuard: React.FC<PermissionGuardProps> = ({
+  children,
+  permission,
+}) => {
+  const permissions = usePermission();
+  return permission(permissions) ? <>{children}</> : null;
+};
+```
+
+#### 2.4.4 使用示例
+```typescript
+// 看板配置组件
+const BoardConfig: React.FC = () => {
+  const { canManageBoard } = usePermission();
+
+  if (!canManageBoard) {
+    return null;
+  }
+
+  return (
+    <div>
+      {/* 看板配置内容 */}
+    </div>
+  );
+};
+
+// 任务列表组件
+const TaskList: React.FC = () => {
+  const { canViewAllTasks } = usePermission();
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  const tasks = useSelector((state: RootState) => state.task.tasks);
+  const filteredTasks = canViewAllTasks 
+    ? tasks 
+    : tasks.filter(task => task.userId === user?.id);
+
+  return (
+    <div>
+      {filteredTasks.map(task => (
+        <TaskCard key={task.id} task={task} />
+      ))}
+    </div>
+  );
+};
+```
+
+### 2.5 权限控制最佳实践
+
+1. 路由级别权限
+   - 使用路由守卫控制页面访问权限
+   - 根据用户角色动态生成路由菜单
+
+2. 组件级别权限
+   - 使用PermissionGuard组件包装需要权限控制的内容
+   - 在组件内部使用usePermission Hook判断权限
+
+3. 数据级别权限
+   - 在API请求时携带用户信息
+   - 在数据过滤时考虑用户权限
+   - 使用Redux中间件处理权限相关的状态更新
+
+4. 错误处理
+   - 统一处理401未授权错误
+   - 显示友好的权限不足提示
+   - 记录权限相关的错误日志
+
 ## 3. 功能模块开发指南
 
 ### 3.1 认证模块

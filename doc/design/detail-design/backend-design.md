@@ -51,6 +51,9 @@ public enum UserRole {
 
 // 开发者或管理员权限
 @PreAuthorize("hasAnyRole('ADMIN', 'DEVELOPER')")
+
+// 用户只能访问自己的资源
+@PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
 ```
 
 #### 2.1.3 认证接口
@@ -122,7 +125,8 @@ public enum UserRole {
     "username": "string",
     "email": "string",
     "fullName": "string",
-    "password": "string"
+    "password": "string",
+    "role": "DEVELOPER"  // 只能创建DEVELOPER角色，ADMIN角色为系统预置
 }
 ```
 - 响应体:
@@ -218,7 +222,7 @@ public enum BoardStatus {
 1. 创建看板
 - 路径: `POST /api/boards`
 - 功能: 创建新的看板
-- 权限: 管理员或经理
+- 权限: 仅管理员
 - 业务逻辑: 创建看板及其列配置
 - 请求体:
 ```json
@@ -326,7 +330,7 @@ public enum BoardStatus {
 6. 归档看板
 - 路径: `PUT /api/boards/{id}/archive`
 - 功能: 归档看板
-- 权限: 管理员或经理
+- 权限: 仅管理员
 - 业务逻辑: 将看板状态更改为已归档
 - 错误码：
   - 403: 无权限
@@ -421,9 +425,9 @@ public enum SprintStatus {
 
 4. 开始Sprint
 - 路径: `PUT /api/sprints/{id}/start`
-- 功能: 开始Sprint
+- 功能: 将Sprint状态更改为进行中
 - 权限: 仅管理员
-- 业务逻辑: 将Sprint状态更改为进行中，记录实际开始时间
+- 业务逻辑: 检查Sprint是否可以开始，更新状态
 - 错误码：
   - 400: "只能启动计划中的Sprint"或"已存在活动中的Sprint"
   - 403: 无权限
@@ -431,19 +435,27 @@ public enum SprintStatus {
 
 5. 完成Sprint
 - 路径: `PUT /api/sprints/{id}/complete`
-- 功能: 完成Sprint
+- 功能: 将Sprint状态更改为已完成
 - 权限: 仅管理员
-- 业务逻辑: 将Sprint状态更改为已完成，记录实际完成时间
+- 业务逻辑: 检查Sprint是否可以完成，更新状态
 - 错误码：
   - 400: "只能完成活动中的Sprint"或"Sprint中还有未完成的任务"
   - 403: 无权限
   - 404: "Sprint不存在"
 
-6. 获取Sprint列表
+6. 取消Sprint
+- 路径: `PUT /api/sprints/{id}/cancel`
+- 功能: 取消Sprint
+- 权限: 仅管理员
+- 业务逻辑: 将任务移回待办列表，删除Sprint
+- 错误码：
+  - 404: "Sprint不存在"
+
+7. 获取Sprint列表
 - 路径: `GET /api/sprints`
 - 功能: 获取Sprint列表
 - 权限: 所有已登录用户
-- 业务逻辑: 分页返回Sprint列表，可按状态筛选
+- 业务逻辑: 分页返回Sprint列表，开发者只能看到自己参与的Sprint
 - 查询参数:
   - status: Sprint状态（可选）
   - page: 页码
@@ -452,7 +464,15 @@ public enum SprintStatus {
 - 错误码：
   - 400: 请求参数错误
 
-7. 获取看板的Sprint列表
+8. 获取Sprint详情
+- 路径: `GET /api/sprints/{id}`
+- 功能: 获取Sprint详细信息
+- 权限: 所有已登录用户
+- 业务逻辑: 返回Sprint详细信息，包括任务列表（开发者只能看到自己的任务）
+- 错误码：
+  - 404: "Sprint不存在"
+
+9. 获取看板的Sprint列表
 - 路径: `GET /api/sprints/boards/{boardId}/sprints`
 - 功能: 获取指定看板的Sprint列表
 - 权限: 所有已登录用户
@@ -464,7 +484,7 @@ public enum SprintStatus {
 - 错误码：
   - 404: 看板不存在
 
-8. 获取Sprint任务
+10. 获取Sprint任务
 - 路径: `GET /api/sprints/{id}/tasks`
 - 功能: 获取Sprint中的任务
 - 权限: 所有已登录用户

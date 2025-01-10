@@ -1,238 +1,197 @@
 import React, { useState } from 'react';
-import {
-  Modal,
-  Form,
-  Input,
-  Button,
-  Space,
-  List,
-  InputNumber,
-  Popconfirm,
-} from 'antd';
-import {
-  PlusOutlined,
-  DeleteOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-} from '@ant-design/icons';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/store';
-import { Board, BoardColumn, UpdateBoardParams } from '@/types/board';
-import { updateBoard } from '@/store/slices/boardSlice';
-import styles from './style.module.less';
-
-interface ExtendedBoardColumn extends BoardColumn {
-  wipLimit?: number;
-}
-
-interface ExtendedBoard extends Board {
-  description?: string;
-}
+import { Button, Form, Input, Modal, Space, Table, message } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { usePermission } from '@/hooks/usePermission';
+import { BoardColumn } from '@/types/board';
 
 interface BoardConfigProps {
-  board: ExtendedBoard;
   visible: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  boardColumns: BoardColumn[];
+  onSave: (columns: BoardColumn[]) => void;
 }
 
-const BoardConfig: React.FC<BoardConfigProps> = ({
-  board,
+export const BoardConfig: React.FC<BoardConfigProps> = ({
   visible,
   onClose,
-  onSuccess,
+  boardColumns,
+  onSave,
 }) => {
+  const { isAdmin } = usePermission();
+  const [editingColumns, setEditingColumns] = useState<BoardColumn[]>(boardColumns);
+  const [editingColumnId, setEditingColumnId] = useState<number | null>(null);
   const [form] = Form.useForm();
-  const dispatch = useDispatch<AppDispatch>();
-  const [columns, setColumns] = useState<ExtendedBoardColumn[]>(
-    board.columns.map((col) => ({
-      ...col,
-      wipLimit: 0,
-    }))
-  );
 
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-    try {
-      const params: UpdateBoardParams = {
+  const handleAdd = () => {
+    form.validateFields().then((values) => {
+      const newColumn: BoardColumn = {
+        id: Date.now(),
         name: values.name,
-        columns: columns.map((col) => ({
-          id: col.id,
-          name: col.name,
-          order: col.order,
-        })),
+        wipLimit: Number(values.wipLimit),
+        order: editingColumns.length,
       };
-      await dispatch(updateBoard({ id: board.id, params }));
-      onSuccess();
-      onClose();
-    } catch {
-      // 错误已在slice中处理
-    }
-  };
-
-  const handleAddColumn = () => {
-    const newColumn: ExtendedBoardColumn = {
-      id: Date.now(), // 临时ID，保存时后端会分配真实ID
-      name: '',
-      order: columns.length,
-      taskIds: [],
-      wipLimit: 0,
-    };
-    setColumns([...columns, newColumn]);
-  };
-
-  const handleDeleteColumn = (index: number) => {
-    const newColumns = [...columns];
-    newColumns.splice(index, 1);
-    // 更新order
-    newColumns.forEach((col, idx) => {
-      col.order = idx;
+      setEditingColumns([...editingColumns, newColumn]);
+      form.resetFields();
     });
-    setColumns(newColumns);
   };
 
-  const handleMoveColumn = (index: number, direction: 'up' | 'down') => {
-    if (
-      (direction === 'up' && index === 0) ||
-      (direction === 'down' && index === columns.length - 1)
-    ) {
-      return;
-    }
+  const handleDelete = (id: number) => {
+    setEditingColumns(editingColumns.filter((col) => col.id !== id));
+  };
 
-    const newColumns = [...columns];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    [newColumns[index], newColumns[targetIndex]] = [
-      newColumns[targetIndex],
-      newColumns[index],
-    ];
-    // 更新order
-    newColumns.forEach((col, idx) => {
-      col.order = idx;
+  const handleEdit = (record: BoardColumn) => {
+    setEditingColumnId(record.id);
+    form.setFieldsValue({
+      name: record.name,
+      wipLimit: record.wipLimit,
     });
-    setColumns(newColumns);
   };
 
-  const handleColumnChange = (
-    index: number,
-    field: keyof ExtendedBoardColumn,
-    value: string | number
-  ) => {
-    const newColumns = [...columns];
-    newColumns[index] = {
-      ...newColumns[index],
-      [field]: value,
-    };
-    setColumns(newColumns);
+  const handleUpdate = () => {
+    if (editingColumnId === null) return;
+    
+    form.validateFields().then((values) => {
+      setEditingColumns(
+        editingColumns.map((col) =>
+          col.id === editingColumnId
+            ? {
+                ...col,
+                name: values.name,
+                wipLimit: Number(values.wipLimit),
+              }
+            : col
+        )
+      );
+      setEditingColumnId(null);
+      form.resetFields();
+    });
   };
+
+  const handleSave = () => {
+    onSave(editingColumns);
+    message.success('看板配置已保存');
+    onClose();
+  };
+
+  const tableColumns: ColumnsType<BoardColumn> = [
+    {
+      title: '列名',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text: string, record: BoardColumn) =>
+        editingColumnId === record.id ? (
+          <Form.Item
+            name="name"
+            rules={[{ required: true, message: '请输入列名' }]}
+            style={{ margin: 0 }}
+          >
+            <Input />
+          </Form.Item>
+        ) : (
+          text
+        ),
+    },
+    {
+      title: 'WIP限制',
+      dataIndex: 'wipLimit',
+      key: 'wipLimit',
+      render: (text: number, record: BoardColumn) =>
+        editingColumnId === record.id ? (
+          <Form.Item
+            name="wipLimit"
+            rules={[{ required: true, message: '请输入WIP限制' }]}
+            style={{ margin: 0 }}
+          >
+            <Input type="number" />
+          </Form.Item>
+        ) : (
+          text
+        ),
+    },
+    {
+      title: '操作',
+      key: 'action',
+      render: (_, record: BoardColumn) => (
+        <Space>
+          {editingColumnId === record.id ? (
+            <>
+              <Button type="link" onClick={handleUpdate}>
+                保存
+              </Button>
+              <Button type="link" onClick={() => setEditingColumnId(null)}>
+                取消
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+              />
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(record.id)}
+              />
+            </>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <Modal
       title="看板配置"
       open={visible}
       onCancel={onClose}
-      width={600}
+      width={800}
       footer={[
         <Button key="cancel" onClick={onClose}>
           取消
         </Button>,
-        <Button key="submit" type="primary" onClick={handleSubmit}>
+        <Button key="save" type="primary" onClick={handleSave}>
           保存
         </Button>,
       ]}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{
-          name: board.name,
-          description: board.description || '',
-        }}
-      >
-        <Form.Item
-          name="name"
-          label="看板名称"
-          rules={[{ required: true, message: '请输入看板名称' }]}
-        >
-          <Input placeholder="请输入看板名称" />
-        </Form.Item>
-
-        <Form.Item name="description" label="看板描述">
-          <Input.TextArea
-            placeholder="请输入看板描述"
-            autoSize={{ minRows: 2, maxRows: 6 }}
-          />
-        </Form.Item>
-
-        <div className={styles.columnsSection}>
-          <div className={styles.columnsSectionHeader}>
-            <h4>看板列配置</h4>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddColumn}
+      {isAdmin ? (
+        <>
+          <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
+            <Form.Item
+              name="name"
+              rules={[{ required: true, message: '请输入列名' }]}
             >
-              添加列
-            </Button>
-          </div>
-
-          <List
-            className={styles.columnsList}
-            dataSource={columns}
-            renderItem={(column, index) => (
-              <List.Item className={styles.columnItem}>
-                <div className={styles.columnContent}>
-                  <Input
-                    value={column.name}
-                    onChange={(e) =>
-                      handleColumnChange(index, 'name', e.target.value)
-                    }
-                    placeholder="列名称"
-                    className={styles.columnName}
-                  />
-                  <InputNumber
-                    value={column.wipLimit}
-                    onChange={(value) =>
-                      handleColumnChange(index, 'wipLimit', value || 0)
-                    }
-                    min={0}
-                    placeholder="WIP限制"
-                    className={styles.wipLimit}
-                  />
-                  <Space>
-                    <Button
-                      type="text"
-                      icon={<ArrowUpOutlined />}
-                      onClick={() => handleMoveColumn(index, 'up')}
-                      disabled={index === 0}
-                    />
-                    <Button
-                      type="text"
-                      icon={<ArrowDownOutlined />}
-                      onClick={() => handleMoveColumn(index, 'down')}
-                      disabled={index === columns.length - 1}
-                    />
-                    <Popconfirm
-                      title="确定要删除这一列吗？"
-                      onConfirm={() => handleDeleteColumn(index)}
-                      okText="确定"
-                      cancelText="取消"
-                    >
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        disabled={columns.length <= 1}
-                      />
-                    </Popconfirm>
-                  </Space>
-                </div>
-              </List.Item>
-            )}
+              <Input placeholder="列名" />
+            </Form.Item>
+            <Form.Item
+              name="wipLimit"
+              rules={[{ required: true, message: '请输入WIP限制' }]}
+            >
+              <Input type="number" placeholder="WIP限制" min={0} />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAdd}
+                disabled={editingColumnId !== null}
+              >
+                添加列
+              </Button>
+            </Form.Item>
+          </Form>
+          <Table
+            columns={tableColumns}
+            dataSource={editingColumns}
+            rowKey="id"
+            pagination={false}
           />
-        </div>
-      </Form>
+        </>
+      ) : (
+        <div>您没有权限配置看板</div>
+      )}
     </Modal>
   );
-};
-
-export default BoardConfig; 
+}; 

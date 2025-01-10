@@ -4,15 +4,13 @@ import { User } from './user';
 export enum TaskPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  URGENT = 'URGENT'
+  HIGH = 'HIGH'
 }
 
 // 任务状态
 export enum TaskStatus {
   TODO = 'TODO',
   IN_PROGRESS = 'IN_PROGRESS',
-  IN_REVIEW = 'IN_REVIEW',
   DONE = 'DONE'
 }
 
@@ -20,22 +18,16 @@ export enum TaskStatus {
 export interface Task {
   id: number;
   title: string;
-  description: string;
-  priority: TaskPriority;
+  description?: string;
   status: TaskStatus;
-  assigneeId?: number;
+  priority: TaskPriority;
   assignee?: User;
-  reporterId: number;
-  reporter?: User;
-  projectId: number;
+  reporter: User;
   sprintId?: number;
   columnId: number;
   order: number;
+  labels?: string[];
   dueDate?: string;
-  estimatedHours?: number;
-  spentHours?: number;
-  labels: string[];
-  attachments: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -69,49 +61,18 @@ export interface CreateTaskParams {
   description: string;
   priority: TaskPriority;
   status: TaskStatus;
-  assigneeId?: number;
   projectId: number;
-  sprintId?: number;
   columnId: number;
-  dueDate?: string;
-  estimatedHours?: number;
-  labels?: string[];
 }
 
 // 更新任务参数
 export interface UpdateTaskParams {
   title?: string;
   description?: string;
-  priority?: TaskPriority;
   status?: TaskStatus;
+  priority?: TaskPriority;
   assigneeId?: number;
   sprintId?: number;
   columnId?: number;
   order?: number;
-  dueDate?: string;
-  estimatedHours?: number;
-  spentHours?: number;
-  labels?: string[];
-}
-
-// 任务评论
-export interface TaskComment {
-  id: number;
-  taskId: number;
-  content: string;
-  userId: number;
-  user?: User;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// 创建任务评论参数
-export interface CreateTaskCommentParams {
-  taskId: number;
-  content: string;
-}
-
-// 更新任务评论参数
-export interface UpdateTaskCommentParams {
-  content: string;
 } 

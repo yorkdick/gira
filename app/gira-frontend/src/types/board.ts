@@ -1,5 +1,4 @@
-import { Task } from './task';
-import { User } from './user';
+import type { Task } from './task';
 
 export interface BoardSettings {
   wipLimit?: number;
@@ -10,41 +9,31 @@ export interface BoardSettings {
 export interface BoardColumn {
   id: number;
   name: string;
-  order: number;
-  settings: BoardSettings;
+  wipLimit: number;
+  order?: number;
+  settings?: BoardSettings;
 }
 
 export interface Board {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   columns: BoardColumn[];
   tasks: Task[];
-  members: User[];
   createdAt: string;
   updatedAt: string;
-  settings: {
-    defaultColumnId?: number;
-    defaultAssigneeId?: number;
-  };
 }
 
 export interface CreateBoardParams {
   name: string;
-  description: string;
-  columns: Array<{
-    name: string;
-    settings?: BoardSettings;
-  }>;
+  description?: string;
+  columns: Omit<BoardColumn, 'id'>[];
 }
 
 export interface UpdateBoardParams {
   name?: string;
   description?: string;
-  settings?: {
-    defaultColumnId?: number;
-    defaultAssigneeId?: number;
-  };
+  columns?: BoardColumn[];
 }
 
 export interface UpdateColumnOrderParams {

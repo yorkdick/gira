@@ -16,7 +16,6 @@ const priorityColorMap: Record<TaskPriority, string> = {
   [TaskPriority.LOW]: '#52c41a',
   [TaskPriority.MEDIUM]: '#1890ff',
   [TaskPriority.HIGH]: '#faad14',
-  [TaskPriority.URGENT]: '#f5222d',
 };
 
 const TaskItem: React.FC<{ task: Task; onEdit: (task: Task) => void }> = ({
