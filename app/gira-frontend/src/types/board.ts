@@ -1,29 +1,63 @@
-// 看板列类型
+import { Task } from './task';
+import { User } from './user';
+
+export interface BoardSettings {
+  wipLimit?: number;
+  allowSubtasks?: boolean;
+  requireEstimation?: boolean;
+}
+
 export interface BoardColumn {
   id: number;
   name: string;
   order: number;
-  taskIds: number[];
+  settings: BoardSettings;
 }
 
-// 看板类型
 export interface Board {
   id: number;
   name: string;
-  projectId: number;
+  description: string;
   columns: BoardColumn[];
+  tasks: Task[];
+  members: User[];
   createdAt: string;
   updatedAt: string;
+  settings: {
+    defaultColumnId?: number;
+    defaultAssigneeId?: number;
+  };
 }
 
-// 看板列表查询参数
-export interface BoardQueryParams {
-  projectId: number;
-  page?: number;
-  pageSize?: number;
+export interface CreateBoardParams {
+  name: string;
+  description: string;
+  columns: Array<{
+    name: string;
+    settings?: BoardSettings;
+  }>;
 }
 
-// 看板列表响应数据
+export interface UpdateBoardParams {
+  name?: string;
+  description?: string;
+  settings?: {
+    defaultColumnId?: number;
+    defaultAssigneeId?: number;
+  };
+}
+
+export interface UpdateColumnOrderParams {
+  columnId: number;
+  order: number;
+}
+
+export interface UpdateTaskOrderParams {
+  taskId: number;
+  columnId: number;
+  order: number;
+}
+
 export interface BoardListResult {
   items: Board[];
   total: number;
@@ -31,28 +65,8 @@ export interface BoardListResult {
   pageSize: number;
 }
 
-// 创建看板参数
-export interface CreateBoardParams {
-  name: string;
-  projectId: number;
-  columns: Omit<BoardColumn, 'id' | 'taskIds'>[];
-}
-
-// 更新看板参数
-export interface UpdateBoardParams {
-  name?: string;
-  columns?: Omit<BoardColumn, 'taskIds'>[];
-}
-
-// 更新看板列顺序参数
-export interface UpdateColumnOrderParams {
-  columnId: number;
-  order: number;
-}
-
-// 更新任务顺序参数
-export interface UpdateTaskOrderParams {
-  taskId: number;
-  columnId: number;
-  order: number;
+export interface BoardQueryParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
 } 

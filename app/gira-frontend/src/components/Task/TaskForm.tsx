@@ -1,24 +1,45 @@
 import React from 'react';
 import { Form, Input, Select, Button, message } from 'antd';
+import { useDispatch } from 'react-redux';
 import PrioritySelect from '@/components/PrioritySelect';
-import { TaskStatus } from '@/types/task';
+import { TaskStatus, CreateTaskParams, TaskPriority } from '@/types/task';
+import { createTask } from '@/store/slices/taskSlice';
+import { AppDispatch } from '@/store';
 import styles from './style.module.less';
 
 interface TaskFormProps {
   onSuccess: () => void;
+  projectId: number;
+  columnId: number;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
-  const [form] = Form.useForm();
+interface TaskFormValues {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+}
 
-  const handleSubmit = async (values: any) => {
+const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, projectId, columnId }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [form] = Form.useForm<TaskFormValues>();
+
+  const handleSubmit = async (values: TaskFormValues) => {
     try {
-      // TODO: 实现创建任务的API调用
-      message.success('任务创建成功');
+      const taskParams: CreateTaskParams = {
+        ...values,
+        projectId,
+        columnId,
+      };
+      await dispatch(createTask(taskParams)).unwrap();
       form.resetFields();
       onSuccess();
-    } catch (error) {
-      message.error('创建任务失败');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        message.error(error.message || '创建任务失败');
+      } else {
+        message.error('创建任务失败');
+      }
     }
   };
 

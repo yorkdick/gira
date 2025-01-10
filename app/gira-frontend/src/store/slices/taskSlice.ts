@@ -133,6 +133,15 @@ export const unassignTask = createAsyncThunk(
   }
 );
 
+export const moveTask = createAsyncThunk(
+  'task/moveTask',
+  async ({ taskId, sprintId }: { taskId: number; sprintId: number }) => {
+    const response = await taskService.moveTask(taskId, sprintId);
+    message.success('任务移动成功');
+    return response;
+  }
+);
+
 const taskSlice = createSlice({
   name: 'task',
   initialState,
@@ -221,6 +230,20 @@ const taskSlice = createSlice({
       .addCase(unassignTask.fulfilled, (state, action) => {
         state.entities = updateEntity(state.entities, action.payload);
         state.cache = {}; // 清除缓存
+      })
+      // moveTask
+      .addCase(moveTask.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(moveTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.entities = updateEntity(state.entities, action.payload);
+        state.cache = {}; // 清除缓存
+      })
+      .addCase(moveTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || '移动任务失败';
+        message.error(state.error);
       });
   },
 });

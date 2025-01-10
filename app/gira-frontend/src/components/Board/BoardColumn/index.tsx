@@ -1,59 +1,64 @@
 import React from 'react';
-import { Card, Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { BoardColumn as BoardColumnType } from '@/types/board';
-import { useDragDrop } from '../../../hooks/useDragDrop';
-import TaskCard from '../../../components/TaskCard';
+import { Card, Progress, Typography } from 'antd';
+import { Task } from '@/types/task';
+import { BoardColumn as IBoardColumn } from '@/types/board';
+import { useDropTask } from '@/hooks/useDragDrop';
+import TaskCard from '../TaskCard';
 import styles from './style.module.less';
 
+const { Title } = Typography;
+
 interface BoardColumnProps {
-  column: BoardColumnType;
+  column: IBoardColumn;
+  tasks: Task[];
+  onTaskClick?: (task: Task) => void;
 }
 
-const BoardColumn: React.FC<BoardColumnProps> = ({ column }) => {
-  const { tasks } = useSelector((state: RootState) => state.task);
-  const { onDragOver, onDrop } = useDragDrop();
+const BoardColumn: React.FC<BoardColumnProps> = ({
+  column,
+  tasks,
+  onTaskClick,
+}) => {
+  const { drop, isOver } = useDropTask(column.id, tasks.length);
 
-  // 获取当前列的任务
-  const columnTasks = tasks.filter((task) => task.columnId === column.id);
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    onDragOver(e);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    onDrop(column.id, columnTasks.length);
-  };
+  // 计算WIP进度
+  const wipProgress = column.settings?.wipLimit
+    ? (tasks.length / column.settings.wipLimit) * 100
+    : 0;
 
   return (
-    <div className={styles.container}>
+    <div
+      ref={drop}
+      className={`${styles.column} ${isOver ? styles.isOver : ''}`}
+    >
       <Card
         title={
           <div className={styles.header}>
-            <span className={styles.title}>{column.name}</span>
-            <span className={styles.count}>{columnTasks.length}</span>
+            <Title level={5}>{column.name}</Title>
+            <span className={styles.count}>{tasks.length}</span>
           </div>
         }
         extra={
-          <Button
-            type="text"
-            icon={<PlusOutlined />}
-            className={styles.addButton}
-          />
+          column.settings?.wipLimit && (
+            <Progress
+              type="circle"
+              percent={wipProgress}
+              width={20}
+              format={() => `${tasks.length}/${column.settings?.wipLimit}`}
+              status={wipProgress >= 100 ? 'exception' : 'normal'}
+            />
+          )
         }
-        bordered={false}
         className={styles.card}
       >
-        <div
-          className={styles.tasks}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          {columnTasks.map((task, index) => (
-            <TaskCard key={task.id} task={task} index={index} />
+        <div className={styles.taskList}>
+          {tasks.map((task, index) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              index={index}
+              onClick={onTaskClick}
+            />
           ))}
         </div>
       </Card>

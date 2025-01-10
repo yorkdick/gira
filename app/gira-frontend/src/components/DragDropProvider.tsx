@@ -1,18 +1,16 @@
 import React from 'react';
-import { useDrag } from '@/hooks/useDrag';
-import { DragDropContext } from '../contexts/DragDropContext';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 interface DragDropProviderProps {
   children: React.ReactNode;
 }
 
 const DragDropProvider: React.FC<DragDropProviderProps> = ({ children }) => {
-  const { onDragStart, onDragOver, onDrop } = useDrag();
-
   return (
-    <DragDropContext.Provider value={{ onDragStart, onDragOver, onDrop }}>
+    <DndProvider backend={HTML5Backend}>
       {children}
-    </DragDropContext.Provider>
+    </DndProvider>
   );
 };
 

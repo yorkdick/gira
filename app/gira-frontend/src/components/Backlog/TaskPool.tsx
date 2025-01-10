@@ -1,9 +1,10 @@
 import React from 'react';
-import { List, Card, Button, Space, Tag } from 'antd';
+import { Card, List, Button, Tag, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Task, TaskPriority } from '@/types/task';
+import { useDragTask } from '@/hooks/useDragTask';
 import styles from './style.module.less';
 
 interface TaskPoolProps {
@@ -13,16 +14,42 @@ interface TaskPoolProps {
 
 const priorityColorMap: Record<TaskPriority, string> = {
   [TaskPriority.LOW]: '#52c41a',
-  [TaskPriority.MEDIUM]: '#faad14',
-  [TaskPriority.HIGH]: '#f5222d',
-  [TaskPriority.URGENT]: '#ff4d4f',
+  [TaskPriority.MEDIUM]: '#1890ff',
+  [TaskPriority.HIGH]: '#faad14',
+  [TaskPriority.URGENT]: '#f5222d',
+};
+
+const TaskItem: React.FC<{ task: Task; onEdit: (task: Task) => void }> = ({
+  task,
+  onEdit,
+}) => {
+  const { drag, isDragging } = useDragTask(task);
+
+  return (
+    <div
+      ref={drag}
+      style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
+      onClick={() => onEdit(task)}
+    >
+      <Card size="small" className={styles.taskCard}>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <div className={styles.taskTitle}>{task.title}</div>
+          <Space>
+            <Tag color={priorityColorMap[task.priority]}>{task.priority}</Tag>
+            {task.assignee && (
+              <Tag>{task.assignee.name}</Tag>
+            )}
+          </Space>
+        </Space>
+      </Card>
+    </div>
+  );
 };
 
 const TaskPool: React.FC<TaskPoolProps> = ({ onCreateTask, onEditTask }) => {
-  const tasks = useSelector((state: RootState) => state.task.tasks);
-
-  // 获取未分配到Sprint的任务
-  const unassignedTasks = tasks.filter((task: Task) => !task.sprintId);
+  const tasks = useSelector((state: RootState) =>
+    Object.values(state.task.entities.byId).filter(task => !task.sprintId)
+  );
 
   return (
     <Card
@@ -32,27 +59,13 @@ const TaskPool: React.FC<TaskPoolProps> = ({ onCreateTask, onEditTask }) => {
           创建任务
         </Button>
       }
-      className={styles.card}
+      className={styles.taskPool}
     >
       <List
-        className={styles.list}
-        dataSource={unassignedTasks}
-        renderItem={(task: Task) => (
-          <List.Item
-            className={styles.item}
-            onClick={() => onEditTask(task)}
-          >
-            <div className={styles.content}>
-              <Space className={styles.header}>
-                <Tag color={priorityColorMap[task.priority]}>
-                  {task.priority}
-                </Tag>
-                {task.labels.map((label: string) => (
-                  <Tag key={label}>{label}</Tag>
-                ))}
-              </Space>
-              <div className={styles.title}>{task.title}</div>
-            </div>
+        dataSource={tasks}
+        renderItem={(task) => (
+          <List.Item>
+            <TaskItem task={task} onEdit={onEditTask} />
           </List.Item>
         )}
       />

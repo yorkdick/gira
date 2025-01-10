@@ -1,39 +1,59 @@
-.list {
+.progress {
+  margin-bottom: 16px;
+  text-align: center;
+
+  .label {
+    margin-top: 8px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+
   :global {
-    .ant-list-item {
-      padding: 0;
+    .ant-progress {
+      margin: 0 auto;
+    }
+
+    .ant-statistic {
+      text-align: left;
+    }
+
+    .ant-statistic-title {
+      font-size: 14px;
+    }
+
+    .ant-statistic-content {
+      font-size: 20px;
     }
   }
 }
 
 .card {
-  width: 100%;
+  margin-bottom: 16px;
+}
 
+.list {
   :global {
-    .ant-card-head {
-      min-height: 48px;
-      padding: 0 16px;
-    }
+    .ant-list-item {
+      padding: 0;
+      margin-bottom: 16px;
 
-    .ant-card-body {
-      padding: 16px;
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
   }
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.sprintCard {
+  width: 100%;
 
-.goal {
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 14px;
-  line-height: 1.5;
-}
+  .content {
+    .goal {
+      margin-bottom: 16px;
+      color: rgba(0, 0, 0, 0.85);
+    }
 
-.dates {
-  color: rgba(0, 0, 0, 0.45);
-  font-size: 12px;
+    .dates {
+      color: rgba(0, 0, 0, 0.45);
+    }
+  }
 } 
