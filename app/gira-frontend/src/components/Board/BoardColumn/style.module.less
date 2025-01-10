@@ -1,0 +1,58 @@
+.container {
+  height: 100%;
+}
+
+.card {
+  height: 100%;
+  background: #f5f5f5;
+
+  :global {
+    .ant-card-head {
+      min-height: 48px;
+      padding: 0 12px;
+      background: transparent;
+    }
+
+    .ant-card-body {
+      height: calc(100% - 48px);
+      padding: 8px;
+      overflow-y: auto;
+    }
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.count {
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 20px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+}
+
+.addButton {
+  padding: 4px;
+  color: rgba(0, 0, 0, 0.45);
+
+  &:hover {
+    color: #1890ff;
+    background: rgba(24, 144, 255, 0.1);
+  }
+}
+
+.tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+} 

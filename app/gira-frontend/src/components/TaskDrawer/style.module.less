@@ -1,0 +1,52 @@
+.taskDrawer {
+  :global {
+    .ant-drawer-body {
+      padding: 0;
+    }
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.taskDetail {
+  padding: 24px;
+
+  :global {
+    .ant-descriptions {
+      background-color: #fff;
+    }
+
+    .ant-descriptions-item-label {
+      width: 100px;
+      font-weight: 500;
+    }
+  }
+}
+
+.attachments {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  a {
+    color: #1890ff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+} 

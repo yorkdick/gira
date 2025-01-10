@@ -1,0 +1,44 @@
+.columnsSection {
+  margin-top: 24px;
+}
+
+.columnsSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h4 {
+    margin: 0;
+  }
+}
+
+.columnsList {
+  :global {
+    .ant-list-item {
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      margin-bottom: 8px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.columnContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.columnName {
+  flex: 1;
+}
+
+.wipLimit {
+  width: 100px;
+} 

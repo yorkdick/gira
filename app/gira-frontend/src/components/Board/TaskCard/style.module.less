@@ -1,0 +1,65 @@
+.card {
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #fafafa;
+  }
+
+  :global {
+    .ant-card-body {
+      padding: 12px;
+    }
+  }
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.priority {
+  text-transform: capitalize;
+}
+
+.label {
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.title {
+  margin-bottom: 12px;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+}
+
+.count {
+  margin-left: 4px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.avatar {
+  background: #1890ff;
+} 
