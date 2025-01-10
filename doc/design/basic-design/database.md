@@ -10,11 +10,11 @@
 |--------|------|------|--------|--------|------|
 | id | bigint | - | 否 | - | 主键，自增 |
 | username | varchar | 50 | 否 | - | 用户名，唯一 |
-| password | varchar | 255 | 否 | - | 密码（加密存储）|
+| password | varchar | 100 | 否 | - | 密码（加密存储）|
 | email | varchar | 100 | 否 | - | 邮箱地址 |
 | full_name | varchar | 100 | 否 | - | 用户全名 |
 | role | varchar | 20 | 否 | 'DEVELOPER' | 用户角色（ADMIN/DEVELOPER）|
-| status | varchar | 20 | 否 | 'ACTIVE' | 用户状态 |
+| status | varchar | 20 | 否 | 'ACTIVE' | 用户状态（ACTIVE/INACTIVE）|
 | created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
@@ -29,6 +29,7 @@
 | id | bigint | - | 否 | - | 主键，自增 |
 | name | varchar | 100 | 否 | - | 看板名称 |
 | description | text | - | 是 | NULL | 看板描述 |
+| status | varchar | 20 | 否 | 'ACTIVE' | 看板状态（ACTIVE/ARCHIVED）|
 | created_by | bigint | - | 否 | - | 创建者ID |
 | created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
@@ -56,16 +57,18 @@
 | 字段名 | 类型 | 长度 | 允许空 | 默认值 | 说明 |
 |--------|------|------|--------|--------|------|
 | id | bigint | - | 否 | - | 主键，自增 |
+| board_id | bigint | - | 否 | - | 所属看板ID |
 | name | varchar | 100 | 否 | - | Sprint名称 |
 | start_date | date | - | 是 | NULL | 开始日期 |
 | end_date | date | - | 是 | NULL | 结束日期 |
-| status | varchar | 20 | 否 | 'PLANNING' | Sprint状态 |
+| status | varchar | 20 | 否 | 'PLANNING' | Sprint状态（PLANNING/ACTIVE/COMPLETED）|
 | created_by | bigint | - | 否 | - | 创建者ID |
 | created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
+- KEY idx_board_id (board_id)
 - KEY idx_created_by (created_by)
 
 ### 2.5 任务表（tasks）
@@ -74,37 +77,23 @@
 | id | bigint | - | 否 | - | 主键，自增 |
 | title | varchar | 200 | 否 | - | 任务标题 |
 | description | text | - | 是 | NULL | 任务描述 |
+| board_id | bigint | - | 否 | - | 所属看板ID |
 | sprint_id | bigint | - | 是 | NULL | 所属SprintID |
 | column_id | bigint | - | 否 | - | 所属列ID |
 | assignee_id | bigint | - | 是 | NULL | 经办人ID |
 | reporter_id | bigint | - | 否 | - | 报告人ID |
-| priority | varchar | 20 | 否 | 'MEDIUM' | 优先级 |
-| status | varchar | 20 | 否 | 'TODO' | 任务状态 |
+| priority | varchar | 20 | 否 | 'MEDIUM' | 优先级（HIGH/MEDIUM/LOW）|
+| status | varchar | 20 | 否 | 'TODO' | 任务状态（TODO/IN_PROGRESS/DONE）|
 | created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
+- KEY idx_board_id (board_id)
 - KEY idx_sprint_id (sprint_id)
 - KEY idx_column_id (column_id)
 - KEY idx_assignee_id (assignee_id)
 - KEY idx_reporter_id (reporter_id)
-
-### 2.6 任务历史表（task_histories）
-| 字段名 | 类型 | 长度 | 允许空 | 默认值 | 说明 |
-|--------|------|------|--------|--------|------|
-| id | bigint | - | 否 | - | 主键，自增 |
-| task_id | bigint | - | 否 | - | 任务ID |
-| field | varchar | 50 | 否 | - | 变更字段 |
-| old_value | text | - | 是 | NULL | 原值 |
-| new_value | text | - | 是 | NULL | 新值 |
-| changed_by | bigint | - | 否 | - | 变更人ID |
-| created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
-
-索引：
-- PRIMARY KEY (id)
-- KEY idx_task_id (task_id)
-- KEY idx_changed_by (changed_by)
 
 ## 3. 表关系图
 ```mermaid
@@ -114,9 +103,9 @@ erDiagram
     users ||--o{ tasks : creates
     users ||--o{ tasks : assigned_to
     boards ||--o{ board_columns : contains
+    boards ||--o{ sprints : contains
     board_columns ||--o{ tasks : contains
     sprints ||--o{ tasks : contains
-    tasks ||--o{ task_histories : has
 ```
 
 ## 4. 初始数据
