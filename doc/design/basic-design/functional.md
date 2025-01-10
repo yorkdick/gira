@@ -4,29 +4,32 @@
 
 ### 1.1 核心模块
 1. 认证模块（Authentication）
-   - 用户登录
-   - Token管理
-   - 权限验证
+   - 用户登录：用户名密码认证
+   - Token管理：JWT访问令牌和刷新令牌
+   - 权限验证：基于角色的访问控制
 
 2. 用户模块（User）
-   - 用户管理
-   - 角色管理
-   - 个人信息管理
+   - 用户管理：创建、更新、删除用户
+   - 角色管理：ADMIN、MANAGER、USER角色
+   - 个人信息管理：密码修改、信息查看
 
 3. 看板模块（Board）
-   - 看板配置
-   - 任务展示
-   - 状态管理
+   - 看板配置：创建、更新看板及其列
+   - 任务展示：看板列和任务卡片
+   - 状态管理：活动和归档状态
+   - WIP限制：控制每列任务数量
 
 4. Sprint模块（Sprint）
-   - Sprint管理
-   - 任务分配
-   - 进度跟踪
+   - Sprint管理：创建、更新、开始、完成
+   - 任务分配：将任务分配到Sprint
+   - 进度跟踪：Sprint状态和任务进度
+   - 时间管理：开始日期和结束日期
 
 5. 任务模块（Task）
-   - 任务管理
-   - 状态流转
-   - 优先级管理
+   - 任务管理：创建、更新、删除任务
+   - 状态流转：任务状态变更
+   - 任务分配：指派任务给用户
+   - 任务分类：Sprint任务和待办任务
 
 ## 2. 功能流程设计
 
@@ -39,11 +42,11 @@ sequenceDiagram
     participant Database
     
     User->>Frontend: 输入用户名密码
-    Frontend->>Backend: 发送登录请求
+    Frontend->>Backend: POST /api/auth/login
     Backend->>Database: 验证用户信息
     Database-->>Backend: 返回用户数据
     Backend->>Backend: 生成JWT Token
-    Backend-->>Frontend: 返回Token和用户信息
+    Backend-->>Frontend: 返回Token和刷新Token
     Frontend->>Frontend: 保存Token
     Frontend-->>User: 登录成功，跳转首页
 ```
@@ -57,14 +60,15 @@ sequenceDiagram
     participant Database
     
     User->>Frontend: 访问看板页面
-    Frontend->>Backend: 获取看板数据
+    Frontend->>Backend: GET /api/boards/{id}
     Backend->>Database: 查询看板配置
     Database-->>Backend: 返回看板数据
     Backend-->>Frontend: 返回看板视图数据
     Frontend-->>User: 展示看板
     
     User->>Frontend: 拖动任务卡片
-    Frontend->>Backend: 更新任务状态
+    Frontend->>Backend: PUT /api/tasks/{id}/status
+    Backend->>Backend: 检查WIP限制
     Backend->>Database: 保存状态变更
     Database-->>Backend: 确认更新
     Backend-->>Frontend: 返回更新结果
@@ -80,14 +84,14 @@ sequenceDiagram
     participant Database
     
     Admin->>Frontend: 创建Sprint
-    Frontend->>Backend: 发送Sprint数据
+    Frontend->>Backend: POST /api/sprints
     Backend->>Database: 保存Sprint信息
     Database-->>Backend: 确认创建
     Backend-->>Frontend: 返回Sprint详情
     Frontend-->>Admin: 显示创建成功
     
     Admin->>Frontend: 分配任务到Sprint
-    Frontend->>Backend: 更新任务关联
+    Frontend->>Backend: PUT /api/tasks/{id}/sprint
     Backend->>Database: 保存任务关联
     Database-->>Backend: 确认更新
     Backend-->>Frontend: 返回更新结果
@@ -103,14 +107,16 @@ sequenceDiagram
     participant Database
     
     Developer->>Frontend: 创建任务
-    Frontend->>Backend: 发送任务数据
+    Frontend->>Backend: POST /api/tasks
+    Backend->>Backend: 检查WIP限制
     Backend->>Database: 保存任务信息
     Database-->>Backend: 确认创建
     Backend-->>Frontend: 返回任务详情
     Frontend-->>Developer: 显示新任务
     
     Developer->>Frontend: 更新任务状态
-    Frontend->>Backend: 发送状态更新
+    Frontend->>Backend: PUT /api/tasks/{id}/status
+    Backend->>Backend: 检查状态转换
     Backend->>Database: 保存状态变更
     Database-->>Backend: 确认更新
     Backend-->>Frontend: 返回更新结果
@@ -120,68 +126,75 @@ sequenceDiagram
 ## 3. 权限控制矩阵
 
 ### 3.1 功能权限
-| 功能模块 | 管理员 | 开发者 |
-|---------|--------|--------|
-| 用户管理 | ✓ | 仅自己 |
-| 看板配置 | ✓ | × |
-| Sprint管理 | ✓ | × |
-| 任务创建 | ✓ | ✓ |
-| 任务状态更新 | ✓ | ✓ |
-| 任务删除 | ✓ | × |
+| 功能模块 | 管理员(ADMIN) | 经理(MANAGER) | 开发者(USER) |
+|---------|--------------|--------------|-------------|
+| 用户管理 | ✓ | × | 仅自己 |
+| 看板配置 | ✓ | ✓ | × |
+| Sprint管理 | ✓ | × | × |
+| 任务创建 | ✓ | ✓ | ✓ |
+| 任务状态更新 | ✓ | ✓ | ✓ |
+| 任务删除 | ✓ | × | × |
 
 ### 3.2 数据权限
-| 数据类型 | 管理员 | 开发者 |
-|---------|--------|--------|
-| 用户数据 | 所有 | 仅自己 |
-| 看板数据 | 读写 | 只读 |
-| Sprint数据 | 读写 | 只读 |
-| 任务数据 | 所有 | 读写 |
+| 数据类型 | 管理员(ADMIN) | 经理(MANAGER) | 开发者(USER) |
+|---------|--------------|--------------|-------------|
+| 用户数据 | 所有 | 只读 | 仅自己 |
+| 看板数据 | 读写 | 读写 | 只读 |
+| Sprint数据 | 读写 | 只读 | 只读 |
+| 任务数据 | 所有 | 读写 | 读写 |
 
 ## 4. 接口设计
 
 ### 4.1 认证接口
 ```
-POST /api/auth/login
-POST /api/auth/logout
-POST /api/auth/refresh-token
+POST /api/auth/login          # 用户登录
+POST /api/auth/logout         # 用户登出
+POST /api/auth/refresh-token  # 刷新访问令牌
 ```
 
 ### 4.2 用户接口
 ```
-GET /api/users
-POST /api/users
-PUT /api/users/{id}
-GET /api/users/{id}
-PUT /api/users/{id}/password
+POST /api/users              # 创建用户
+PUT /api/users/{id}          # 更新用户
+PUT /api/users/{id}/password # 修改密码
+GET /api/users/{id}          # 获取用户详情
+GET /api/users               # 获取用户列表
+DELETE /api/users/{id}       # 删除用户
 ```
 
 ### 4.3 看板接口
 ```
-GET /api/boards
-POST /api/boards
-PUT /api/boards/{id}
-GET /api/boards/{id}
-GET /api/boards/{id}/columns
-PUT /api/boards/{id}/columns
+POST /api/boards             # 创建看板
+PUT /api/boards/{id}         # 更新看板
+PUT /api/boards/{id}/columns # 更新看板列
+GET /api/boards/{id}         # 获取看板详情
+GET /api/boards              # 获取看板列表
+PUT /api/boards/{id}/archive # 归档看板
+GET /api/boards/{id}/tasks   # 获取看板任务
 ```
 
 ### 4.4 Sprint接口
 ```
-GET /api/sprints
-POST /api/sprints
-PUT /api/sprints/{id}
-GET /api/sprints/{id}
-POST /api/sprints/{id}/start
-POST /api/sprints/{id}/complete
+POST /api/sprints                        # 创建Sprint
+PUT /api/sprints/{id}                    # 更新Sprint
+GET /api/sprints/{id}                    # 获取Sprint详情
+PUT /api/sprints/{id}/start              # 开始Sprint
+PUT /api/sprints/{id}/complete           # 完成Sprint
+GET /api/sprints                         # 获取Sprint列表
+GET /api/sprints/boards/{boardId}/sprints # 获取看板的Sprint列表
+GET /api/sprints/{id}/tasks              # 获取Sprint的任务列表
 ```
 
 ### 4.5 任务接口
 ```
-GET /api/tasks
-POST /api/tasks
-PUT /api/tasks/{id}
-GET /api/tasks/{id}
-DELETE /api/tasks/{id}
-PUT /api/tasks/{id}/status
-PUT /api/tasks/{id}/assignee
+POST /api/tasks                    # 创建任务
+PUT /api/tasks/{id}                # 更新任务
+PUT /api/tasks/{id}/status         # 更新任务状态
+GET /api/tasks/{id}                # 获取任务详情
+GET /api/tasks                     # 获取任务列表
+GET /api/tasks/backlog             # 获取待办任务
+PUT /api/tasks/{id}/sprint         # 移动任务到Sprint
+GET /api/tasks/boards/{boardId}    # 获取看板任务
+GET /api/tasks/assignee/{assigneeId} # 获取指派的任务
+DELETE /api/tasks/{id}             # 删除任务
 ``` 
