@@ -9,12 +9,35 @@
 - 方法和变量名使用 camelCase（如 findUserById、isOrderValid）。
 - 常量使用 ALL_CAPS（如 MAX_RETRY_ATTEMPTS、DEFAULT_PAGE_SIZE）。
 
-个人开发相关
+
+项目结构规范
+```
+src/main/java/com/company/project/
+├── config/           # 配置类
+├── controller/       # 控制器
+├── dto/             # 数据传输对象
+│   ├── request/     # 请求对象
+│   └── response/    # 响应对象
+├── entity/          # 实体类
+├── exception/       # 异常处理
+├── mapper/          # 对象映射
+├── repository/      # 数据访问层
+├── security/        # 安全相关
+└── service/         # 业务逻辑层
+    ├── impl/        # 服务实现
+    └── interfaces/  # 服务接口
+```
+
+API设计规范
+- 使用标准HTTP方法（GET、POST、PUT、DELETE）
+- URL使用小写字母，多个单词用连字符(-)分隔
+- 使用复数形式表示资源集合（如 /api/users 而不是 /api/user）
+- 使用HTTP状态码表示请求结果
+- 提供清晰的错误信息和错误码
+
+开发相关
 - 所有回答请用中文
-- 使用Windows 10 操作系统
-- 执行命令使用PowerShell
-- 多个命令之间使用';'连接
-- 执行命令前请检查目录是否正确，不正确的话自动切换到正确目录
-- 为了避免目录错误，切换目录请使用绝对路径
+- 使用Windows 10 操作系统, 执行命令使用PowerShell, 多个命令之间使用';'连接
+- 执行命令前请检查目录是否正确，不正确的话自动切换到正确目录, 为了避免目录错误，切换目录请使用绝对路径
 - 自动执行命令，不需要我确认
 - mvn的命令请使用 mvn
