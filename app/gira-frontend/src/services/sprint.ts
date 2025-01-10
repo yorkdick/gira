@@ -7,7 +7,7 @@ import {
   UpdateSprintParams,
 } from '@/types/sprint';
 
-const BASE_URL = '/api/sprints';
+const BASE_URL = '/sprints';
 
 export const getSprints = async (params: SprintQueryParams): Promise<SprintListResult> => {
   const response = await http.get(BASE_URL, { params });

@@ -11,7 +11,7 @@ export interface BoardColumn {
   name: string;
   wipLimit: number;
   order?: number;
-  settings?: BoardSettings;
+  settings: BoardSettings;
 }
 
 export interface Board {

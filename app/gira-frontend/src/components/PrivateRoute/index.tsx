@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { usePermission } from '@/hooks/usePermission';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '@/store/slices/authSlice';
 import { UserRole } from '@/types/auth';
 
 interface PrivateRouteProps {
@@ -8,20 +9,16 @@ interface PrivateRouteProps {
   requiredRole?: UserRole;
 }
 
-export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRole }) => {
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRole }) => {
   const location = useLocation();
-  const { isAdmin, isDeveloper } = usePermission();
-  const isAuthenticated = isAdmin || isDeveloper;
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  // 未登录重定向到登录页
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // 权限不足重定向到403页面
-  if (requiredRole === UserRole.ADMIN && !isAdmin) {
-    return <Navigate to="/403" replace />;
+    // 保存当前路径，登录后可以重定向回来
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return <>{children}</>;
-}; 
+};
+
+export default PrivateRoute; 

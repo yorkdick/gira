@@ -52,7 +52,7 @@ function SprintDetail(): JSX.Element {
           </Card>
         </Col>
         <Col span={8}>
-          <SprintProgress tasks={sprint.tasks} />
+          <SprintProgress tasks={sprint.tasks} sprint={sprint} />
         </Col>
       </Row>
     </div>

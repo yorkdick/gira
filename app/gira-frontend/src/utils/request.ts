@@ -13,6 +13,7 @@ export const http: AxiosInstance = axios.create({
 // 请求拦截器
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    console.log('Request config:', config);
     // 从localStorage获取token
     const token = localStorage.getItem('token');
     if (token) {
@@ -22,6 +23,7 @@ http.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -29,15 +31,16 @@ http.interceptors.request.use(
 // 响应拦截器
 http.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { data } = response;
+    console.log('Response:', response);
     // 如果是下载文件，直接返回response
     if (response.config.responseType === 'blob') {
       return response;
     }
-    // 根据后端接口规范处理响应数据
-    return data;
+    // 返回响应数据
+    return response;
   },
   (error) => {
+    console.error('Response error:', error);
     if (error.response) {
       const { status } = error.response;
       switch (status) {

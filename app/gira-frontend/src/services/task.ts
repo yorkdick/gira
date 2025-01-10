@@ -7,7 +7,7 @@ import {
   UpdateTaskParams,
 } from '@/types/task';
 
-const BASE_URL = '/api/tasks';
+const BASE_URL = '/tasks';
 
 export const getTasks = async (params?: TaskQueryParams): Promise<TaskListResult> => {
   const response = await http.get(BASE_URL, { params });

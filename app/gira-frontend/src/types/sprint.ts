@@ -11,6 +11,7 @@ export interface Sprint {
   id: number;
   name: string;
   description?: string;
+  goal: string;
   startDate: string;
   endDate: string;
   status: SprintStatus;

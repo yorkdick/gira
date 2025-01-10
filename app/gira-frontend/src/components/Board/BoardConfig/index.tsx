@@ -30,6 +30,11 @@ export const BoardConfig: React.FC<BoardConfigProps> = ({
         name: values.name,
         wipLimit: Number(values.wipLimit),
         order: editingColumns.length,
+        settings: {
+          wipLimit: Number(values.wipLimit),
+          allowSubtasks: false,
+          requireEstimation: false,
+        }
       };
       setEditingColumns([...editingColumns, newColumn]);
       form.resetFields();

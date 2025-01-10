@@ -142,6 +142,7 @@ const SprintCard: React.FC<SprintCardProps> = ({
           </Space>
           {sprint.status !== SprintStatus.PLANNING && (
             <SprintProgress
+              sprint={sprint}
               tasks={getSprintTasks()}
             />
           )}

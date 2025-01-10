@@ -1,13 +1,25 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 import { withSuspense } from '../utils/withSuspense';
+import PrivateRoute from '@/components/PrivateRoute';
 
-// 懒加载页面组件
 const Login = lazy(() => import('../pages/Login'));
 const Board = lazy(() => import('../pages/Board'));
 const Backlog = lazy(() => import('../pages/Backlog'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 const MainLayout = lazy(() => import('../layouts/MainLayout'));
+
+const PrivateBoard = () => (
+  <PrivateRoute>
+    <Board />
+  </PrivateRoute>
+);
+
+const PrivateBacklog = () => (
+  <PrivateRoute>
+    <Backlog />
+  </PrivateRoute>
+);
 
 export const routes: RouteObject[] = [
   {
@@ -19,12 +31,16 @@ export const routes: RouteObject[] = [
     element: withSuspense(MainLayout),
     children: [
       {
+        path: '',
+        element: withSuspense(PrivateBoard),
+      },
+      {
         path: 'board',
-        element: withSuspense(Board),
+        element: withSuspense(PrivateBoard),
       },
       {
         path: 'backlog',
-        element: withSuspense(Backlog),
+        element: withSuspense(PrivateBacklog),
       },
       {
         path: '*',

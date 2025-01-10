@@ -63,6 +63,10 @@ export interface CreateTaskParams {
   status: TaskStatus;
   projectId: number;
   columnId: number;
+  assigneeId?: number;
+  sprintId?: number;
+  labels?: string[];
+  dueDate?: string;
 }
 
 // 更新任务参数

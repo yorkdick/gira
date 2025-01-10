@@ -81,7 +81,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, projectId, columnId }) =
         <Select placeholder="请选择状态">
           <Select.Option value={TaskStatus.TODO}>待处理</Select.Option>
           <Select.Option value={TaskStatus.IN_PROGRESS}>进行中</Select.Option>
-          <Select.Option value={TaskStatus.IN_REVIEW}>审核中</Select.Option>
           <Select.Option value={TaskStatus.DONE}>已完成</Select.Option>
         </Select>
       </Form.Item>

@@ -1,17 +1,19 @@
 import { Card, Progress, Space, Statistic, Tooltip } from 'antd';
 import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import type { Task } from '@/types/task';
+import type { Sprint } from '@/types/sprint';
 import { TaskStatus } from '@/types/task';
 
 export interface SprintProgressProps {
+  sprint: Sprint;
   tasks: Task[];
 }
 
-function SprintProgress({ tasks }: SprintProgressProps): JSX.Element {
+function SprintProgress({ sprint, tasks }: SprintProgressProps): JSX.Element {
   // 计算Sprint进度
   const now = new Date();
-  const start = new Date();  // TODO: Need startDate from parent
-  const end = new Date();    // TODO: Need endDate from parent
+  const start = new Date(sprint.startDate);
+  const end = new Date(sprint.endDate);
   
   const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   const passedDays = Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));

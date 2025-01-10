@@ -59,7 +59,6 @@ const BoardFilter: React.FC<BoardFilterProps> = ({
         >
           <Select.Option value={TaskStatus.TODO}>待处理</Select.Option>
           <Select.Option value={TaskStatus.IN_PROGRESS}>进行中</Select.Option>
-          <Select.Option value={TaskStatus.IN_REVIEW}>审核中</Select.Option>
           <Select.Option value={TaskStatus.DONE}>已完成</Select.Option>
         </Select>
         <Select
@@ -72,7 +71,6 @@ const BoardFilter: React.FC<BoardFilterProps> = ({
           <Select.Option value={TaskPriority.LOW}>低</Select.Option>
           <Select.Option value={TaskPriority.MEDIUM}>中</Select.Option>
           <Select.Option value={TaskPriority.HIGH}>高</Select.Option>
-          <Select.Option value={TaskPriority.URGENT}>紧急</Select.Option>
         </Select>
         <Select
           placeholder="经办人"
