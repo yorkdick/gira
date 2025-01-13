@@ -13,13 +13,10 @@ export interface LoginParams {
 
 // 登录响应数据
 export interface LoginResult {
-  token: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    role: UserRole;
-  };
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
 // 注册请求参数

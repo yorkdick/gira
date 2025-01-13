@@ -1,20 +1,17 @@
 import { LoginParams, LoginResult, RegisterParams } from '@/types/auth';
-import request from '@/utils/request';
+import { http } from '@/utils/request';
 
 // 登录服务
 export const login = async (params: LoginParams): Promise<LoginResult> => {
-  const response = await request.post<LoginResult>('/auth/login', params);
-  return response.data;
+  return http.post('auth/login', params);
 };
 
 // 注册服务
 export const register = async (params: RegisterParams): Promise<void> => {
-  const response = await request.post<void>('/auth/register', params);
-  return response.data;
+  return http.post('auth/register', params);
 };
 
 // 登出服务
 export const logout = async (): Promise<void> => {
-  const response = await request.post<void>('/auth/logout');
-  return response.data;
+  return http.post('auth/logout');
 }; 

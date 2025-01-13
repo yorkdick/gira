@@ -3,7 +3,7 @@ import { message } from 'antd';
 
 // 创建axios实例
 export const http: AxiosInstance = axios.create({
-  baseURL: '/api', // API的base_url
+  baseURL: '/api', // 恢复/api前缀
   timeout: 10000,  // 请求超时时间
   headers: {
     'Content-Type': 'application/json',
@@ -13,17 +13,25 @@ export const http: AxiosInstance = axios.create({
 // 请求拦截器
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    console.log('Request config:', config);
     // 从localStorage获取token
     const token = localStorage.getItem('token');
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // 打印请求信息
+    console.log('Request:', {
+      method: config.method,
+      url: config.url,
+      baseURL: config.baseURL,
+      data: config.data,
+      headers: config.headers
+    });
+    
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -31,16 +39,24 @@ http.interceptors.request.use(
 // 响应拦截器
 http.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('Response:', response);
-    // 如果是下载文件，直接返回response
-    if (response.config.responseType === 'blob') {
-      return response;
-    }
-    // 返回响应数据
-    return response;
+    // 打印响应信息
+    console.log('Response:', {
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    });
+    
+    return response.data;
   },
   (error) => {
-    console.error('Response error:', error);
+    // 打印错误信息
+    console.error('Response Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers,
+      config: error.config
+    });
+    
     if (error.response) {
       const { status } = error.response;
       switch (status) {
@@ -49,7 +65,6 @@ http.interceptors.response.use(
           break;
         case 401:
           message.error('未授权，请重新登录');
-          // 清除token并跳转到登录页
           localStorage.removeItem('token');
           window.location.href = '/login';
           break;
@@ -65,6 +80,8 @@ http.interceptors.response.use(
         default:
           message.error('网络错误');
       }
+    } else if (error.request) {
+      message.error('服务器无响应');
     } else {
       message.error('网络错误，请检查网络连接');
     }

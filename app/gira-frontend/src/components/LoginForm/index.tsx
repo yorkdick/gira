@@ -16,7 +16,6 @@ const LoginForm: React.FC = () => {
   const [form] = Form.useForm();
 
   const handleSubmit = async (values: LoginParams) => {
-    console.log('Form submitted with values:', values);
     if (!values.username || !values.password) {
       message.error('请输入用户名和密码');
       return;
@@ -24,31 +23,24 @@ const LoginForm: React.FC = () => {
 
     try {
       setLoading(true);
-      console.log('Sending login request...');
       const result = await login(values);
-      console.log('Login response:', result);
       
-      if (!result || !result.token) {
-        throw new Error('登录响应缺少token');
+      if (!result || !result.accessToken) {
+        throw new Error('登录响应缺少accessToken');
       }
 
-      dispatch(setToken(result.token));
+      dispatch(setToken(result.accessToken));
       message.success('登录成功');
       
       // 获取重定向路径
       const from = (location.state as any)?.from || '/';
       navigate(from, { replace: true });
     } catch (error: any) {
-      console.error('登录失败:', error);
-      message.error(error.response?.data?.message || '登录失败，请检查用户名和密码');
+      console.error('Login error:', error);
+      message.error('登录失败，请检查用户名和密码');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    form.submit();
   };
 
   return (
@@ -88,7 +80,6 @@ const LoginForm: React.FC = () => {
           htmlType="submit"
           loading={loading}
           block
-          onClick={handleButtonClick}
         >
           登录
         </Button>
