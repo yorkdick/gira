@@ -122,11 +122,11 @@ public class SprintServiceImpl implements SprintService {
                 .description("Sprint: " + sprint.getName())
                 .status(BoardStatus.ACTIVE)
                 .createdBy(sprint.getCreatedBy())
+                .sprint(sprint)
                 .build();
         boardRepository.save(board);
 
         sprint.setStatus(SprintStatus.ACTIVE);
-        sprint.setBoard(board);
         return sprintMapper.toResponse(sprintRepository.save(sprint));
     }
 

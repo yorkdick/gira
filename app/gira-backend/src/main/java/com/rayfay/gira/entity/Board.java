@@ -29,4 +29,8 @@ public class Board extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sprint_id", nullable = false)
+    private Sprint sprint;
 }

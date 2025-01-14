@@ -1,2 +1,0 @@
-INSERT INTO users (username, password, email, full_name, role, status, created_at, updated_at)
-VALUES ('user1', '$2a$10$kWVUP88bSsV3ouhxLj1FlOVmFnHEZsAxBqjRgXISe1o4qtTzHSa1S', 'user1@example.com', 'Test User', 'DEVELOPER', 'ACTIVE', NOW(), NOW()); 

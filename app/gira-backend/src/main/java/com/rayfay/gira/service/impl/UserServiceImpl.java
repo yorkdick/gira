@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .email(request.getEmail())
-                .role(UserRole.DEVELOPER)
+                .role(request.getRole())
                 .status(UserStatus.ACTIVE)
                 .build();
 

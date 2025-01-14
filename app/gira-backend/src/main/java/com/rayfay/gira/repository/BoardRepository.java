@@ -11,7 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long> {
-    Page<Board> findByStatus(BoardStatus status, Pageable pageable);
-
     Optional<Board> findByName(String name);
+
+    Optional<Board> findByStatus(BoardStatus status);
+
+    Page<Board> findByStatus(BoardStatus status, Pageable pageable);
 }

@@ -34,6 +34,11 @@ public class BoardController {
         return ResponseEntity.ok(boardService.getBoardById(id));
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<BoardResponse> getActiveBoard() {
+        return ResponseEntity.ok(boardService.getActiveBoard());
+    }
+
     @GetMapping
     public ResponseEntity<Page<BoardResponse>> getAllBoards(
             @RequestParam(required = false) BoardStatus status,

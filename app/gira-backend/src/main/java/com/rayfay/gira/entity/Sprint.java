@@ -29,10 +29,6 @@ public class Sprint extends BaseEntity {
 
     private LocalDate endDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
-    private Board board;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -45,4 +41,7 @@ public class Sprint extends BaseEntity {
     @OneToMany(mappedBy = "sprint")
     @Builder.Default
     private List<Task> tasks = new ArrayList<>();
+
+    @OneToOne(mappedBy = "sprint", fetch = FetchType.LAZY)
+    private Board board;
 }

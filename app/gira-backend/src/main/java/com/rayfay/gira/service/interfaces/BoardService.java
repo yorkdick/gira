@@ -11,5 +11,7 @@ public interface BoardService {
 
     BoardResponse getBoardById(Long id);
 
+    BoardResponse getActiveBoard();
+
     Page<BoardResponse> getAllBoards(BoardStatus status, Pageable pageable);
 }

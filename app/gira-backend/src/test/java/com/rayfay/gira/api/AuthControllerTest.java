@@ -3,25 +3,25 @@ package com.rayfay.gira.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rayfay.gira.dto.request.LoginRequest;
 import com.rayfay.gira.dto.request.RefreshTokenRequest;
-import com.rayfay.gira.dto.response.LoginResponse;
-import com.rayfay.gira.service.interfaces.AuthService;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Sql(scripts = { "/sql/auth/init_login_test.sql" }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = { "/sql/auth/cleanup_login_test.sql" }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Sql(scripts = { "/sql/auth/init_auth_test.sql" }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = { "/sql/auth/cleanup_auth_test.sql" }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class AuthControllerTest {
 
     @Autowired
@@ -30,82 +30,111 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private AuthService authService;
-
-    private static final String TEST_USERNAME = "user1";
-    private static final String TEST_PASSWORD = "password123";
+    private String accessToken;
+    private String refreshToken;
 
     @Test
-    void login_WithValidCredentials_ShouldReturnToken() throws Exception {
-        // Arrange
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername(TEST_USERNAME);
-        loginRequest.setPassword(TEST_PASSWORD);
+    @Order(1)
+    void login_WithValidCredentials_ShouldReturnTokens() throws Exception {
+        LoginRequest request = new LoginRequest();
+        request.setUsername("manager");
+        request.setPassword("password");
 
-        // Act & Assert
-        mockMvc.perform(post("/api/auth/login")
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
-                .andExpect(jsonPath("$.refreshToken").exists());
+                .andExpect(jsonPath("$.refreshToken").exists())
+                .andExpect(jsonPath("$.expiresIn").exists())
+                .andReturn();
+
+        // 保存token供后续测试使用
+        String response = result.getResponse().getContentAsString();
+        accessToken = objectMapper.readTree(response).get("accessToken").asText();
+        refreshToken = objectMapper.readTree(response).get("refreshToken").asText();
     }
 
     @Test
-    void login_WithInvalidCredentials_ShouldReturnUnauthorized() throws Exception {
-        // Arrange
+    @Order(2)
+    void login_WithInvalidPassword_ShouldReturnUnauthorized() throws Exception {
         LoginRequest request = new LoginRequest();
-        request.setUsername("wronguser");
-        request.setPassword("wrongpass");
+        request.setUsername("manager");
+        request.setPassword("wrongpassword");
 
-        // Act & Assert
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("用户名或密码错误"));
     }
 
     @Test
-    @WithMockUser
-    void logout_ShouldReturnOk() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post("/api/auth/logout"))
-                .andExpect(status().isOk());
+    @Order(3)
+    void login_WithNonexistentUser_ShouldReturnUnauthorized() throws Exception {
+        LoginRequest request = new LoginRequest();
+        request.setUsername("nonexistent");
+        request.setPassword("password");
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("用户名或密码错误"));
     }
 
     @Test
-    void refreshToken_WithValidToken_ShouldReturnNewToken() throws Exception {
-        // Arrange - Login first to get a refresh token
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername(TEST_USERNAME);
-        loginRequest.setPassword(TEST_PASSWORD);
-        LoginResponse loginResponse = authService.login(loginRequest);
+    @Order(4)
+    void refreshToken_WithValidToken_ShouldReturnNewAccessToken() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken(refreshToken);
 
-        RefreshTokenRequest refreshRequest = new RefreshTokenRequest();
-        refreshRequest.setRefreshToken("Bearer " + loginResponse.getRefreshToken());
-
-        // Act & Assert
         mockMvc.perform(post("/api/auth/refresh-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(refreshRequest)))
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
-                .andExpect(jsonPath("$.refreshToken").exists());
+                .andExpect(jsonPath("$.expiresIn").exists());
     }
 
     @Test
+    @Order(5)
     void refreshToken_WithInvalidToken_ShouldReturnUnauthorized() throws Exception {
-        // Arrange
         RefreshTokenRequest request = new RefreshTokenRequest();
-        request.setRefreshToken("Bearer invalid-token");
+        request.setRefreshToken("invalid.refresh.token");
 
-        // Act & Assert
         mockMvc.perform(post("/api/auth/refresh-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Unauthorized"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.message").value("无效的刷新令牌"));
+    }
+
+    @Test
+    @Order(6)
+    void logout_WithValidToken_ShouldSucceed() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+
+        // 验证使用已登出的token访问受保护的接口应该返回未授权
+        mockMvc.perform(get("/api/users/current")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(7)
+    void logout_WithoutToken_ShouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(8)
+    void logout_WithInvalidToken_ShouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                .header("Authorization", "Bearer invalid.token"))
+                .andExpect(status().isUnauthorized());
     }
 }

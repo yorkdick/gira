@@ -2,18 +2,16 @@ package com.rayfay.gira.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rayfay.gira.dto.request.CreateTaskRequest;
-import com.rayfay.gira.dto.request.UpdateTaskRequest;
+import com.rayfay.gira.dto.request.LoginRequest;
+import com.rayfay.gira.dto.request.UpdateTaskStatusRequest;
 import com.rayfay.gira.entity.TaskPriority;
 import com.rayfay.gira.entity.TaskStatus;
-import com.rayfay.gira.repository.BoardColumnRepository;
-import com.rayfay.gira.repository.BoardRepository;
 import com.rayfay.gira.repository.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -37,43 +35,61 @@ class TaskControllerTest {
         private ObjectMapper objectMapper;
 
         @Autowired
-        private BoardRepository boardRepository;
-
-        @Autowired
-        private BoardColumnRepository boardColumnRepository;
-
-        @Autowired
         private UserRepository userRepository;
 
-        private static Long boardId;
-        private static Long columnId;
-        private static Long taskId;
-        private static Long userId;
+        private String adminToken;
+        private String developerToken;
+        private Long sprintId;
+        private Long taskId;
+        private Long userId;
 
-        @BeforeEach
-        void setUp() {
-                if (boardId == null) {
-                        boardId = boardRepository.findByName("测试看板")
-                                        .orElseThrow(() -> new RuntimeException("测试看板未找到")).getId();
-                        columnId = boardColumnRepository.findByBoardIdAndName(boardId, "待办")
-                                        .orElseThrow(() -> new RuntimeException("看板列未找到")).getId();
-                        userId = userRepository.findByUsername("developer")
-                                        .orElseThrow(() -> new RuntimeException("测试用户未找到")).getId();
-                }
+        @BeforeAll
+        void setUp() throws Exception {
+                // 获取管理员token
+                LoginRequest adminLogin = new LoginRequest();
+                adminLogin.setUsername("manager");
+                adminLogin.setPassword("password");
+                MvcResult adminResult = mockMvc.perform(post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(adminLogin)))
+                                .andReturn();
+                adminToken = objectMapper.readTree(adminResult.getResponse().getContentAsString())
+                                .get("accessToken").asText();
+
+                // 获取开发者token
+                LoginRequest devLogin = new LoginRequest();
+                devLogin.setUsername("developer");
+                devLogin.setPassword("password");
+                MvcResult devResult = mockMvc.perform(post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(devLogin)))
+                                .andReturn();
+                developerToken = objectMapper.readTree(devResult.getResponse().getContentAsString())
+                                .get("accessToken").asText();
+
+                // 获取活动Sprint ID
+                MvcResult sprintResult = mockMvc.perform(get("/api/sprints")
+                                .header("Authorization", "Bearer " + adminToken))
+                                .andReturn();
+                sprintId = objectMapper.readTree(sprintResult.getResponse().getContentAsString())
+                                .get("content").get(0).get("id").asLong();
+
+                // 获取开发者ID
+                userId = userRepository.findByUsername("developer")
+                                .orElseThrow(() -> new RuntimeException("测试用户未找到")).getId();
         }
 
         @Test
         @Order(1)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void createTask_WithValidRequest_ShouldReturnCreatedTask() throws Exception {
                 CreateTaskRequest request = new CreateTaskRequest();
                 request.setTitle("Test Task");
                 request.setDescription("Test Description");
                 request.setPriority(TaskPriority.MEDIUM);
-                request.setBoardId(boardId);
-                request.setColumnId(columnId);
+                request.setSprintId(sprintId);
 
                 MvcResult result = mockMvc.perform(post("/api/tasks")
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -89,15 +105,14 @@ class TaskControllerTest {
 
         @Test
         @Order(2)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void createTask_WithoutTitle_ShouldReturnBadRequest() throws Exception {
                 CreateTaskRequest request = new CreateTaskRequest();
                 request.setDescription("Test Description");
                 request.setPriority(TaskPriority.MEDIUM);
-                request.setBoardId(boardId);
-                request.setColumnId(columnId);
+                request.setSprintId(sprintId);
 
                 mockMvc.perform(post("/api/tasks")
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest())
@@ -106,35 +121,33 @@ class TaskControllerTest {
 
         @Test
         @Order(3)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
-        void createTask_WithInvalidBoard_ShouldReturnBadRequest() throws Exception {
+        void createTask_WithInvalidSprint_ShouldReturnBadRequest() throws Exception {
                 CreateTaskRequest request = new CreateTaskRequest();
                 request.setTitle("Test Task");
                 request.setDescription("Test Description");
                 request.setPriority(TaskPriority.MEDIUM);
-                request.setBoardId(999L);
-                request.setColumnId(columnId);
+                request.setSprintId(999L);
 
                 mockMvc.perform(post("/api/tasks")
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("看板不存在"));
+                                .andExpect(jsonPath("$.message").value("Sprint不存在"));
         }
 
         @Test
         @Order(4)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void createTask_WithAssignee_ShouldReturnCreatedTask() throws Exception {
                 CreateTaskRequest request = new CreateTaskRequest();
                 request.setTitle("Assigned Task");
                 request.setDescription("Task with Assignee");
                 request.setPriority(TaskPriority.HIGH);
-                request.setBoardId(boardId);
-                request.setColumnId(columnId);
+                request.setSprintId(sprintId);
                 request.setAssigneeId(userId);
 
                 mockMvc.perform(post("/api/tasks")
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -144,9 +157,9 @@ class TaskControllerTest {
 
         @Test
         @Order(5)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void getTask_WithValidId_ShouldReturnTask() throws Exception {
-                mockMvc.perform(get("/api/tasks/{id}", taskId))
+                mockMvc.perform(get("/api/tasks/{id}", taskId)
+                                .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(taskId))
                                 .andExpect(jsonPath("$.title").value("Test Task"));
@@ -154,9 +167,9 @@ class TaskControllerTest {
 
         @Test
         @Order(6)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void getTask_WithInvalidId_ShouldReturnNotFound() throws Exception {
-                mockMvc.perform(get("/api/tasks/{id}", 999L))
+                mockMvc.perform(get("/api/tasks/{id}", 999L)
+                                .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.status").value(404))
                                 .andExpect(jsonPath("$.message").value("任务不存在"));
@@ -164,9 +177,9 @@ class TaskControllerTest {
 
         @Test
         @Order(7)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
-        void getAllTasksByBoard_ShouldReturnPageOfTasks() throws Exception {
-                mockMvc.perform(get("/api/tasks/boards/{boardId}", boardId))
+        void getAllTasksBySprint_ShouldReturnPageOfTasks() throws Exception {
+                mockMvc.perform(get("/api/tasks/sprints/{sprintId}", sprintId)
+                                .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content").isArray())
                                 .andExpect(jsonPath("$.content[0].title").exists());
@@ -174,20 +187,20 @@ class TaskControllerTest {
 
         @Test
         @Order(8)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void getAllTasksByAssignee_ShouldReturnPageOfTasks() throws Exception {
-                mockMvc.perform(get("/api/tasks/assignee/{assigneeId}", userId))
+                mockMvc.perform(get("/api/tasks/assignee/{assigneeId}", userId)
+                                .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content").isArray());
         }
 
         @Test
         @Order(9)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void getAllTasksByStatus_ShouldReturnPageOfTasks() throws Exception {
                 mockMvc.perform(get("/api/tasks")
                                 .param("status", "TODO")
-                                .param("priority", "MEDIUM"))
+                                .param("priority", "MEDIUM")
+                                .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content").isArray())
                                 .andExpect(jsonPath("$.content[0].status").value("TODO"))
@@ -196,12 +209,12 @@ class TaskControllerTest {
 
         @Test
         @Order(10)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void updateTask_ToInProgress_ShouldReturnUpdatedTask() throws Exception {
-                UpdateTaskRequest request = new UpdateTaskRequest();
+                UpdateTaskStatusRequest request = new UpdateTaskStatusRequest();
                 request.setStatus(TaskStatus.IN_PROGRESS);
 
-                mockMvc.perform(put("/api/tasks/{id}", taskId)
+                mockMvc.perform(put("/api/tasks/{id}/status", taskId)
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -210,12 +223,12 @@ class TaskControllerTest {
 
         @Test
         @Order(11)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void updateTask_ToDone_ShouldReturnUpdatedTask() throws Exception {
-                UpdateTaskRequest request = new UpdateTaskRequest();
+                UpdateTaskStatusRequest request = new UpdateTaskStatusRequest();
                 request.setStatus(TaskStatus.DONE);
 
-                mockMvc.perform(put("/api/tasks/{id}", taskId)
+                mockMvc.perform(put("/api/tasks/{id}/status", taskId)
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -224,17 +237,16 @@ class TaskControllerTest {
 
         @Test
         @Order(12)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void updateTask_InvalidStatusTransition_ShouldReturnBadRequest() throws Exception {
                 // 创建新任务用于测试
                 CreateTaskRequest createRequest = new CreateTaskRequest();
                 createRequest.setTitle("Status Test Task");
                 createRequest.setDescription("For testing invalid status transition");
                 createRequest.setPriority(TaskPriority.MEDIUM);
-                createRequest.setBoardId(boardId);
-                createRequest.setColumnId(columnId);
+                createRequest.setSprintId(sprintId);
 
                 MvcResult result = mockMvc.perform(post("/api/tasks")
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(createRequest)))
                                 .andExpect(status().isOk())
@@ -243,10 +255,11 @@ class TaskControllerTest {
                 Long newTaskId = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
 
                 // 尝试从TODO直接到DONE
-                UpdateTaskRequest updateRequest = new UpdateTaskRequest();
+                UpdateTaskStatusRequest updateRequest = new UpdateTaskStatusRequest();
                 updateRequest.setStatus(TaskStatus.DONE);
 
-                mockMvc.perform(put("/api/tasks/{id}", newTaskId)
+                mockMvc.perform(put("/api/tasks/{id}/status", newTaskId)
+                                .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updateRequest)))
                                 .andExpect(status().isBadRequest())
@@ -255,17 +268,17 @@ class TaskControllerTest {
 
         @Test
         @Order(13)
-        @WithMockUser(username = "developer", roles = "DEVELOPER")
         void deleteTask_WithoutAdminRole_ShouldReturnForbidden() throws Exception {
-                mockMvc.perform(delete("/api/tasks/{id}", taskId))
+                mockMvc.perform(delete("/api/tasks/{id}", taskId)
+                                .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isForbidden());
         }
 
         @Test
         @Order(14)
-        @WithMockUser(username = "manager", roles = "ADMIN")
         void deleteTask_WithAdminRole_ShouldReturnOk() throws Exception {
-                mockMvc.perform(delete("/api/tasks/{id}", taskId))
+                mockMvc.perform(delete("/api/tasks/{id}", taskId)
+                                .header("Authorization", "Bearer " + adminToken))
                                 .andExpect(status().isOk());
         }
 }

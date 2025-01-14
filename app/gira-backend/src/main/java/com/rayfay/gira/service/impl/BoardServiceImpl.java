@@ -48,6 +48,13 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public BoardResponse getActiveBoard() {
+        return boardRepository.findByStatus(BoardStatus.ACTIVE)
+                .map(boardMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("没有活动中的看板"));
+    }
+
+    @Override
     public Page<BoardResponse> getAllBoards(BoardStatus status, Pageable pageable) {
         if (status != null) {
             return boardRepository.findByStatus(status, pageable)
