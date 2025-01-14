@@ -12,10 +12,9 @@ WITH inserted_board AS (
     RETURNING id
 )
 -- 插入默认看板列
-INSERT INTO board_columns (board_id, name, wip_limit, order_index, created_at, updated_at)
+INSERT INTO board_columns (board_id, name, order_index, created_at, updated_at)
 SELECT 
     id, unnest(ARRAY['待办', '进行中', '已完成']),
-    unnest(ARRAY[NULL, 3, NULL]),
     unnest(ARRAY[0, 1, 2]),
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM inserted_board; 

@@ -23,6 +23,5 @@ public class CreateBoardRequest {
         private String name;
 
         private Integer orderIndex;
-        private Integer wipLimit;
     }
 }

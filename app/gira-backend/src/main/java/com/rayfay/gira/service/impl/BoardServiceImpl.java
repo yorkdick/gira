@@ -64,7 +64,6 @@ public class BoardServiceImpl implements BoardService {
                         .board(savedBoard)
                         .name(column.getName())
                         .orderIndex(column.getOrderIndex())
-                        .wipLimit(column.getWipLimit())
                         .build())
                 .collect(Collectors.toList());
 
@@ -93,13 +92,11 @@ public class BoardServiceImpl implements BoardService {
                 }
                 column.setName(columnRequest.getName());
                 column.setOrderIndex(columnRequest.getOrderIndex());
-                column.setWipLimit(columnRequest.getWipLimit());
             } else {
                 column = BoardColumn.builder()
-                        .board(board)
                         .name(columnRequest.getName())
                         .orderIndex(columnRequest.getOrderIndex())
-                        .wipLimit(columnRequest.getWipLimit())
+                        .board(board)
                         .build();
             }
             updatedColumns.add(column);

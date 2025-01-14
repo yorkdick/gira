@@ -17,7 +17,6 @@
    - 看板配置：创建、更新看板及其列
    - 任务展示：看板列和任务卡片
    - 状态管理：活动和归档状态
-   - WIP限制：控制每列任务数量
 
 4. Sprint模块（Sprint）
    - Sprint管理：创建、更新、开始、完成
@@ -197,4 +196,12 @@ PUT /api/tasks/{id}/sprint         # 移动任务到Sprint
 GET /api/tasks/boards/{boardId}    # 获取看板任务
 GET /api/tasks/assignee/{assigneeId} # 获取指派的任务
 DELETE /api/tasks/{id}             # 删除任务
-``` 
+```
+
+### 看板功能
+- 看板列管理：
+  - 自定义列名称
+  - 调整列顺序
+  - 删除空列
+- 任务拖拽：在不同列之间拖拽任务
+- 看板统计：显示各列任务数量和完成情况 

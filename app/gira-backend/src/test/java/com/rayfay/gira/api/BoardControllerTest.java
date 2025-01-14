@@ -4,9 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rayfay.gira.dto.request.CreateBoardRequest;
 import com.rayfay.gira.dto.request.UpdateBoardRequest;
 import com.rayfay.gira.entity.Board;
-import com.rayfay.gira.entity.BoardStatus;
-import com.rayfay.gira.repository.BoardRepository;
-import com.rayfay.gira.repository.UserRepository;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -20,7 +17,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.util.Arrays;
 
@@ -42,12 +38,6 @@ class BoardControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     private static Long boardId;
 
     @Test
@@ -62,12 +52,10 @@ class BoardControllerTest {
         // 创建看板列
         CreateBoardRequest.BoardColumnRequest todoColumn = new CreateBoardRequest.BoardColumnRequest();
         todoColumn.setName("待办");
-        todoColumn.setWipLimit(5);
         todoColumn.setOrderIndex(0);
 
         CreateBoardRequest.BoardColumnRequest inProgressColumn = new CreateBoardRequest.BoardColumnRequest();
         inProgressColumn.setName("进行中");
-        inProgressColumn.setWipLimit(3);
         inProgressColumn.setOrderIndex(1);
 
         CreateBoardRequest.BoardColumnRequest doneColumn = new CreateBoardRequest.BoardColumnRequest();

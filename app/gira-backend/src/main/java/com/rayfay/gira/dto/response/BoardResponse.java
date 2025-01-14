@@ -21,7 +21,6 @@ public class BoardResponse {
         private Long id;
         private String name;
         private Integer orderIndex;
-        private Integer wipLimit;
         private Integer taskCount;
     }
 }

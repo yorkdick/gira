@@ -10,12 +10,12 @@ SELECT '测试看板', '用于Task测试的看板', 'ACTIVE', id, CURRENT_TIMEST
 FROM users WHERE username = 'manager';
 
 -- 插入看板列
-INSERT INTO board_columns (name, board_id, order_index, wip_limit, created_at, updated_at)
-SELECT '待办', id, 0, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+INSERT INTO board_columns (name, board_id, order_index, created_at, updated_at)
+SELECT '待办', id, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM boards WHERE name = '测试看板'
 UNION ALL
-SELECT '进行中', id, 1, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT '进行中', id, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM boards WHERE name = '测试看板'
 UNION ALL
-SELECT '已完成', id, 2, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT '已完成', id, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM boards WHERE name = '测试看板'; 

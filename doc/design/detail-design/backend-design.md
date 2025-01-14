@@ -232,8 +232,7 @@ public enum BoardStatus {
     "columns": [
         {
             "name": "string",
-            "orderIndex": "number",
-            "wipLimit": "number"
+            "orderIndex": "number"
         }
     ]
 }
@@ -249,6 +248,8 @@ public enum BoardStatus {
 - 错误码：
   - 400: 请求参数错误
   - 403: 无权限
+  - 404: "看板不存在"
+  - 409: "看板名称已存在"
 
 2. 更新看板
 - 路径: `PUT /api/boards/{id}`

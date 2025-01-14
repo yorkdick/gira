@@ -49,13 +49,6 @@ public class TaskServiceImpl implements TaskService {
             throw new IllegalArgumentException("看板列不属于指定的看板");
         }
 
-        if (column.getWipLimit() != null) {
-            int currentTasks = taskRepository.countByColumnId(column.getId());
-            if (currentTasks >= column.getWipLimit()) {
-                throw new IllegalStateException("看板列任务数量已达到限制");
-            }
-        }
-
         Task task = Task.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -109,12 +102,6 @@ public class TaskServiceImpl implements TaskService {
             BoardColumn column = boardColumnRepository.findById(request.getColumnId())
                     .orElseThrow(() -> new ResourceNotFoundException("看板列不存在"));
 
-            if (column.getWipLimit() != null) {
-                int currentTasks = taskRepository.countByColumnId(column.getId());
-                if (currentTasks >= column.getWipLimit()) {
-                    throw new IllegalStateException("看板列任务数量已达到限制");
-                }
-            }
             task.setColumn(column);
         }
 
@@ -133,13 +120,6 @@ public class TaskServiceImpl implements TaskService {
         Task task = getTaskOrThrow(id);
         BoardColumn column = boardColumnRepository.findById(request.getColumnId())
                 .orElseThrow(() -> new ResourceNotFoundException("看板列不存在"));
-
-        if (column.getWipLimit() != null) {
-            int currentTasks = taskRepository.countByColumnId(column.getId());
-            if (currentTasks >= column.getWipLimit()) {
-                throw new IllegalStateException("看板列任务数量已达到限制");
-            }
-        }
 
         task.setColumn(column);
         if (column.getName().equalsIgnoreCase("Done") ||

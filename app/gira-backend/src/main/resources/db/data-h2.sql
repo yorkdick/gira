@@ -13,9 +13,9 @@ FROM users WHERE username = 'admin';
 WITH default_board AS (
     SELECT id FROM boards WHERE name = '默认看板'
 )
-INSERT INTO board_columns (board_id, name, wip_limit, order_index, created_at, updated_at)
-SELECT id, '待办', NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM default_board
+INSERT INTO board_columns (board_id, name, order_index, created_at, updated_at)
+SELECT id, '待办', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM default_board
 UNION ALL
-SELECT id, '进行中', 3, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM default_board
+SELECT id, '进行中', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM default_board
 UNION ALL
-SELECT id, '已完成', NULL, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM default_board; 
+SELECT id, '已完成', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM default_board; 

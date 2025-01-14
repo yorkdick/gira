@@ -7,7 +7,6 @@ GIRA (Git-Inspired Rapid Agile) 是一个轻量级的项目管理系统，专注
 - 看板管理
   - 自定义看板列
   - 任务拖拽
-  - WIP限制
   - 看板统计
 
 - Sprint管理
@@ -46,12 +45,6 @@ GIRA (Git-Inspired Rapid Agile) 是一个轻量级的项目管理系统，专注
 - [功能设计文档](doc/design/basic-design/functional.md)
 - [后台详细设计](doc/design/detail-design/backend-design.md)
 - [后台开发指南](doc/design/detail-design/backend-development.md)
-- [前端详细设计](doc/design/detail-design/frontend-design.md)
-- [前端开发计划](doc/design/detail-design/frontend-development-plan.md)
-- [前端开发指南](doc/design/detail-design/frontend-development.md)
-- [前端任务列表](doc/design/detail-design/frontend-task-list.md)
-- [测试计划](app/gira-backend/doc/test-plan.md) - 详细的测试计划和执行指南
-- [测试结果](app/gira-backend/doc/test-results.md) - 测试执行结果和分析报告
 
 ## 快速开始
 

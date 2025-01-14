@@ -43,11 +43,10 @@
 |--------|------|------|--------|--------|------|
 | id | bigint | - | 否 | - | 主键，自增 |
 | board_id | bigint | - | 否 | - | 所属看板ID |
-| name | varchar | 50 | 否 | - | 列名称 |
-| order_index | int | - | 否 | 0 | 列顺序 |
-| wip_limit | int | - | 是 | NULL | 在制品数量限制 |
-| created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
+| name | varchar(255) | - | 否 | - | 列名称 |
+| order_index | int | - | 否 | - | 列排序索引 |
+| created_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
+| updated_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
