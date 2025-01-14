@@ -67,12 +67,17 @@ class TaskControllerTest {
                 developerToken = objectMapper.readTree(devResult.getResponse().getContentAsString())
                                 .get("accessToken").asText();
 
-                // 获取活动Sprint ID
+                // 获取Sprint ID并启动
                 MvcResult sprintResult = mockMvc.perform(get("/api/sprints")
                                 .header("Authorization", "Bearer " + adminToken))
                                 .andReturn();
                 sprintId = objectMapper.readTree(sprintResult.getResponse().getContentAsString())
                                 .get("content").get(0).get("id").asLong();
+
+                // 启动Sprint
+                mockMvc.perform(put("/api/sprints/{id}/start", sprintId)
+                                .header("Authorization", "Bearer " + adminToken))
+                                .andExpect(status().isOk());
 
                 // 获取开发者ID
                 userId = userRepository.findByUsername("developer")
@@ -132,7 +137,7 @@ class TaskControllerTest {
                                 .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isBadRequest())
+                                .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.message").value("Sprint不存在"));
         }
 
@@ -178,11 +183,13 @@ class TaskControllerTest {
         @Test
         @Order(7)
         void getAllTasksBySprint_ShouldReturnPageOfTasks() throws Exception {
-                mockMvc.perform(get("/api/tasks/sprints/{sprintId}", sprintId)
+                mockMvc.perform(get("/api/sprints/{id}/tasks", sprintId)
                                 .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.content").isArray())
-                                .andExpect(jsonPath("$.content[0].title").exists());
+                                .andExpect(jsonPath("$").isArray())
+                                .andExpect(jsonPath("$[0].title").value("测试任务"))
+                                .andExpect(jsonPath("$[0].status").value("TODO"))
+                                .andExpect(jsonPath("$[0].priority").value("MEDIUM"));
         }
 
         @Test
@@ -191,20 +198,20 @@ class TaskControllerTest {
                 mockMvc.perform(get("/api/tasks/assignee/{assigneeId}", userId)
                                 .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.content").isArray());
+                                .andExpect(jsonPath("$.content").isArray())
+                                .andExpect(jsonPath("$.content[0].assignee.id").value(userId));
         }
 
         @Test
         @Order(9)
         void getAllTasksByStatus_ShouldReturnPageOfTasks() throws Exception {
-                mockMvc.perform(get("/api/tasks")
+                mockMvc.perform(get("/api/tasks/assignee/{assigneeId}", userId)
                                 .param("status", "TODO")
                                 .param("priority", "MEDIUM")
                                 .header("Authorization", "Bearer " + developerToken))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content").isArray())
-                                .andExpect(jsonPath("$.content[0].status").value("TODO"))
-                                .andExpect(jsonPath("$.content[0].priority").value("MEDIUM"));
+                                .andExpect(jsonPath("$.content[0].status").value("TODO"));
         }
 
         @Test

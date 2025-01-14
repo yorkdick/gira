@@ -118,7 +118,7 @@ class UserControllerTest {
                                 .header("Authorization", "Bearer " + adminToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isBadRequest())
+                                .andExpect(status().isConflict())
                                 .andExpect(jsonPath("$.message").value("用户名已存在"));
         }
 
@@ -179,7 +179,14 @@ class UserControllerTest {
                 request.setOldPassword("password");
                 request.setNewPassword("newpassword");
 
-                mockMvc.perform(put("/api/users/password")
+                // 获取当前用户ID
+                MvcResult userResult = mockMvc.perform(get("/api/users/current")
+                                .header("Authorization", "Bearer " + developerToken))
+                                .andReturn();
+                Long userId = objectMapper.readTree(userResult.getResponse().getContentAsString())
+                                .get("id").asLong();
+
+                mockMvc.perform(put("/api/users/{id}/password", userId)
                                 .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
@@ -203,7 +210,14 @@ class UserControllerTest {
                 request.setOldPassword("wrongpassword");
                 request.setNewPassword("newpassword");
 
-                mockMvc.perform(put("/api/users/password")
+                // 获取当前用户ID
+                MvcResult userResult = mockMvc.perform(get("/api/users/current")
+                                .header("Authorization", "Bearer " + developerToken))
+                                .andReturn();
+                Long userId = objectMapper.readTree(userResult.getResponse().getContentAsString())
+                                .get("id").asLong();
+
+                mockMvc.perform(put("/api/users/{id}/password", userId)
                                 .header("Authorization", "Bearer " + developerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))

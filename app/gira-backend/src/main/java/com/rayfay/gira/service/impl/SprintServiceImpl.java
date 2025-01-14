@@ -26,7 +26,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -124,10 +123,16 @@ public class SprintServiceImpl implements SprintService {
                 .createdBy(sprint.getCreatedBy())
                 .sprint(sprint)
                 .build();
-        boardRepository.save(board);
 
+        // 保存看板
+        board = boardRepository.save(board);
+
+        // 更新Sprint状态和关联
         sprint.setStatus(SprintStatus.ACTIVE);
-        return sprintMapper.toResponse(sprintRepository.save(sprint));
+        sprint.setBoard(board);
+        sprint = sprintRepository.save(sprint);
+
+        return sprintMapper.toResponse(sprint);
     }
 
     @Override

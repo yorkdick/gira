@@ -41,17 +41,22 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getCredentials() != null) {
+            String token = authentication.getCredentials().toString();
+            jwtTokenProvider.blacklistToken(token);
+        }
         SecurityContextHolder.clearContext();
     }
 
     @Override
     public LoginResponse refreshToken(String refreshToken) {
         try {
-            if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
+            if (refreshToken == null) {
                 throw new IllegalArgumentException("无效的刷新令牌");
             }
 
-            String token = refreshToken.substring(7);
+            String token = refreshToken;
             if (!jwtTokenProvider.isRefreshToken(token)) {
                 throw new IllegalArgumentException("无效的刷新令牌类型");
             }

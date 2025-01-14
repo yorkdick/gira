@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -32,9 +33,13 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         body.put("status", HttpStatus.UNAUTHORIZED.value());
         body.put("error", "Unauthorized");
 
-        String message = authException.getMessage();
-        if (authException.getCause() instanceof JwtException) {
-            message = "Invalid token";
+        String message;
+        if (authException instanceof BadCredentialsException) {
+            message = "用户名或密码错误";
+        } else if (authException.getCause() instanceof JwtException) {
+            message = "无效的令牌";
+        } else {
+            message = "需要完整的身份认证才能访问此资源";
         }
         body.put("message", message);
         body.put("path", request.getServletPath());

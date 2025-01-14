@@ -42,6 +42,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        @SuppressWarnings("null")
         String message = ex.getBindingResult().getFieldError().getDefaultMessage();
         ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
