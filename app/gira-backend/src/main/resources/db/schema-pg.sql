@@ -24,20 +24,10 @@ CREATE TABLE IF NOT EXISTS boards (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- 看板列表
-CREATE TABLE IF NOT EXISTS board_columns (
-    id BIGSERIAL PRIMARY KEY,
-    board_id BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    order_index INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Sprint表
 CREATE TABLE IF NOT EXISTS sprints (
     id BIGSERIAL PRIMARY KEY,
-    board_id BIGINT NOT NULL,
+    board_id BIGINT,
     name VARCHAR(100) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PLANNING',
     start_date DATE,
@@ -54,8 +44,6 @@ CREATE TABLE IF NOT EXISTS tasks (
     description TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'TODO',
     priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
-    board_id BIGINT NOT NULL,
-    column_id BIGINT NOT NULL,
     sprint_id BIGINT,
     reporter_id BIGINT NOT NULL,
     assignee_id BIGINT,

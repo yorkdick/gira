@@ -16,7 +16,7 @@ public interface SprintRepository extends JpaRepository<Sprint, Long> {
 
     List<Sprint> findByStatusAndEndDateBefore(SprintStatus status, LocalDate date);
 
-    boolean existsByStatusAndEndDateAfter(SprintStatus status, LocalDate date);
+    boolean existsByStatus(SprintStatus status);
 
-    Page<Sprint> findByBoardId(Long boardId, Pageable pageable);
+    boolean existsByName(String name);
 }

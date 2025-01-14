@@ -15,6 +15,5 @@ public class SprintResponse {
     private SprintStatus status;
     private UserResponse createdBy;
     private LocalDateTime createdAt;
-    private int totalTasks;
-    private int completedTasks;
+    private BoardResponse board;
 }

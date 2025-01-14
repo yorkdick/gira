@@ -9,7 +9,5 @@ public interface TaskMapper {
 
     @Mapping(target = "sprintId", source = "sprint.id")
     @Mapping(target = "sprintName", source = "sprint.name")
-    @Mapping(target = "columnId", source = "column.id")
-    @Mapping(target = "columnName", source = "column.name")
     TaskResponse toResponse(Task task);
 }

@@ -1,7 +1,7 @@
 # GIRA项目数据库设计文档
 
 ## 1. 数据库概述
-本系统采用关系型数据库，使用MySQL 8.0版本。所有表格采用InnoDB引擎，字符集使用utf8mb4。
+本系统采用关系型数据库PostgreSQL 14。所有表格采用UTF-8字符集。
 
 ## 2. 表结构设计
 
@@ -15,8 +15,8 @@
 | full_name | varchar | 100 | 否 | - | 用户全名 |
 | role | varchar | 20 | 否 | 'DEVELOPER' | 用户角色（ADMIN/DEVELOPER）|
 | status | varchar | 20 | 否 | 'ACTIVE' | 用户状态（ACTIVE/INACTIVE）|
-| created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
+| created_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
+| updated_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
@@ -30,69 +30,49 @@
 | name | varchar | 100 | 否 | - | 看板名称 |
 | description | text | - | 是 | NULL | 看板描述 |
 | status | varchar | 20 | 否 | 'ACTIVE' | 看板状态（ACTIVE/ARCHIVED）|
-| created_by | bigint | - | 否 | - | 创建者ID |
-| created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
-
-索引：
-- PRIMARY KEY (id)
-- KEY idx_created_by (created_by)
-
-### 2.3 看板列表（board_columns）
-| 字段名 | 类型 | 长度 | 允许空 | 默认值 | 说明 |
-|--------|------|------|--------|--------|------|
-| id | bigint | - | 否 | - | 主键，自增 |
-| board_id | bigint | - | 否 | - | 所属看板ID |
-| name | varchar(255) | - | 否 | - | 列名称 |
-| order_index | int | - | 否 | - | 列排序索引 |
+| sprint_id | bigint | - | 否 | - | 关联的SprintID |
 | created_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
-- KEY idx_board_id (board_id)
+- KEY idx_sprint_id (sprint_id)
 
-### 2.4 Sprint表（sprints）
+### 2.3 Sprint表（sprints）
 | 字段名 | 类型 | 长度 | 允许空 | 默认值 | 说明 |
 |--------|------|------|--------|--------|------|
 | id | bigint | - | 否 | - | 主键，自增 |
-| board_id | bigint | - | 否 | - | 所属看板ID |
 | name | varchar | 100 | 否 | - | Sprint名称 |
 | start_date | date | - | 是 | NULL | 开始日期 |
 | end_date | date | - | 是 | NULL | 结束日期 |
 | status | varchar | 20 | 否 | 'PLANNING' | Sprint状态（PLANNING/ACTIVE/COMPLETED）|
-| created_by | bigint | - | 否 | - | 创建者ID |
-| created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
+| created_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
+| updated_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
-- KEY idx_board_id (board_id)
-- KEY idx_created_by (created_by)
+- KEY idx_status (status)
 
-### 2.5 任务表（tasks）
+### 2.4 任务表（tasks）
 | 字段名 | 类型 | 长度 | 允许空 | 默认值 | 说明 |
 |--------|------|------|--------|--------|------|
 | id | bigint | - | 否 | - | 主键，自增 |
 | title | varchar | 200 | 否 | - | 任务标题 |
 | description | text | - | 是 | NULL | 任务描述 |
-| board_id | bigint | - | 否 | - | 所属看板ID |
-| sprint_id | bigint | - | 是 | NULL | 所属SprintID |
-| column_id | bigint | - | 否 | - | 所属列ID |
+| sprint_id | bigint | - | 否 | - | 所属SprintID |
+| status | varchar | 20 | 否 | 'TODO' | 任务状态（TODO/IN_PROGRESS/DONE）|
 | assignee_id | bigint | - | 是 | NULL | 经办人ID |
 | reporter_id | bigint | - | 否 | - | 报告人ID |
 | priority | varchar | 20 | 否 | 'MEDIUM' | 优先级（HIGH/MEDIUM/LOW）|
-| status | varchar | 20 | 否 | 'TODO' | 任务状态（TODO/IN_PROGRESS/DONE）|
-| created_at | datetime | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | datetime | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
+| created_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 创建时间 |
+| updated_at | timestamp | - | 否 | CURRENT_TIMESTAMP | 更新时间 |
 
 索引：
 - PRIMARY KEY (id)
-- KEY idx_board_id (board_id)
 - KEY idx_sprint_id (sprint_id)
-- KEY idx_column_id (column_id)
 - KEY idx_assignee_id (assignee_id)
 - KEY idx_reporter_id (reporter_id)
+- KEY idx_status (status)
 
 ## 3. 表关系图
 ```mermaid
@@ -101,9 +81,8 @@ erDiagram
     users ||--o{ sprints : creates
     users ||--o{ tasks : creates
     users ||--o{ tasks : assigned_to
-    boards ||--o{ board_columns : contains
-    boards ||--o{ sprints : contains
-    board_columns ||--o{ tasks : contains
+    users ||--o{ tasks : reports
+    sprints ||--|| boards : has
     sprints ||--o{ tasks : contains
 ```
 
@@ -113,16 +92,14 @@ erDiagram
 ### 4.1 管理员用户
 ```sql
 INSERT INTO users (username, password, email, full_name, role, status)
-VALUES ('admin', '{bcrypt}$2a$10$...', 'admin@example.com', 'System Admin', 'ADMIN', 'ACTIVE');
-```
-
-### 4.2 默认看板列
-```sql
-INSERT INTO board_columns (board_id, name, order_index)
-VALUES 
-(1, 'To Do', 0),
-(1, 'In Progress', 1),
-(1, 'Done', 2);
+VALUES (
+    'admin', 
+    '{bcrypt}$2a$10$...', 
+    'admin@example.com', 
+    'System Admin', 
+    'ADMIN', 
+    'ACTIVE'
+);
 ```
 
 ## 5. 数据库维护建议
@@ -133,13 +110,28 @@ VALUES
 - 保留最近30天的备份数据
 
 ### 5.2 性能优化
-- 所有表使用InnoDB引擎
-- 根据查询模式创建合适的索引
-- 定期进行ANALYZE TABLE操作
-- 监控慢查询日志并优化
+- 合理使用索引
+  - 经常作为查询条件的字段建立索引
+  - 避免冗余索引
+  - 定期分析索引使用情况
+- 定期进行VACUUM操作
+  - 每周进行VACUUM FULL
+  - 每天进行VACUUM ANALYZE
+- 监控慢查询并优化
+  - 设置log_min_duration_statement
+  - 使用pg_stat_statements分析SQL性能
+  - 定期优化慢查询
 
 ### 5.3 安全建议
 - 使用强密码策略
-- 定期轮换数据库密码
-- 限制数据库远程访问
-- 对敏感数据进行加密存储 
+  - 密码长度至少12位
+  - 包含大小写字母、数字和特殊字符
+  - 定期更换密码
+- 数据库访问控制
+  - 限制数据库远程访问
+  - 使用最小权限原则
+  - 定期审计数据库访问日志
+- 数据加密
+  - 敏感数据使用加密存储
+  - 使用TLS加密传输
+  - 定期轮换加密密钥 

@@ -16,13 +16,7 @@ public interface TaskService {
 
     TaskResponse getTaskById(Long id);
 
-    Page<TaskResponse> getAllTasks(Long sprintId, Long assigneeId, Pageable pageable);
-
-    Page<TaskResponse> getBacklogTasks(Pageable pageable);
-
     TaskResponse moveTaskToSprint(Long id, Long sprintId);
-
-    Page<TaskResponse> getTasksByBoard(Long boardId, Pageable pageable);
 
     Page<TaskResponse> getTasksByAssignee(Long assigneeId, Pageable pageable);
 

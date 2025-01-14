@@ -60,7 +60,6 @@ class SprintControllerTest {
     @WithMockUser(username = "manager", roles = { "ADMIN" })
     void createSprint_WithValidRequest_ShouldReturnCreatedSprint() throws Exception {
         CreateSprintRequest request = new CreateSprintRequest();
-        request.setBoardId(boardId);
         request.setName("Sprint 1");
         request.setStartDate(LocalDate.now());
         request.setEndDate(LocalDate.now().plusWeeks(2));
@@ -71,21 +70,19 @@ class SprintControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Sprint 1"))
                 .andExpect(jsonPath("$.status").value("PLANNING"))
-                // .andExpect(jsonPath("$.boardId").value(boardId))
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
         sprintId = objectMapper.readTree(response).get("id").asLong();
 
         CreateSprintRequest request2 = new CreateSprintRequest();
-        request2.setBoardId(boardId);
         request2.setName("Another Sprint");
         request2.setStartDate(LocalDate.now());
         request2.setEndDate(LocalDate.now().plusWeeks(2));
 
         MvcResult result2 = mockMvc.perform(post("/api/sprints")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isOk())
                 .andReturn();
         String response2 = result2.getResponse().getContentAsString();
@@ -197,7 +194,6 @@ class SprintControllerTest {
     @WithMockUser(username = "manager", roles = { "ADMIN" })
     void completeSprint_WhenNotActive_ShouldReturnBadRequest() throws Exception {
         CreateSprintRequest request = new CreateSprintRequest();
-        request.setBoardId(boardId);
         request.setName("Planning Sprint");
         request.setStartDate(LocalDate.now());
         request.setEndDate(LocalDate.now().plusWeeks(2));
@@ -231,7 +227,6 @@ class SprintControllerTest {
     @WithMockUser(username = "manager", roles = { "ADMIN" })
     void createSprint_WithInvalidDateRange_ShouldReturnBadRequest() throws Exception {
         CreateSprintRequest request = new CreateSprintRequest();
-        request.setBoardId(boardId);
         request.setName("Invalid Sprint");
         request.setStartDate(LocalDate.now().plusWeeks(2));
         request.setEndDate(LocalDate.now().plusWeeks(1));
@@ -248,7 +243,6 @@ class SprintControllerTest {
     @WithMockUser(username = "manager", roles = { "ADMIN" })
     void createSprint_WithPastStartDate_ShouldReturnBadRequest() throws Exception {
         CreateSprintRequest request = new CreateSprintRequest();
-        request.setBoardId(boardId);
         request.setName("Past Sprint");
         request.setStartDate(LocalDate.now().minusDays(1));
         request.setEndDate(LocalDate.now().plusWeeks(2));

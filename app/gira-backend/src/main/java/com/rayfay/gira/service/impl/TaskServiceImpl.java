@@ -7,8 +7,6 @@ import com.rayfay.gira.dto.response.TaskResponse;
 import com.rayfay.gira.entity.*;
 import com.rayfay.gira.exception.ResourceNotFoundException;
 import com.rayfay.gira.mapper.TaskMapper;
-import com.rayfay.gira.repository.BoardColumnRepository;
-import com.rayfay.gira.repository.BoardRepository;
 import com.rayfay.gira.repository.SprintRepository;
 import com.rayfay.gira.repository.TaskRepository;
 import com.rayfay.gira.repository.UserRepository;
@@ -26,47 +24,35 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final SprintRepository sprintRepository;
-    private final BoardRepository boardRepository;
-    private final BoardColumnRepository boardColumnRepository;
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
 
     @Override
     @Transactional
     public TaskResponse createTask(CreateTaskRequest request) {
+        if (request.getSprintId() == null) {
+            throw new IllegalArgumentException("任务必须在Sprint中创建");
+        }
+
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
         User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
 
-        Board board = boardRepository.findById(request.getBoardId())
-                .orElseThrow(() -> new IllegalArgumentException("看板不存在"));
-
-        BoardColumn column = boardColumnRepository.findById(request.getColumnId())
-                .orElseThrow(() -> new ResourceNotFoundException("看板列不存在"));
-
-        if (!column.getBoard().getId().equals(board.getId())) {
-            throw new IllegalArgumentException("看板列不属于指定的看板");
+        Sprint sprint = sprintRepository.findById(request.getSprintId())
+                .orElseThrow(() -> new ResourceNotFoundException("Sprint不存在"));
+        if (sprint.getStatus() != SprintStatus.PLANNING && sprint.getStatus() != SprintStatus.ACTIVE) {
+            throw new IllegalStateException("只能将任务添加到计划中或活动中的Sprint");
         }
 
         Task task = Task.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .column(column)
-                .board(board)
                 .reporter(currentUser)
+                .sprint(sprint)
                 .priority(request.getPriority() != null ? request.getPriority() : TaskPriority.MEDIUM)
                 .status(TaskStatus.TODO)
                 .build();
-
-        if (request.getSprintId() != null) {
-            Sprint sprint = sprintRepository.findById(request.getSprintId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Sprint不存在"));
-            if (sprint.getStatus() != SprintStatus.PLANNING && sprint.getStatus() != SprintStatus.ACTIVE) {
-                throw new IllegalStateException("只能将任务添加到计划中或活动中的Sprint");
-            }
-            task.setSprint(sprint);
-        }
 
         if (request.getAssigneeId() != null) {
             User assignee = userRepository.findById(request.getAssigneeId())
@@ -91,19 +77,6 @@ public class TaskServiceImpl implements TaskService {
         if (request.getPriority() != null) {
             task.setPriority(request.getPriority());
         }
-        if (request.getStatus() != null) {
-            // 检查状态转换是否合法
-            if (task.getStatus() == TaskStatus.TODO && request.getStatus() == TaskStatus.DONE) {
-                throw new IllegalStateException("无效的状态变更");
-            }
-            task.setStatus(request.getStatus());
-        }
-        if (request.getColumnId() != null) {
-            BoardColumn column = boardColumnRepository.findById(request.getColumnId())
-                    .orElseThrow(() -> new ResourceNotFoundException("看板列不存在"));
-
-            task.setColumn(column);
-        }
 
         if (request.getAssigneeId() != null) {
             User assignee = userRepository.findById(request.getAssigneeId())
@@ -118,18 +91,31 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskResponse updateTaskStatus(Long id, UpdateTaskStatusRequest request) {
         Task task = getTaskOrThrow(id);
-        BoardColumn column = boardColumnRepository.findById(request.getColumnId())
-                .orElseThrow(() -> new ResourceNotFoundException("看板列不存在"));
 
-        task.setColumn(column);
-        if (column.getName().equalsIgnoreCase("Done") ||
-                column.getName().equalsIgnoreCase("完成")) {
-            task.setStatus(TaskStatus.DONE);
-        } else {
-            task.setStatus(TaskStatus.IN_PROGRESS);
+        // 检查状态转换是否有效
+        if (!isValidStatusTransition(task.getStatus(), request.getStatus())) {
+            throw new IllegalStateException("无效的状态变更");
         }
 
+        task.setStatus(request.getStatus());
         return taskMapper.toResponse(taskRepository.save(task));
+    }
+
+    private boolean isValidStatusTransition(TaskStatus currentStatus, TaskStatus newStatus) {
+        if (currentStatus == newStatus) {
+            return true;
+        }
+
+        switch (currentStatus) {
+            case TODO:
+                return newStatus == TaskStatus.IN_PROGRESS;
+            case IN_PROGRESS:
+                return newStatus == TaskStatus.DONE || newStatus == TaskStatus.TODO;
+            case DONE:
+                return false;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -138,55 +124,18 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Page<TaskResponse> getAllTasks(Long sprintId, Long assigneeId, Pageable pageable) {
-        if (sprintId != null) {
-            return taskRepository.findBySprintId(sprintId, pageable)
-                    .map(taskMapper::toResponse);
-        }
-        if (assigneeId != null) {
-            return taskRepository.findByAssigneeId(assigneeId, pageable)
-                    .map(taskMapper::toResponse);
-        }
-        return taskRepository.findAll(pageable)
-                .map(taskMapper::toResponse);
-    }
-
-    @Override
-    public Page<TaskResponse> getBacklogTasks(Pageable pageable) {
-        return taskRepository.findBySprintIdIsNull(pageable)
-                .map(taskMapper::toResponse);
-    }
-
-    @Override
     @Transactional
     public TaskResponse moveTaskToSprint(Long id, Long sprintId) {
         Task task = getTaskOrThrow(id);
+        Sprint sprint = sprintRepository.findById(sprintId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sprint不存在"));
 
-        if (sprintId == null) {
-            task.setSprint(null);
-        } else {
-            Sprint sprint = sprintRepository.findById(sprintId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Sprint不存在"));
-
-            if (sprint.getStatus() != SprintStatus.PLANNING && sprint.getStatus() != SprintStatus.ACTIVE) {
-                throw new IllegalStateException("只能将任务移动到计划中或活动中的Sprint");
-            }
-
-            task.setSprint(sprint);
+        if (sprint.getStatus() != SprintStatus.PLANNING && sprint.getStatus() != SprintStatus.ACTIVE) {
+            throw new IllegalStateException("只能将任务移动到计划中或活动中的Sprint");
         }
 
+        task.setSprint(sprint);
         return taskMapper.toResponse(taskRepository.save(task));
-    }
-
-    private Task getTaskOrThrow(Long id) {
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("任务不存在"));
-    }
-
-    @Override
-    public Page<TaskResponse> getTasksByBoard(Long boardId, Pageable pageable) {
-        return taskRepository.findByColumnBoardId(boardId, pageable)
-                .map(taskMapper::toResponse);
     }
 
     @Override
@@ -200,5 +149,10 @@ public class TaskServiceImpl implements TaskService {
     public void deleteTask(Long id) {
         Task task = getTaskOrThrow(id);
         taskRepository.delete(task);
+    }
+
+    private Task getTaskOrThrow(Long id) {
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("任务不存在"));
     }
 }

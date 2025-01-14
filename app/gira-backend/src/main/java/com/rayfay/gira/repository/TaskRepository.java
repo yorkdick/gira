@@ -12,16 +12,9 @@ import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    Page<Task> findBySprintId(Long sprintId, Pageable pageable);
-
-    Page<Task> findBySprintIdIsNull(Pageable pageable);
+    List<Task> findBySprintId(Long sprintId);
 
     Page<Task> findByAssigneeId(Long assigneeId, Pageable pageable);
-
-    List<Task> findByColumnId(Long columnId);
-
-    @Query("SELECT COUNT(t) FROM Task t WHERE t.column.id = :columnId")
-    int countByColumnId(Long columnId);
 
     @Query("SELECT COUNT(t) FROM Task t WHERE t.sprint.id = :sprintId")
     int countBySprintId(Long sprintId);
@@ -31,5 +24,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findBySprintIdAndStatus(Long sprintId, TaskStatus status);
 
-    Page<Task> findByColumnBoardId(Long boardId, Pageable pageable);
+    List<Task> findBySprintIdAndStatusIn(Long sprintId, List<TaskStatus> statuses);
 }

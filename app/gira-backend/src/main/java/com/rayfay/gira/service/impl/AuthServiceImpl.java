@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -40,8 +41,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
-        // 在实际应用中，可以在这里实现令牌黑名单等逻辑
-        // 由于使用的是JWT，客户端只需要删除本地存储的令牌即可
+        SecurityContextHolder.clearContext();
     }
 
     @Override
@@ -57,26 +57,22 @@ public class AuthServiceImpl implements AuthService {
             }
 
             String username = jwtTokenProvider.extractUsername(token);
-            if (username == null) {
-                throw new IllegalArgumentException("无效的刷新令牌");
-            }
-
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (!jwtTokenProvider.isTokenValid(token, userDetails)) {
-                throw new IllegalArgumentException("刷新令牌已过期");
+
+            if (jwtTokenProvider.isTokenValid(token, userDetails)) {
+                String newAccessToken = jwtTokenProvider.generateToken(userDetails);
+                String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+
+                return LoginResponse.builder()
+                        .accessToken(newAccessToken)
+                        .refreshToken(newRefreshToken)
+                        .tokenType("Bearer")
+                        .expiresIn(jwtTokenProvider.getExpirationTime())
+                        .build();
             }
-
-            String newAccessToken = jwtTokenProvider.generateToken(userDetails);
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
-
-            return LoginResponse.builder()
-                    .accessToken(newAccessToken)
-                    .refreshToken(newRefreshToken)
-                    .tokenType("Bearer")
-                    .expiresIn(jwtTokenProvider.getExpirationTime())
-                    .build();
+            throw new IllegalArgumentException("刷新令牌已过期");
         } catch (JwtException e) {
-            throw new IllegalArgumentException("无效的令牌格式");
+            throw new IllegalArgumentException("无效的刷新令牌");
         }
     }
 }

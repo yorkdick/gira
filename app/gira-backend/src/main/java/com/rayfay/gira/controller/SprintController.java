@@ -61,15 +61,8 @@ public class SprintController {
         return sprintService.getAllSprints(status, pageable);
     }
 
-    @GetMapping("/boards/{boardId}/sprints")
-    public Page<SprintResponse> getSprintsByBoard(
-            @PathVariable Long boardId,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return sprintService.getSprintsByBoard(boardId, pageable);
-    }
-
     @GetMapping("/{id}/tasks")
-    public ResponseEntity<List<TaskResponse>> getSprintTasks(@PathVariable Long id) {
-        return ResponseEntity.ok(sprintService.getSprintTasks(id));
+    public List<TaskResponse> getSprintTasks(@PathVariable Long id) {
+        return sprintService.getSprintTasks(id);
     }
 }

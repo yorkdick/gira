@@ -91,4 +91,9 @@ public class JwtTokenProvider {
     public long getExpirationTime() {
         return jwtExpiration;
     }
+
+    public long getExpirationTime(String token) {
+        Date expiration = extractExpiration(token);
+        return expiration.getTime() - System.currentTimeMillis();
+    }
 }

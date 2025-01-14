@@ -62,15 +62,29 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse updateUser(Long id, UpdateUserRequest request) {
         User user = getUserOrThrow(id);
-        checkUpdatePermission(user);
 
-        if (!user.getEmail().equals(request.getEmail()) &&
-                userRepository.existsByEmail(request.getEmail())) {
-            throw new UserAlreadyExistsException("邮箱已存在");
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
+
+        if (!currentUser.getRole().equals(UserRole.ADMIN) && !user.getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("无权限修改其他用户信息");
         }
 
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new UserAlreadyExistsException("邮箱已存在");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getStatus() != null && currentUser.getRole().equals(UserRole.ADMIN)) {
+            user.setStatus(request.getStatus());
+        }
 
         return userMapper.toResponse(userRepository.save(user));
     }
@@ -79,10 +93,14 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updatePassword(Long id, String oldPassword, String newPassword) {
         User user = getUserOrThrow(id);
-        checkUpdatePermission(user);
+
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!user.getUsername().equals(currentUsername)) {
+            throw new AccessDeniedException("无权限修改其他用户密码");
+        }
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new IllegalArgumentException("原密码错误");
+            throw new IllegalArgumentException("旧密码错误");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -103,31 +121,25 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(Long id) {
         User user = getUserOrThrow(id);
-        if (user.getRole() == UserRole.ADMIN) {
-            throw new IllegalStateException("不能删除管理员用户");
+
+        if (user.getRole().equals(UserRole.ADMIN)) {
+            long adminCount = userRepository.countByRole(UserRole.ADMIN);
+            if (adminCount <= 1) {
+                throw new IllegalStateException("系统必须保留至少一个管理员账号");
+            }
         }
+
         userRepository.delete(user);
-    }
-
-    private User getUserOrThrow(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
-    }
-
-    private void checkUpdatePermission(User user) {
-        UserDetails currentUser = (UserDetails) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-
-        if (!currentUser.getUsername().equals(user.getUsername()) &&
-                !currentUser.getAuthorities().stream()
-                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessDeniedException("无权限修改其他用户信息");
-        }
     }
 
     @Override
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
+    }
+
+    private User getUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
     }
 }

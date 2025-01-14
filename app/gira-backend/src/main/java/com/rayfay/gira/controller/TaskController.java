@@ -44,31 +44,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTaskById(id));
     }
 
-    @GetMapping
-    public ResponseEntity<Page<TaskResponse>> getAllTasks(
-            @RequestParam(required = false) Long sprintId,
-            @RequestParam(required = false) Long assigneeId,
-            Pageable pageable) {
-        return ResponseEntity.ok(taskService.getAllTasks(sprintId, assigneeId, pageable));
-    }
-
-    @GetMapping("/backlog")
-    public ResponseEntity<Page<TaskResponse>> getBacklogTasks(Pageable pageable) {
-        return ResponseEntity.ok(taskService.getBacklogTasks(pageable));
-    }
-
-    @PutMapping("/{id}/sprint")
+    @PutMapping("/{id}/sprint/{sprintId}")
     public ResponseEntity<TaskResponse> moveTaskToSprint(
             @PathVariable Long id,
-            @RequestParam(required = false) Long sprintId) {
+            @PathVariable Long sprintId) {
         return ResponseEntity.ok(taskService.moveTaskToSprint(id, sprintId));
-    }
-
-    @GetMapping("/boards/{boardId}")
-    public ResponseEntity<Page<TaskResponse>> getTasksByBoard(
-            @PathVariable Long boardId,
-            Pageable pageable) {
-        return ResponseEntity.ok(taskService.getTasksByBoard(boardId, pageable));
     }
 
     @GetMapping("/assignee/{assigneeId}")

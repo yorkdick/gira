@@ -2,7 +2,6 @@ package com.rayfay.gira.dto.request;
 
 import com.rayfay.gira.entity.TaskPriority;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -12,15 +11,9 @@ public class CreateTaskRequest {
 
     private String description;
 
-    @NotNull(message = "看板ID不能为空")
-    private Long boardId;
+    private TaskPriority priority;
 
     private Long sprintId;
 
-    @NotNull(message = "看板列不能为空")
-    private Long columnId;
-
     private Long assigneeId;
-
-    private TaskPriority priority;
 }

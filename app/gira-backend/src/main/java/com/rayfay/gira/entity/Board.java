@@ -3,9 +3,6 @@ package com.rayfay.gira.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "boards")
 @Getter
@@ -32,8 +29,4 @@ public class Board extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
-
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<BoardColumn> columns = new ArrayList<>();
 }
