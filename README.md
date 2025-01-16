@@ -27,14 +27,26 @@ GIRA (Git-Inspired Rapid Agile) 是一个轻量级的项目管理系统，专注
 ## 技术栈
 
 ### 后端技术栈
-- Java 21
-- Spring Boot 3.2.0
-- Spring Security + JWT
-- Spring Data JPA
-- H2 Database (开发环境)
-- PostgreSQL (生产环境)
-- MapStruct 1.5.5.Final
-- Lombok 1.18.30
+- 核心框架：Spring Boot 3.2.0
+- JDK版本：OpenJDK 21
+- 安全框架：Spring Security + JWT
+- 数据访问：Spring Data JPA
+- 数据库：PostgreSQL 14
+- 对象映射：MapStruct 1.5.5.Final
+- 代码简化：Lombok 1.18.30
+- API文档：SpringDoc OpenAPI 2.3.0
+
+### 前端技术栈
+- 核心框架：React 18
+- UI组件库：Ant Design 5.x
+- 状态管理：Redux Toolkit
+- 路由管理：React Router 6
+- 类型系统：TypeScript 5.x
+- HTTP客户端：Axios
+- 样式解决方案：Less + CSS Modules
+- 构建工具：Vite
+- 代码规范：ESLint + Prettier
+- 测试框架：Jest + React Testing Library
 
 ## 项目文档
 
@@ -45,6 +57,9 @@ GIRA (Git-Inspired Rapid Agile) 是一个轻量级的项目管理系统，专注
 - [功能设计文档](doc/design/basic-design/functional.md)
 - [后台详细设计](doc/design/detail-design/backend-design.md)
 - [后台开发指南](doc/design/detail-design/backend-development.md)
+- [前端页面设计](doc/design/detail-design/frontend-pages.md)
+- [前端开发指南](doc/design/detail-design/frontend-development.md)
+- [前端API接口](doc/design/detail-design/frontend-api.md)
 
 ## 快速开始
 
@@ -52,6 +67,8 @@ GIRA (Git-Inspired Rapid Agile) 是一个轻量级的项目管理系统，专注
 - OpenJDK 21
 - Maven 3.9.6+
 - PostgreSQL 14+ (生产环境)
+- Node.js 18+
+- pnpm 8+
 
 ### 开发环境设置
 
@@ -61,15 +78,26 @@ git clone https://github.com/rayfay/gira.git
 cd gira
 ```
 
-2. 编译项目
+2. 编译后端项目
 ```bash
 cd app/gira-backend
 mvn clean install
 ```
 
-3. 运行项目（开发模式）
+3. 运行后端项目（开发模式）
 ```bash
 mvn spring-boot:run -Dspring.profiles.active=dev
+```
+
+4. 安装前端依赖
+```bash
+cd app/gira-frontend
+pnpm install
+```
+
+5. 运行前端项目（开发模式）
+```bash
+pnpm dev
 ```
 
 开发环境默认使用H2数据库，无需额外配置。
@@ -79,16 +107,29 @@ mvn spring-boot:run -Dspring.profiles.active=dev
 ```
 gira/
 ├── app/
-│   └── gira-backend/        # 后端应用
-│       ├── src/             # 源代码
-│       │   ├── main/        # 主要代码
-│       │   └── test/        # 测试代码
-│       └── doc/             # 后端文档
-└── doc/                     # 项目文档
-    ├── design/              # 设计文档
-    │   ├── basic-design/    # 基础设计
-    │   └── detail-design/   # 详细设计
-    └── assets/              # 文档资源
+│   ├── gira-backend/        # 后端应用
+│   │   ├── src/            # 源代码
+│   │   │   ├── main/       # 主要代码
+│   │   │   └── test/       # 测试代码
+│   │   └── doc/            # 后端文档
+│   └── gira-frontend/      # 前端应用
+│       ├── src/            # 源代码
+│       │   ├── assets/     # 静态资源
+│       │   ├── components/ # 通用组件
+│       │   ├── config/     # 配置文件
+│       │   ├── hooks/      # 自定义Hooks
+│       │   ├── layouts/    # 布局组件
+│       │   ├── pages/      # 页面组件
+│       │   ├── services/   # API服务
+│       │   ├── store/      # 状态管理
+│       │   ├── types/      # 类型定义
+│       │   └── utils/      # 工具函数
+│       └── doc/            # 前端文档
+└── doc/                    # 项目文档
+    ├── design/             # 设计文档
+    │   ├── basic-design/   # 基础设计
+    │   └── detail-design/  # 详细设计
+    └── assets/             # 文档资源
 ```
 
 ## 开发规范
@@ -119,9 +160,16 @@ Type类型:
 
 ## 测试
 
+### 后端测试
 ```bash
 cd app/gira-backend
 mvn test
+```
+
+### 前端测试
+```bash
+cd app/gira-frontend
+pnpm test
 ```
 
 ## 许可证

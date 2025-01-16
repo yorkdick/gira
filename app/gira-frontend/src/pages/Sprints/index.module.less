@@ -1,0 +1,53 @@
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.sprintCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  :global {
+    .ant-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.cardHeader {
+  margin-bottom: 12px;
+}
+
+.description {
+  flex: 1;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dates {
+  margin-bottom: 12px;
+}
+
+.progress {
+  :global {
+    .ant-progress {
+      margin-bottom: 8px;
+    }
+  }
+} 

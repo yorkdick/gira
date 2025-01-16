@@ -17,8 +17,6 @@ Layout
 
 ### 1.2 响应式设计
 - 桌面端（≥1200px）：三栏布局
-- 平板端（≥768px）：两栏布局，侧边栏可折叠
-- 移动端（<768px）：单栏布局，导航通过抽屉呈现
 
 ## 2. 页面分组
 
@@ -27,39 +25,28 @@ Layout
 - 布局：居中单列布局
 - 功能：
   - 用户名密码登录
+  - 登出（在顶部导航栏的用户菜单中）
 - 权限：所有用户
+- 参考页面：[登录页面设计图](../../../doc/assets/image/login.png)
 
-### 2.2 看板页面组
-#### 看板列表页（/boards）
-- 布局：卡片网格布局
+### 2.2 看板页面
+#### 当前看板页（/activeBoard）
+- 布局：三列布局(代办、进行中、完成)
 - 功能：
-  - 查看所有看板
-  - 创建新看板（ADMIN/MANAGER）
-  - 归档看板（ADMIN/MANAGER）
-  - 按状态筛选看板（ACTIVE/ARCHIVED）
-- 权限：
-  - ADMIN/MANAGER：全部功能
-  - DEVELOPER：查看功能
-
-#### 看板详情页（/boards/:id）
-- 布局：看板列布局
-- 功能：
-  - 查看看板内容和任务
-  - 更新看板信息（名称、描述）
-  - 更新看板列（名称、顺序）
-  - 创建/编辑任务
   - 拖动任务卡片更新任务状态
+  - 点击任务卡片查看任务详情
+  - 编辑任务信息（标题、描述、经办人、优先级）
 - 权限：
-  - ADMIN/MANAGER：全部功能
-  - DEVELOPER：查看和任务操作
+  - ADMIN：全部功能
+  - DEVELOPER：查看和编辑功能
+- 参考页面：[看板页面设计图](../../../doc/assets/image/JIRA-Kanban.png)
 
-### 2.3 Sprint与任务管理页面组
-#### Sprint计划页面（/sprints）
+### 2.3 Sprint页面
+#### Sprint页面（/sprints）
 - 布局：垂直列表布局
   - 顶部操作栏
     - 创建Sprint按钮（ADMIN）
-    - Sprint状态筛选（PLANNING/ACTIVE/COMPLETED）
-    - 任务筛选（优先级、经办人）
+    - 搜索框（按Sprint名称搜索）
   - Sprint卡片列表
     - Sprint信息区
       - Sprint名称和日期
@@ -70,29 +57,27 @@ Layout
         - 任务标题
         - 任务状态（TODO/IN_PROGRESS/DONE）
         - 优先级标识
-        - 经办人头像
+        - 经办人名称缩写
       - 快速创建任务按钮
 - 功能：
   - Sprint管理
-    - 查看所有Sprint
+    - 搜索Sprint（按Sprint名称搜索）
     - 创建新Sprint（ADMIN）
     - 开始Sprint（ADMIN）
     - 完成Sprint（ADMIN）
-    - Sprint信息编辑（名称、开始结束日期）
+    - Sprint信息编辑（名称、开始结束日期）（ADMIN）
   - 任务管理
     - 查看Sprint任务列表（按优先级排序）
     - 创建新任务
     - 编辑任务（标题、描述、经办人、优先级）
     - 更新任务状态（TODO/IN_PROGRESS/DONE）
     - 删除任务（ADMIN）
-  - 筛选功能
-    - Sprint状态筛选（PLANNING/ACTIVE/COMPLETED）
-    - 任务筛选（优先级、经办人）
 - 权限：
   - ADMIN：全部功能
   - DEVELOPER：查看和任务操作
+- 参考页面：[Sprint页面设计图](../../../doc/assets/image/JIRA-Backlog.png)
 
-### 2.4 用户管理页面组
+### 2.4 用户管理页面组  (只有ADMIN可以访问)
 #### 用户列表页（/users）
 - 布局：表格布局
 - 功能：
@@ -103,13 +88,21 @@ Layout
 - 权限：仅ADMIN
 
 #### 个人设置页（/settings）
-- 布局：表单布局
+- 布局：点击个人头像，表单弹出框
 - 功能：
   - 查看个人信息
   - 修改个人信息（邮箱、全名）
   - 修改密码
   - 获取当前用户信息
 - 权限：所有用户
+
+## 2.5 看板管理页面组  (只有ADMIN可以访问)
+#### 看板列表页（/boards）
+- 布局：表格布局
+- 功能：
+  - 查看所有看板
+  - 编辑看板信息（名称、描述）
+- 权限：仅ADMIN
 
 ## 3. UI设计规范
 
