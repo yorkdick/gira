@@ -26,9 +26,9 @@ const { confirm } = Modal;
 
 const UsersPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { list: users, loading } = useSelector((state: RootState) => state.users);
-  const { currentUser } = useSelector((state: RootState) => state.auth);
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const { list: users } = useSelector((state: RootState) => state.user);
+  const isAdmin = user?.role === 'ADMIN';
 
   const [formVisible, setFormVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<UserInfo | null>(null);
@@ -108,7 +108,7 @@ const UsersPage: React.FC = () => {
           >
             编辑
           </Button>
-          {isAdmin && record.id !== currentUser?.id && (
+          {isAdmin && record.id !== user?.id && (
             <Button
               type="text"
               danger

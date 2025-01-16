@@ -10,7 +10,7 @@ public class PasswordGenerator {
         System.out.println("Raw password: " + rawPassword);
         System.out.println("Encoded password: " + encodedPassword);
 
-        rawPassword = "password";
+        rawPassword = "admin123";
         encodedPassword = encoder.encode(rawPassword);
         System.out.println("Raw password: " + rawPassword);
         System.out.println("Encoded password: " + encodedPassword);

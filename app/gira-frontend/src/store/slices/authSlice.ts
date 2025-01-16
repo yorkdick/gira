@@ -13,7 +13,7 @@ export interface UserInfo {
   updatedAt: string;
 }
 
-interface AuthState {
+export interface AuthState {
   token: string | null;
   user: UserInfo | null;
   loading: boolean;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { List, Card, Tag, Space, Button, Modal, message, Drawer } from 'antd';
+import { Card, Tag, Space, Button, Modal, message, Drawer } from 'antd';
 import { DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { AppDispatch, RootState } from '@/store';
@@ -16,8 +16,8 @@ interface TaskListProps {
 
 const TaskList: React.FC<TaskListProps> = ({ sprintId, tasks }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentUser } = useSelector((state: RootState) => state.auth);
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isAdmin = user?.role === 'ADMIN';
 
   const [assignDrawerVisible, setAssignDrawerVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -37,7 +37,7 @@ const TaskList: React.FC<TaskListProps> = ({ sprintId, tasks }) => {
           updates: { status: newStatus }
         })).unwrap();
         message.success('更新任务状态成功');
-      } catch (error) {
+      } catch {
         message.error('更新任务状态失败');
       }
     }
@@ -52,7 +52,7 @@ const TaskList: React.FC<TaskListProps> = ({ sprintId, tasks }) => {
       onOk: async () => {
         try {
           await dispatch(removeTaskFromSprint({ sprintId, taskId })).unwrap();
-        } catch (error) {
+        } catch {
           message.error('移除任务失败');
         }
       },

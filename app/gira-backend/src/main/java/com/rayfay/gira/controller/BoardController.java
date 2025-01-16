@@ -2,6 +2,7 @@ package com.rayfay.gira.controller;
 
 import com.rayfay.gira.dto.request.UpdateBoardRequest;
 import com.rayfay.gira.dto.response.BoardResponse;
+import com.rayfay.gira.dto.response.TaskResponse;
 import com.rayfay.gira.entity.BoardStatus;
 import com.rayfay.gira.service.interfaces.BoardService;
 import jakarta.validation.Valid;
@@ -13,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -37,6 +40,11 @@ public class BoardController {
     @GetMapping("/active")
     public ResponseEntity<BoardResponse> getActiveBoard() {
         return ResponseEntity.ok(boardService.getActiveBoard());
+    }
+
+    @GetMapping("/{id}/tasks")
+    public ResponseEntity<List<TaskResponse>> getBoardTasks(@PathVariable Long id) {
+        return ResponseEntity.ok(boardService.getBoardTasks(id));
     }
 
     @GetMapping

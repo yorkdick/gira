@@ -22,7 +22,7 @@ const UserForm: React.FC<UserFormProps> = ({
 }) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.users);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async () => {
     try {

@@ -9,7 +9,7 @@ export interface Sprint {
   startDate: string;
   endDate: string;
   status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
-  tasks: Task[];
+  tasks?: Task[];
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +19,12 @@ interface SprintState {
   currentSprint: Sprint | null;
   loading: boolean;
   error: string | null;
+  pagination: {
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 const initialState: SprintState = {
@@ -26,6 +32,12 @@ const initialState: SprintState = {
   currentSprint: null,
   loading: false,
   error: null,
+  pagination: {
+    pageNumber: 0,
+    pageSize: 10,
+    totalElements: 0,
+    totalPages: 0,
+  },
 };
 
 export const fetchSprints = createAsyncThunk(
@@ -87,7 +99,15 @@ export const updateTaskInSprint = createAsyncThunk(
 const sprintSlice = createSlice({
   name: 'sprint',
   initialState,
-  reducers: {},
+  reducers: {
+    resetSprints: (state) => {
+      state.sprints = [];
+      state.currentSprint = null;
+      state.loading = false;
+      state.error = null;
+      state.pagination = initialState.pagination;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchSprints.pending, (state) => {
@@ -96,35 +116,51 @@ const sprintSlice = createSlice({
       })
       .addCase(fetchSprints.fulfilled, (state, action) => {
         state.loading = false;
-        state.sprints = action.payload;
+        if (action.payload) {
+          state.sprints = action.payload.content || [];
+          state.pagination = {
+            pageNumber: action.payload.pageNumber,
+            pageSize: action.payload.pageSize,
+            totalElements: action.payload.totalElements,
+            totalPages: action.payload.totalPages,
+          };
+        }
+        state.error = null;
       })
       .addCase(fetchSprints.rejected, (state, action) => {
         state.loading = false;
+        state.sprints = [];
         state.error = action.error.message || '获取Sprint列表失败';
       })
       .addCase(createSprint.fulfilled, (state, action) => {
-        state.sprints.push(action.payload);
+        if (action.payload) {
+          state.sprints.push(action.payload);
+        }
       })
       .addCase(updateSprint.fulfilled, (state, action) => {
-        const index = state.sprints.findIndex((s) => s.id === action.payload.id);
-        if (index !== -1) {
-          state.sprints[index] = action.payload;
+        if (action.payload) {
+          const index = state.sprints.findIndex((s) => s.id === action.payload.id);
+          if (index !== -1) {
+            state.sprints[index] = action.payload;
+          }
         }
       })
       .addCase(deleteSprint.fulfilled, (state, action) => {
-        state.sprints = state.sprints.filter((s) => s.id !== action.payload);
+        if (action.payload) {
+          state.sprints = state.sprints.filter((s) => s.id !== action.payload);
+        }
       })
       .addCase(removeTaskFromSprint.fulfilled, (state, action) => {
         const { sprintId, taskId } = action.payload;
         const sprint = state.sprints.find((s) => s.id === sprintId);
-        if (sprint) {
+        if (sprint && Array.isArray(sprint.tasks)) {
           sprint.tasks = sprint.tasks.filter((t) => t.id !== taskId);
         }
       })
       .addCase(updateTaskInSprint.fulfilled, (state, action) => {
         const { sprintId, task } = action.payload;
         const sprint = state.sprints.find((s) => s.id === sprintId);
-        if (sprint) {
+        if (sprint && Array.isArray(sprint.tasks)) {
           const index = sprint.tasks.findIndex((t) => t.id === task.id);
           if (index !== -1) {
             sprint.tasks[index] = task;
@@ -134,4 +170,5 @@ const sprintSlice = createSlice({
   },
 });
 
+export const { resetSprints } = sprintSlice.actions;
 export default sprintSlice.reducer; 

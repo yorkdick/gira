@@ -3,16 +3,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface Task {
   id: string;
   title: string;
-  description?: string;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  description: string;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
-  assignee?: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  dueDate?: string;
-  tags?: string[];
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  assigneeId?: string;
+  sprintId?: string;
   createdAt: string;
   updatedAt: string;
 }

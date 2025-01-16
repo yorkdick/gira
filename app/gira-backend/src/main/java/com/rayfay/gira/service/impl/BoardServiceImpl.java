@@ -2,13 +2,20 @@ package com.rayfay.gira.service.impl;
 
 import com.rayfay.gira.dto.request.UpdateBoardRequest;
 import com.rayfay.gira.dto.response.BoardResponse;
+import com.rayfay.gira.dto.response.TaskResponse;
 import com.rayfay.gira.entity.Board;
 import com.rayfay.gira.entity.BoardStatus;
+import com.rayfay.gira.entity.Sprint;
 import com.rayfay.gira.exception.ResourceNotFoundException;
 import com.rayfay.gira.mapper.BoardMapper;
 import com.rayfay.gira.repository.BoardRepository;
 import com.rayfay.gira.service.interfaces.BoardService;
+import com.rayfay.gira.service.interfaces.SprintService;
+
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
+    private final SprintService sprintService;
     private final BoardMapper boardMapper;
 
     @Override
@@ -67,5 +75,12 @@ public class BoardServiceImpl implements BoardService {
     private Board getBoardOrThrow(Long id) {
         return boardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("看板不存在"));
+    }
+
+    @Override
+    public List<TaskResponse> getBoardTasks(Long id) {
+        Board board = getBoardOrThrow(id);
+        Sprint activeSprint = board.getSprint();
+        return sprintService.getSprintTasks(activeSprint.getId());
     }
 }
