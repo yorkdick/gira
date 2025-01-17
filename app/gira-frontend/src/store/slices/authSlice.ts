@@ -3,6 +3,19 @@ import { message } from 'antd';
 import { AxiosError } from 'axios';
 import authService from '@/services/authService';
 
+// 从localStorage获取初始状态
+const getStoredAuthState = () => {
+  try {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    return { token, user };
+  } catch (error) {
+    console.error('Failed to parse stored auth state:', error);
+    return { token: null, user: null };
+  }
+};
+
 export interface UserInfo {
   id: string;
   username: string;
@@ -20,9 +33,11 @@ export interface AuthState {
   error: string | null;
 }
 
+const storedState = getStoredAuthState();
+
 const initialState: AuthState = {
-  token: null,
-  user: null,
+  token: storedState.token,
+  user: storedState.user,
   loading: false,
   error: null,
 };
@@ -73,9 +88,19 @@ const authSlice = createSlice({
   reducers: {
     setToken: (state, action: PayloadAction<string | null>) => {
       state.token = action.payload;
+      if (action.payload) {
+        localStorage.setItem('token', action.payload);
+      } else {
+        localStorage.removeItem('token');
+      }
     },
     setUser: (state, action: PayloadAction<UserInfo | null>) => {
       state.user = action.payload;
+      if (action.payload) {
+        localStorage.setItem('user', JSON.stringify(action.payload));
+      } else {
+        localStorage.removeItem('user');
+      }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -87,6 +112,8 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.error = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     },
   },
   extraReducers: (builder) => {
