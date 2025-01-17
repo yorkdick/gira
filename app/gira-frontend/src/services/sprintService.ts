@@ -45,7 +45,6 @@ const sprintService = {
   // Sprint 状态管理接口
   startSprint: (id: string) => request.put<Sprint>(`/sprints/${id}/start`),
   completeSprint: (id: string) => request.put<Sprint>(`/sprints/${id}/complete`),
-  reopenSprint: (id: string) => request.put<Sprint>(`/sprints/${id}/reopen`),
 
   // Sprint 任务管理接口
   getTasks: (sprintId: string) => request.get<Task[]>(`/sprints/${sprintId}/tasks`),

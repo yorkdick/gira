@@ -11,121 +11,52 @@
  * @component
  */
 
-import React, { useEffect, useState, memo } from 'react';
-import { Button, Row, Col, Card, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import React, { useEffect } from 'react';
+import { Row, Col, Card, Space, Typography } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  MinusCircleOutlined,
+} from '@ant-design/icons';
 import { Task, updateTask, setTasks, setCurrentBoard } from '@/store/slices/boardSlice';
 import { RootState } from '@/store/types';
 import TaskCard from '@/components/TaskCard';
-import { TaskFormModal, BoardSummary } from '@/components';
 import boardService from '@/services/boardService';
-import { AxiosError } from 'axios';
 import styles from './index.module.less';
 
-/**
- * 任务列类型定义
- */
-interface TaskColumn {
-  id: Task['status'];
-  title: string;
-  tasks: Task[];
-}
+const { Text } = Typography;
 
-/**
- * 任务状态列表
- */
-const COLUMNS: TaskColumn[] = [
-  { id: 'TODO', title: '待办', tasks: [] },
-  { id: 'IN_PROGRESS', title: '进行中', tasks: [] },
-  { id: 'DONE', title: '已完成', tasks: [] },
+const COLUMNS = [
+  { 
+    id: 'TODO', 
+    title: '待办', 
+    icon: <MinusCircleOutlined style={{ color: '#8c8c8c' }} />,
+  },
+  { 
+    id: 'IN_PROGRESS', 
+    title: '进行中', 
+    icon: <ClockCircleOutlined style={{ color: '#096dd9' }} />,
+  },
+  { 
+    id: 'DONE', 
+    title: '已完成', 
+    icon: <CheckCircleOutlined style={{ color: '#389e0d' }} />,
+  },
 ];
-
-/**
- * 任务列表属性接口
- */
-interface TaskListProps {
-  columnId: string;
-  tasks: Task[];
-  onEdit: (task: Task) => void;
-  onDelete: (taskId: string) => void;
-  isDragDisabled?: boolean;
-}
-
-/**
- * 任务列表容器组件
- */
-const TaskList = memo(function TaskList({
-  columnId,
-  tasks = [],
-  onEdit,
-  onDelete,
-  isDragDisabled = false
-}: TaskListProps) {
-  const renderDraggable = (task: Task, index: number) => (
-    <Draggable
-      key={task.id}
-      draggableId={task.id}
-      index={index}
-      isDragDisabled={isDragDisabled}
-    >
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          style={{
-            ...provided.draggableProps.style,
-            opacity: snapshot.isDragging ? 0.8 : 1
-          }}
-        >
-          <TaskCard
-            task={task}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        </div>
-      )}
-    </Draggable>
-  );
-
-  return (
-    <Droppable droppableId={columnId} type="TASK">
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.droppableProps}
-          className={`${styles.taskList} ${snapshot.isDraggingOver ? styles.draggingOver : ''}`}
-        >
-          {tasks.map((task, index) => renderDraggable(task, index))}
-          {provided.placeholder}
-        </div>
-      )}
-    </Droppable>
-  );
-});
-
-TaskList.displayName = 'TaskList';
 
 const Board: React.FC = () => {
   const dispatch = useDispatch();
-  const { tasks, currentBoard } = useSelector((state: RootState) => state.board);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const { tasks = [], currentBoard } = useSelector((state: RootState) => state.board);
 
-  /**
-   * 初始化加载任务数据
-   */
   useEffect(() => {
     const fetchActiveBoard = async () => {
       try {
         const response = await boardService.getActiveBoard();
         dispatch(setCurrentBoard(response.data));
       } catch (error) {
-        if (error instanceof AxiosError && error.response?.status !== 404) {
-          message.error('加载看板失败');
-        }
+        console.error('加载看板失败:', error);
       }
     };
     fetchActiveBoard();
@@ -133,35 +64,17 @@ const Board: React.FC = () => {
 
   useEffect(() => {
     const fetchTasks = async () => {
-      // 如果没有当前看板，不加载任务
-      if (!currentBoard) {
-        return;
-      }
-      
+      if (!currentBoard) return;
       try {
         const response = await boardService.getTasks();
         dispatch(setTasks(response.data));
-      } catch (error: unknown) {
-        // 忽略 404 错误
-        if (error instanceof AxiosError && error.response?.status !== 404) {
-          message.error('加载任务失败');
-        }
+      } catch (error) {
+        console.error('加载任务失败:', error);
       }
     };
     fetchTasks();
   }, [dispatch, currentBoard]);
 
-  if (!currentBoard) {
-    return (
-      <div className={styles.container}>
-        <Card>暂无看板</Card>
-      </div>
-    );
-  }
-
-  /**
-   * 处理任务拖拽结束事件
-   */
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
 
@@ -169,7 +82,7 @@ const Board: React.FC = () => {
     if (source.droppableId === destination.droppableId) return;
 
     try {
-      const task = tasks.find(t => t.id === draggableId);
+      const task = tasks.find(t => String(t.id) === draggableId);
       if (!task) return;
 
       const updatedTask = {
@@ -177,80 +90,98 @@ const Board: React.FC = () => {
         status: destination.droppableId as Task['status'],
       };
 
-      await boardService.updateTaskStatus(task.id, updatedTask.status);
+      await boardService.updateTaskStatus(String(task.id), updatedTask.status);
       dispatch(updateTask(updatedTask));
-      message.success('更新任务状态成功');
-    } catch {
-      message.error('更新任务状态失败');
+    } catch (error) {
+      console.error('更新任务状态失败:', error);
     }
   };
 
-  /**
-   * 处理任务编辑
-   */
-  const handleEdit = (task: Task) => {
-    setEditingTask(task);
-    setIsModalVisible(true);
-  };
-
-  /**
-   * 处理任务删除
-   */
-  const handleDelete = async (taskId: string) => {
-    try {
-      await boardService.deleteTask(taskId);
-      dispatch(setTasks(tasks.filter(t => t.id !== taskId)));
-      message.success('删除任务成功');
-    } catch {
-      message.error('删除任务失败');
-    }
-  };
-
-  /**
-   * 获取指定状态的任务列表
-   */
   const getColumnTasks = (status: Task['status']) => {
     return tasks.filter(task => task.status === status);
   };
 
+  const totalTasks = tasks.length;
+  const todoTasks = getColumnTasks('TODO').length;
+  const inProgressTasks = getColumnTasks('IN_PROGRESS').length;
+  const doneTasks = getColumnTasks('DONE').length;
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <BoardSummary />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalVisible(true)}
-        >
-          创建任务
-        </Button>
+        <Space size="middle">
+          <Text strong>{currentBoard?.name}</Text>
+          <Space size="small">
+            <Text type="secondary">总任务:</Text>
+            <Text>{totalTasks}</Text>
+            <Text type="secondary">待办:</Text>
+            <Text>{todoTasks}</Text>
+            <Text type="secondary">进行中:</Text>
+            <Text>{inProgressTasks}</Text>
+            <Text type="secondary">已完成:</Text>
+            <Text>{doneTasks}</Text>
+            <Text type="secondary">完成率:</Text>
+            <Text>{totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0}%</Text>
+          </Space>
+        </Space>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Row gutter={16} className={styles.columns}>
           {COLUMNS.map(column => (
             <Col span={8} key={column.id}>
-              <Card title={column.title} className={styles.column}>
-                <TaskList
-                  columnId={column.id}
-                  tasks={getColumnTasks(column.id)}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+              <Card 
+                title={
+                  <Space>
+                    {column.icon}
+                    <Text>{column.title}</Text>
+                  </Space>
+                } 
+                className={styles.column}
+              >
+                <Droppable 
+                  droppableId={column.id}
+                  type="TASK"
+                  isDropDisabled={false}
+                >
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`${styles.taskList} ${snapshot.isDraggingOver ? styles.draggingOver : ''}`}
+                    >
+                      {getColumnTasks(column.id as Task['status']).map((task, index) => (
+                        <Draggable 
+                          key={String(task.id)} 
+                          draggableId={String(task.id)} 
+                          index={index}
+                          isDragDisabled={false}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={styles.taskItem}
+                              style={{
+                                ...provided.draggableProps.style,
+                                opacity: snapshot.isDragging ? 0.8 : 1
+                              }}
+                            >
+                              <TaskCard task={task} />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
               </Card>
             </Col>
           ))}
         </Row>
       </DragDropContext>
-
-      <TaskFormModal
-        visible={isModalVisible}
-        task={editingTask}
-        onClose={() => {
-          setIsModalVisible(false);
-          setEditingTask(null);
-        }}
-      />
     </div>
   );
 };

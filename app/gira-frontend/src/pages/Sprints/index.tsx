@@ -16,10 +16,22 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Button, List, Tag, Space, Modal, message, Spin, Form, Input, Row, Col, Typography, Select } from 'antd';
-import { PlusOutlined, EditOutlined, PlayCircleOutlined, CheckCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, List, Space, Modal, message, Spin, Form, Input, Row, Col, Typography, Select, Avatar, Tooltip, Collapse } from 'antd';
+import {
+  PlusOutlined,
+  EditOutlined,
+  PlayCircleOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  ClockCircleOutlined,
+  CheckOutlined,
+  ArrowUpOutlined,
+  MinusOutlined,
+  ArrowDownOutlined,
+  CaretRightOutlined,
+} from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { Sprint, fetchSprints, updateSprint, deleteSprint, resetSprints } from '@/store/slices/sprintSlice';
+import { Sprint, fetchSprints, updateSprint, resetSprints } from '@/store/slices/sprintSlice';
 import type { SprintFormData } from '@/components/SprintForm';
 import type { SprintCreateDTO, SprintUpdateDTO } from '@/services/sprintService';
 import type { CreateTaskRequest } from '@/services/taskService';
@@ -33,33 +45,42 @@ import userService from '@/services/userService';
 import type { UserInfo } from '@/store/slices/authSlice';
 
 const { Text } = Typography;
+const { Panel } = Collapse;
 
 /**
- * 获取Sprint状态对应的标签颜色
- * @param status - Sprint状态
- * @returns 标签颜色
+ * 获取任务优先级对应的图标和颜色
  */
-const getStatusColor = (status: Sprint['status']) => {
-  const colors: Record<Sprint['status'], string> = {
-    PLANNING: 'default',
-    ACTIVE: 'processing',
-    COMPLETED: 'success',
+const getPriorityIcon = (priority: Task['priority']) => {
+  const config: Record<Task['priority'], { icon: React.ReactNode; color: string }> = {
+    HIGH: { icon: <ArrowUpOutlined />, color: '#f5222d' },
+    MEDIUM: { icon: <MinusOutlined />, color: '#faad14' },
+    LOW: { icon: <ArrowDownOutlined />, color: '#52c41a' },
   };
-  return colors[status];
+  return config[priority];
 };
 
 /**
- * 获取Sprint状态的中文描述
- * @param status - Sprint状态
- * @returns 状态描述
+ * 获取任务状态对应的图标和颜色
  */
-const getStatusText = (status: Sprint['status']) => {
-  const texts: Record<Sprint['status'], string> = {
-    PLANNING: '规划中',
-    ACTIVE: '进行中',
-    COMPLETED: '已完成',
+const getStatusIcon = (status: Task['status']) => {
+  const config: Record<Task['status'], { icon: React.ReactNode; color: string }> = {
+    TODO: { icon: <ClockCircleOutlined />, color: '#bfbfbf' },
+    IN_PROGRESS: { icon: <ExclamationCircleOutlined />, color: '#1890ff' },
+    DONE: { icon: <CheckOutlined />, color: '#52c41a' },
   };
-  return texts[status];
+  return config[status];
+};
+
+/**
+ * 获取Sprint状态对应的图标和颜色
+ */
+const getSprintStatusIcon = (status: Sprint['status']) => {
+  const config: Record<Sprint['status'], { icon: React.ReactNode; color: string; text: string }> = {
+    PLANNING: { icon: <ClockCircleOutlined />, color: '#bfbfbf', text: '规划中' },
+    ACTIVE: { icon: <ExclamationCircleOutlined />, color: '#1890ff', text: '进行中' },
+    COMPLETED: { icon: <CheckCircleOutlined />, color: '#52c41a', text: '已完成' },
+  };
+  return config[status];
 };
 
 const Sprints: React.FC = () => {
@@ -75,6 +96,7 @@ const Sprints: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDetailModalVisible, setIsTaskDetailModalVisible] = useState(false);
   const [users, setUsers] = useState<UserInfo[]>([]);
+  const [expandedSprints, setExpandedSprints] = useState<string[]>([]);
 
   useEffect(() => {
     dispatch(fetchSprints());
@@ -148,11 +170,8 @@ const Sprints: React.FC = () => {
       setIsModalVisible(false);
       setEditingSprint(null);
     } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message);
-      } else {
-        message.error(editingSprint ? '更新Sprint失败' : '创建Sprint失败');
-      }
+      // 不显示错误提示，因为request.ts中已经处理了错误提示
+      console.error('Sprint操作失败:', error);
     }
   };
 
@@ -161,42 +180,21 @@ const Sprints: React.FC = () => {
    * @param sprint - 要更新的Sprint
    * @param action - 状态更新动作
    */
-  const handleStatusUpdate = async (sprint: Sprint, action: 'start' | 'complete' | 'reopen') => {
+  const handleStatusUpdate = async (sprint: Sprint, action: 'start' | 'complete') => {
     try {
-      let response;
       switch (action) {
         case 'start':
-          response = await sprintService.startSprint(sprint.id);
+          await sprintService.startSprint(sprint.id);
           break;
         case 'complete':
-          response = await sprintService.completeSprint(sprint.id);
-          break;
-        case 'reopen':
-          response = await sprintService.reopenSprint(sprint.id);
+          await sprintService.completeSprint(sprint.id);
           break;
       }
-      if (response?.data) {
-        await dispatch(updateSprint({
-          id: sprint.id,
-          data: response.data,
-        })).unwrap();
-        message.success('更新Sprint状态成功');
-      }
-    } catch {
-      message.error('更新Sprint状态失败');
-    }
-  };
-
-  /**
-   * 处理Sprint删除
-   * @param sprintId - 要删除的SprintID
-   */
-  const handleDelete = async (sprintId: string) => {
-    try {
-      await dispatch(deleteSprint(sprintId)).unwrap();  
-      message.success('删除Sprint成功');
-    } catch {
-      message.error('删除Sprint失败');
+      // 重新获取Sprint列表
+      void dispatch(fetchSprints());
+      message.success('更新Sprint状态成功');
+    } catch (error) {
+      console.error('更新Sprint状态失败:', error);
     }
   };
 
@@ -231,8 +229,8 @@ const Sprints: React.FC = () => {
       message.success('创建任务成功');
       setIsTaskModalVisible(false);
       taskForm.resetFields();
-    } catch {
-      message.error('创建任务失败');
+    } catch (error) {
+      console.error('创建任务失败:', error);
     }
   };
 
@@ -246,8 +244,8 @@ const Sprints: React.FC = () => {
       message.success('删除任务成功');
       setIsTaskDetailModalVisible(false);
       setSelectedTask(null);
-    } catch {
-      message.error('删除任务失败');
+    } catch (error) {
+      console.error('删除任务失败:', error);
     }
   };
 
@@ -271,8 +269,8 @@ const Sprints: React.FC = () => {
       message.success('更新任务成功');
       setIsTaskDetailModalVisible(false);
       setSelectedTask(null);
-    } catch {
-      message.error('更新任务失败');
+    } catch (error) {
+      console.error('更新任务失败:', error);
     }
   };
 
@@ -296,117 +294,158 @@ const Sprints: React.FC = () => {
       </div>
 
       <Spin spinning={loading}>
-        <List
-          grid={{ gutter: 16, column: 1 }}
-          dataSource={Array.isArray(sprints) ? sprints : []}
-          locale={{ emptyText: '暂无Sprint数据' }}
-          renderItem={(sprint) => (
-            <List.Item key={sprint.id}>
-              <Card
-                title={sprint.name}
-                extra={
-                  <Tag color={getStatusColor(sprint.status)}>
-                    {getStatusText(sprint.status)}
-                  </Tag>
-                }
-                className={styles.sprintCard}
-              >
-                <p className={styles.description}>{sprint.description}</p>
-                <div className={styles.sprintInfo}>
-                  <div className={styles.dates}>
-                    开始：{new Date(sprint.startDate).toLocaleDateString()} | 结束：{new Date(sprint.endDate).toLocaleDateString()}
-                  </div>
-                  <div className={styles.tasks}>
-                    <List
-                      size="small"
-                      dataSource={sprintTasks[sprint.id] || []}
-                      renderItem={task => (
-                        <List.Item
-                          onClick={() => {
-                            setSelectedTask(task);
-                            setIsTaskDetailModalVisible(true);
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <Row style={{ width: '100%', alignItems: 'center' }}>
-                            <Col flex="auto">
-                              <Text>{task.title}</Text>
-                            </Col>
-                            <Col>
-                              <Tag color={
-                                task.status === 'TODO' ? 'default' :
-                                task.status === 'IN_PROGRESS' ? 'processing' :
-                                'success'
-                              }>
-                                {
-                                  task.status === 'TODO' ? '待处理' :
-                                  task.status === 'IN_PROGRESS' ? '进行中' :
-                                  '已完成'
-                                }
-                              </Tag>
-                            </Col>
-                          </Row>
-                        </List.Item>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {user?.role === 'ADMIN' && (
-                  <Space className={styles.actions}>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<PlusOutlined />}
-                      onClick={() => handleOpenTaskModal(sprint.id)}
-                      disabled={sprint.status === 'COMPLETED'}
-                    >
-                      添加任务
-                    </Button>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<EditOutlined />}
-                      onClick={() => {
-                        setEditingSprint(sprint);
-                        setIsModalVisible(true);
-                      }}
-                    >
-                      编辑
-                    </Button>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<PlayCircleOutlined />}
-                      onClick={() => handleStatusUpdate(sprint, 'start')}
-                      disabled={sprint.status !== 'PLANNING'}
-                    >
-                      激活
-                    </Button>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<CheckCircleOutlined />}
-                      onClick={() => handleStatusUpdate(sprint, 'complete')}
-                      disabled={sprint.status !== 'ACTIVE'}
-                    >
-                      完成
-                    </Button>
-                    <Button
-                      type="text"
-                      danger
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDelete(sprint.id)}
-                    >
-                      删除
-                    </Button>
-                  </Space>
-                )}
-              </Card>
-            </List.Item>
+        <Collapse
+          ghost
+          activeKey={expandedSprints}
+          onChange={(keys) => setExpandedSprints(keys as string[])}
+          expandIcon={({ isActive }) => (
+            <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ fontSize: '12px' }} />
           )}
-        />
+          className={styles.sprintList}
+        >
+          {Array.isArray(sprints) && sprints.map((sprint) => (
+            <Panel
+              key={sprint.id}
+              header={
+                <Row align="middle" style={{ width: '100%' }}>
+                  <Col flex="auto">
+                    <Space size="middle">
+                      <Text strong>{sprint.name}</Text>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {new Date(sprint.startDate).toLocaleDateString()} - {new Date(sprint.endDate).toLocaleDateString()}
+                      </Text>
+                      <Space size="small">
+                        <Text type="secondary">总任务:</Text>
+                        <Text>{(sprintTasks[sprint.id] || []).length}</Text>
+                        <Text type="secondary">待办:</Text>
+                        <Text>{(sprintTasks[sprint.id] || []).filter(t => t.status === 'TODO').length}</Text>
+                        <Text type="secondary">进行中:</Text>
+                        <Text>{(sprintTasks[sprint.id] || []).filter(t => t.status === 'IN_PROGRESS').length}</Text>
+                        <Text type="secondary">已完成:</Text>
+                        <Text>{(sprintTasks[sprint.id] || []).filter(t => t.status === 'DONE').length}</Text>
+                      </Space>
+                    </Space>
+                  </Col>
+                  <Col>
+                    <Space>
+                      <Tooltip title={getSprintStatusIcon(sprint.status).text}>
+                        <span style={{ color: getSprintStatusIcon(sprint.status).color }}>
+                          {getSprintStatusIcon(sprint.status).icon}
+                        </span>
+                      </Tooltip>
+                      {user?.role === 'ADMIN' && (
+                        <Space size="small">
+                          <Tooltip title="添加任务">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<PlusOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenTaskModal(sprint.id);
+                              }}
+                              disabled={sprint.status === 'COMPLETED'}
+                            />
+                          </Tooltip>
+                          <Tooltip title="编辑Sprint">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<EditOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingSprint(sprint);
+                                setIsModalVisible(true);
+                              }}
+                            />
+                          </Tooltip>
+                          <Tooltip title="激活Sprint">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<PlayCircleOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusUpdate(sprint, 'start');
+                              }}
+                              disabled={sprint.status !== 'PLANNING'}
+                            />
+                          </Tooltip>
+                          <Tooltip title="完成Sprint">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<CheckCircleOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusUpdate(sprint, 'complete');
+                              }}
+                              disabled={sprint.status !== 'ACTIVE'}
+                            />
+                          </Tooltip>
+                        </Space>
+                      )}
+                    </Space>
+                  </Col>
+                </Row>
+              }
+              className={styles.sprintPanel}
+            >
+              <List
+                size="small"
+                dataSource={sprintTasks[sprint.id] || []}
+                renderItem={task => (
+                  <List.Item
+                    onClick={() => {
+                      setSelectedTask(task);
+                      setIsTaskDetailModalVisible(true);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                    className={styles.taskItem}
+                  >
+                    <Row style={{ width: '100%', alignItems: 'center' }}>
+                      <Col flex="auto">
+                        <Text>{task.title}</Text>
+                      </Col>
+                      <Col>
+                        <Space size="small">
+                          <Tooltip title={`优先级: ${
+                            task.priority === 'HIGH' ? '高' :
+                            task.priority === 'MEDIUM' ? '中' :
+                            '低'
+                          }`}>
+                            <span style={{ color: getPriorityIcon(task.priority).color }}>
+                              {getPriorityIcon(task.priority).icon}
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={`状态: ${
+                            task.status === 'TODO' ? '待处理' :
+                            task.status === 'IN_PROGRESS' ? '进行中' :
+                            '已完成'
+                          }`}>
+                            <span style={{ color: getStatusIcon(task.status).color }}>
+                              {getStatusIcon(task.status).icon}
+                            </span>
+                          </Tooltip>
+                          {task.assignee && (
+                            <Tooltip title={`负责人: ${task.assignee.username}`}>
+                              <Avatar
+                                size="small"
+                                style={{ backgroundColor: '#1890ff' }}
+                              >
+                                {task.assignee.username.slice(0, 1).toUpperCase()}
+                              </Avatar>
+                            </Tooltip>
+                          )}
+                        </Space>
+                      </Col>
+                    </Row>
+                  </List.Item>
+                )}
+              />
+            </Panel>
+          ))}
+        </Collapse>
       </Spin>
 
       <Modal

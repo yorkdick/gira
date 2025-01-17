@@ -63,7 +63,9 @@ request.interceptors.response.use(
           message.error('没有权限访问');
           break;
         case 404:
-          message.error('请求的资源不存在');
+          if (!error.config.url.includes('/boards/active')) {
+            message.error('请求的资源不存在');
+          }
           break;
         case 500:
           message.error('服务器错误');

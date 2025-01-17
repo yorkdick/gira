@@ -21,117 +21,114 @@
  */
 
 import React from 'react';
-import { Card, Avatar, Tag, Tooltip, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
+import { Typography, Tooltip, Avatar, Space } from 'antd';
 import {
-  EditOutlined,
-  DeleteOutlined,
-  MoreOutlined,
+  ArrowUpOutlined,
+  MinusOutlined,
+  ArrowDownOutlined,
+  CheckOutlined,
+  ExclamationCircleOutlined,
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import { Task } from '@/store/slices/boardSlice';
 import styles from './index.module.less';
 
-/**
- * TaskCard 组件的属性类型定义
- * @interface
- */
+const { Text } = Typography;
+
 interface TaskCardProps {
-  /** 任务数据对象 */
   task: Task;
-  /** 任务编辑回调函数 */
-  onEdit?: (task: Task) => void;
-  /** 任务删除回调函数 */
-  onDelete?: (taskId: string) => void;
-  /** 是否可拖拽 */
-  draggable?: boolean;
-  /** 拖拽开始回调函数 */
-  onDragStart?: (e: React.DragEvent<HTMLDivElement>, task: Task) => void;
-  /** 拖拽结束回调函数 */
-  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
-/**
- * 获取优先级对应的标签颜色
- * @param priority - 任务优先级
- * @returns 对应的标签颜色
- */
-const getPriorityColor = (priority: Task['priority']) => {
-  const colors = {
-    HIGH: 'red',
-    MEDIUM: 'orange',
-    LOW: 'green',
+const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'HIGH':
+        return {
+          icon: <ArrowUpOutlined />,
+          color: '#f5222d'
+        };
+      case 'MEDIUM':
+        return {
+          icon: <MinusOutlined />,
+          color: '#fa8c16'
+        };
+      case 'LOW':
+        return {
+          icon: <ArrowDownOutlined />,
+          color: '#52c41a'
+        };
+      default:
+        return {
+          icon: <ArrowDownOutlined />,
+          color: '#52c41a'
+        };
+    }
   };
-  return colors[priority];
-};
 
-/**
- * 获取状态对应的标签颜色
- * @param status - 任务状态
- * @returns 对应的标签颜色
- */
-const getStatusColor = (status: Task['status']) => {
-  const colors = {
-    TODO: 'default',
-    IN_PROGRESS: 'processing',
-    DONE: 'success',
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'DONE':
+        return {
+          icon: <CheckOutlined />,
+          color: '#52c41a'
+        };
+      case 'IN_PROGRESS':
+        return {
+          icon: <ExclamationCircleOutlined />,
+          color: '#1890ff'
+        };
+      case 'TODO':
+        return {
+          icon: <ClockCircleOutlined />,
+          color: '#8c8c8c'
+        };
+      default:
+        return {
+          icon: <ClockCircleOutlined />,
+          color: '#8c8c8c'
+        };
+    }
   };
-  return colors[status];
-};
-
-const TaskCard: React.FC<TaskCardProps> = ({
-  task,
-  onEdit,
-  onDelete,
-  draggable,
-  onDragStart,
-  onDragEnd,
-}) => {
-  /**
-   * 操作菜单配置
-   */
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'edit',
-      icon: <EditOutlined />,
-      label: '编辑',
-      onClick: () => onEdit?.(task),
-    },
-    {
-      key: 'delete',
-      icon: <DeleteOutlined />,
-      label: '删除',
-      onClick: () => onDelete?.(task.id),
-    },
-  ];
 
   return (
-    <Card
-      className={styles.taskCard}
-      draggable={draggable}
-      onDragStart={(e) => onDragStart?.(e, task)}
-      onDragEnd={onDragEnd}
-    >
+    <div className={styles.taskCard}>
       <div className={styles.header}>
-        <Tag color={getPriorityColor(task.priority)}>{task.priority}</Tag>
-        <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-          <MoreOutlined className={styles.more} />
-        </Dropdown>
-      </div>
-      <div className={styles.title}>{task.title}</div>
-      <div className={styles.description}>{task.description}</div>
-      <div className={styles.footer}>
-        <Tag color={getStatusColor(task.status)}>{task.status}</Tag>
-        {task.assignee && (
-          <Tooltip title={task.assignee.username}>
-            <Avatar
-              size="small"
-              icon={<EditOutlined />}
-              className={styles.avatar}
-            />
+        <Text className={styles.title}>{task.title}</Text>
+        <Space size="small">
+          <Tooltip title={`优先级: ${
+            task.priority === 'HIGH' ? '高' :
+            task.priority === 'MEDIUM' ? '中' :
+            '低'
+          }`}>
+            <span style={{ color: getPriorityIcon(task.priority).color }}>
+              {getPriorityIcon(task.priority).icon}
+            </span>
           </Tooltip>
-        )}
+          <Tooltip title={`状态: ${
+            task.status === 'TODO' ? '待处理' :
+            task.status === 'IN_PROGRESS' ? '进行中' :
+            '已完成'
+          }`}>
+            <span style={{ color: getStatusIcon(task.status).color }}>
+              {getStatusIcon(task.status).icon}
+            </span>
+          </Tooltip>
+          {task.assignee && (
+            <Tooltip title={`负责人: ${task.assignee.username}`}>
+              <Avatar
+                size="small"
+                style={{ backgroundColor: '#1890ff' }}
+              >
+                {task.assignee.username.slice(0, 1).toUpperCase()}
+              </Avatar>
+            </Tooltip>
+          )}
+        </Space>
       </div>
-    </Card>
+      {task.description && (
+        <Text className={styles.description}>{task.description}</Text>
+      )}
+    </div>
   );
 };
 
