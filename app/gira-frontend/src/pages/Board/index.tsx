@@ -14,7 +14,7 @@
 import React, { useEffect } from 'react';
 import { Row, Col, Card, Space, Typography } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -142,7 +142,6 @@ const Board: React.FC = () => {
                 <Droppable 
                   droppableId={column.id}
                   type="TASK"
-                  isDropDisabled={false}
                 >
                   {(provided, snapshot) => (
                     <div
@@ -155,7 +154,6 @@ const Board: React.FC = () => {
                           key={String(task.id)} 
                           draggableId={String(task.id)} 
                           index={index}
-                          isDragDisabled={false}
                         >
                           {(provided, snapshot) => (
                             <div
