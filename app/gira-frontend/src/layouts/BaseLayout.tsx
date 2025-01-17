@@ -122,7 +122,7 @@ const BaseLayout: React.FC = () => {
           <div className={styles.userInfo}>
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <span className={styles.userAvatar}>
-                <Avatar icon={<UserOutlined />} src={user?.avatar} />
+                <Avatar icon={<UserOutlined />} />
                 <span className={styles.username}>{user?.username}</span>
               </span>
             </Dropdown>

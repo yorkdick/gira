@@ -4,17 +4,14 @@ import type { Task } from '@/store/slices/boardSlice';
 
 export interface SprintCreateDTO {
   name: string;
-  description: string;
   startDate: string;
   endDate: string;
 }
 
 export interface SprintUpdateDTO {
-  name?: string;
-  description?: string;
-  startDate?: string;
-  endDate?: string;
-  status?: Sprint['status'];
+  name: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface PageResponse<T> {

@@ -1,22 +1,28 @@
 import request from '@/utils/request';
 import type { UserInfo } from '@/store/slices/authSlice';
 
-export interface LoginResponse {
+interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+interface LoginResponse {
   accessToken: string;
-  user: UserInfo;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
 const authService = {
-  login: async (data: { username: string; password: string }) => {
-    const response = await request.post<LoginResponse>('/auth/login', data);
-    return response.data;
-  },
+  login: (data: LoginRequest) => request.post<LoginResponse>('/auth/login', data),
   logout: () => request.post('/auth/logout'),
   getCurrentUser: () => request.get<UserInfo>('/users/current'),
-  updateProfile: (data: Pick<UserInfo, 'username' | 'email' | 'avatar'>) =>
-    request.put<UserInfo>('/users/profile', data),
-  updatePassword: (data: { oldPassword: string; newPassword: string }) =>
-    request.put('/users/password', data),
+  updateProfile: (data: Pick<UserInfo, 'username' | 'email' | 'fullName'>, id: string) =>
+    request.put<UserInfo>(`/users/${id}`, data),
+  updatePassword: (data: { oldPassword: string; newPassword: string }, id: string) =>
+    request.put(`/users/${id}/password`, data),
+  refreshToken: (refreshToken: string) =>
+    request.post<LoginResponse>('/auth/refresh-token', { refreshToken }),
 };
 
 export default authService; 

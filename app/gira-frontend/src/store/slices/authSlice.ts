@@ -6,11 +6,11 @@ import authService from '@/services/authService';
 export interface UserInfo {
   id: string;
   username: string;
+  fullName: string;
   email: string;
-  avatar?: string;
   role: 'ADMIN' | 'USER';
+  status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface AuthState {
@@ -29,9 +29,14 @@ const initialState: AuthState = {
 
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
-  async (data: Pick<UserInfo, 'username' | 'email' | 'avatar'>, { rejectWithValue }) => {
+  async (data: Pick<UserInfo, 'username' | 'email' | 'fullName'>, { getState, rejectWithValue }) => {
     try {
-      const response = await authService.updateProfile(data);
+      const state = getState() as { auth: AuthState };
+      const userId = state.auth.user?.id;
+      if (!userId) {
+        throw new Error('User ID not found');
+      }
+      const response = await authService.updateProfile(data, userId);
       message.success('更新个人信息成功');
       return response.data;
     } catch (error) {
@@ -44,9 +49,14 @@ export const updateProfile = createAsyncThunk(
 
 export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
-  async (data: { oldPassword: string; newPassword: string }, { rejectWithValue }) => {
+  async (data: { oldPassword: string; newPassword: string }, { getState, rejectWithValue }) => {
     try {
-      await authService.updatePassword(data);
+      const state = getState() as { auth: AuthState };
+      const userId = state.auth.user?.id;
+      if (!userId) {
+        throw new Error('User ID not found');
+      }
+      await authService.updatePassword(data, userId);
       message.success('修改密码成功');
       return true;
     } catch (error) {

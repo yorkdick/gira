@@ -16,11 +16,12 @@ import { Button, Row, Col, Card, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { Task, updateTask, setTasks } from '@/store/slices/boardSlice';
+import { Task, updateTask, setTasks, setCurrentBoard } from '@/store/slices/boardSlice';
 import { RootState } from '@/store/types';
 import TaskCard from '@/components/TaskCard';
 import { TaskFormModal, BoardSummary } from '@/components';
 import boardService from '@/services/boardService';
+import { AxiosError } from 'axios';
 import styles from './index.module.less';
 
 /**
@@ -109,7 +110,7 @@ TaskList.displayName = 'TaskList';
 
 const Board: React.FC = () => {
   const dispatch = useDispatch();
-  const { tasks } = useSelector((state: RootState) => state.board);
+  const { tasks, currentBoard } = useSelector((state: RootState) => state.board);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -117,16 +118,46 @@ const Board: React.FC = () => {
    * 初始化加载任务数据
    */
   useEffect(() => {
+    const fetchActiveBoard = async () => {
+      try {
+        const response = await boardService.getActiveBoard();
+        dispatch(setCurrentBoard(response.data));
+      } catch (error) {
+        if (error instanceof AxiosError && error.response?.status !== 404) {
+          message.error('加载看板失败');
+        }
+      }
+    };
+    fetchActiveBoard();
+  }, [dispatch]);
+
+  useEffect(() => {
     const fetchTasks = async () => {
+      // 如果没有当前看板，不加载任务
+      if (!currentBoard) {
+        return;
+      }
+      
       try {
         const response = await boardService.getTasks();
         dispatch(setTasks(response.data));
-      } catch {
-        message.error('加载任务失败');
+      } catch (error: unknown) {
+        // 忽略 404 错误
+        if (error instanceof AxiosError && error.response?.status !== 404) {
+          message.error('加载任务失败');
+        }
       }
     };
     fetchTasks();
-  }, [dispatch]);
+  }, [dispatch, currentBoard]);
+
+  if (!currentBoard) {
+    return (
+      <div className={styles.container}>
+        <Card>暂无看板</Card>
+      </div>
+    );
+  }
 
   /**
    * 处理任务拖拽结束事件

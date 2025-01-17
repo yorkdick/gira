@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Button, List, Tag, Space, Modal, message, Spin, Form, Input } from 'antd';
+import { Card, Button, List, Tag, Space, Modal, message, Spin, Form, Input, Row, Col, Typography, Select } from 'antd';
 import { PlusOutlined, EditOutlined, PlayCircleOutlined, CheckCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { Sprint, fetchSprints, updateSprint, deleteSprint, resetSprints } from '@/store/slices/sprintSlice';
@@ -29,6 +29,10 @@ import sprintService from '@/services/sprintService';
 import taskService from '@/services/taskService';
 import styles from './index.module.less';
 import { Task } from '@/store/slices/boardSlice';
+import userService from '@/services/userService';
+import type { UserInfo } from '@/store/slices/authSlice';
+
+const { Text } = Typography;
 
 /**
  * 获取Sprint状态对应的标签颜色
@@ -68,6 +72,9 @@ const Sprints: React.FC = () => {
   const [currentSprintId, setCurrentSprintId] = useState<string>('');
   const [taskForm] = Form.useForm();
   const [sprintTasks, setSprintTasks] = useState<Record<string, Task[]>>({});
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isTaskDetailModalVisible, setIsTaskDetailModalVisible] = useState(false);
+  const [users, setUsers] = useState<UserInfo[]>([]);
 
   useEffect(() => {
     dispatch(fetchSprints());
@@ -96,6 +103,21 @@ const Sprints: React.FC = () => {
     }
   }, [sprints]);
 
+  useEffect(() => {
+    // 获取用户列表
+    const fetchUsers = async () => {
+      try {
+        const response = await userService.getUsers();
+        setUsers(response.data.content || []);
+      } catch (error) {
+        console.error('获取用户列表失败:', error);
+        setUsers([]);
+      }
+    };
+
+    void fetchUsers();
+  }, []);
+
   /**
    * 处理Sprint表单提交
    * @param values - 表单数据
@@ -105,7 +127,6 @@ const Sprints: React.FC = () => {
       if (editingSprint) {
         const updateData: SprintUpdateDTO = {
           name: values.name,
-          description: values.description,
           startDate: values.startDate,
           endDate: values.endDate,
         };
@@ -117,7 +138,6 @@ const Sprints: React.FC = () => {
       } else {
         const createData: SprintCreateDTO = {
           name: values.name,
-          description: values.description,
           startDate: values.startDate,
           endDate: values.endDate,
         };
@@ -127,8 +147,12 @@ const Sprints: React.FC = () => {
       }
       setIsModalVisible(false);
       setEditingSprint(null);
-    } catch {
-      message.error(editingSprint ? '更新Sprint失败' : '创建Sprint失败');
+    } catch (error) {
+      if (error instanceof Error) {
+        message.error(error.message);
+      } else {
+        message.error(editingSprint ? '更新Sprint失败' : '创建Sprint失败');
+      }
     }
   };
 
@@ -169,7 +193,7 @@ const Sprints: React.FC = () => {
    */
   const handleDelete = async (sprintId: string) => {
     try {
-      await dispatch(deleteSprint(sprintId)).unwrap();
+      await dispatch(deleteSprint(sprintId)).unwrap();  
       message.success('删除Sprint成功');
     } catch {
       message.error('删除Sprint失败');
@@ -189,13 +213,18 @@ const Sprints: React.FC = () => {
    * 处理任务创建
    * @param values - 表单数据
    */
-  const handleTaskSubmit = async (values: { title: string; description: string }) => {
+  const handleTaskSubmit = async (values: {
+    title: string;
+    description: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+    assigneeId?: string;
+  }) => {
     try {
       const taskData: CreateTaskRequest = {
         ...values,
         sprintId: currentSprintId,
-        priority: 'MEDIUM',
-        status: 'TODO',
+        description: values.description || '',
       };
       await taskService.createTask(taskData);
       void dispatch(fetchSprints());
@@ -208,18 +237,42 @@ const Sprints: React.FC = () => {
   };
 
   /**
-   * 处理从Sprint移除任务
-   * @param sprintId - Sprint ID
-   * @param taskId - 任务ID
+   * 处理删除任务
    */
-  const handleRemoveTask = async (sprintId: string, taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
     try {
-      // 将任务的 sprintId 设为 undefined 来移除任务
-      await taskService.updateTask(taskId, { sprintId: undefined });
+      await taskService.deleteTask(taskId);
       void dispatch(fetchSprints());
-      message.success('移除任务成功');
+      message.success('删除任务成功');
+      setIsTaskDetailModalVisible(false);
+      setSelectedTask(null);
     } catch {
-      message.error('移除任务失败');
+      message.error('删除任务失败');
+    }
+  };
+
+  /**
+   * 处理任务更新
+   * @param values - 表单数据
+   */
+  const handleTaskUpdate = async (values: {
+    title: string;
+    description: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    assigneeId?: string;
+  }) => {
+    if (!selectedTask) return;
+    try {
+      await taskService.updateTask(selectedTask.id, {
+        ...values,
+        description: values.description || '',
+      });
+      void dispatch(fetchSprints());
+      message.success('更新任务成功');
+      setIsTaskDetailModalVisible(false);
+      setSelectedTask(null);
+    } catch {
+      message.error('更新任务失败');
     }
   };
 
@@ -269,23 +322,30 @@ const Sprints: React.FC = () => {
                       dataSource={sprintTasks[sprint.id] || []}
                       renderItem={task => (
                         <List.Item
-                          actions={[
-                            user?.role === 'ADMIN' && sprint.status !== 'COMPLETED' && (
-                              <Button
-                                type="text"
-                                danger
-                                size="small"
-                                onClick={() => handleRemoveTask(sprint.id, task.id)}
-                              >
-                                移除
-                              </Button>
-                            ),
-                          ].filter(Boolean)}
+                          onClick={() => {
+                            setSelectedTask(task);
+                            setIsTaskDetailModalVisible(true);
+                          }}
+                          style={{ cursor: 'pointer' }}
                         >
-                          <List.Item.Meta
-                            title={task.title}
-                            description={task.status}
-                          />
+                          <Row style={{ width: '100%', alignItems: 'center' }}>
+                            <Col flex="auto">
+                              <Text>{task.title}</Text>
+                            </Col>
+                            <Col>
+                              <Tag color={
+                                task.status === 'TODO' ? 'default' :
+                                task.status === 'IN_PROGRESS' ? 'processing' :
+                                'success'
+                              }>
+                                {
+                                  task.status === 'TODO' ? '待处理' :
+                                  task.status === 'IN_PROGRESS' ? '进行中' :
+                                  '已完成'
+                                }
+                              </Tag>
+                            </Col>
+                          </Row>
                         </List.Item>
                       )}
                     />
@@ -361,7 +421,6 @@ const Sprints: React.FC = () => {
         <SprintForm
           initialValues={editingSprint ? {
             name: editingSprint.name,
-            description: editingSprint.description,
             startDate: editingSprint.startDate,
             endDate: editingSprint.endDate,
           } : undefined}
@@ -386,6 +445,10 @@ const Sprints: React.FC = () => {
           form={taskForm}
           layout="vertical"
           onFinish={handleTaskSubmit}
+          initialValues={{
+            priority: 'MEDIUM',
+            status: 'TODO',
+          }}
         >
           <Form.Item
             name="title"
@@ -399,6 +462,40 @@ const Sprints: React.FC = () => {
             label="描述"
           >
             <Input.TextArea placeholder="请输入任务描述" rows={4} />
+          </Form.Item>
+          <Form.Item
+            name="priority"
+            label="优先级"
+            rules={[{ required: true, message: '请选择优先级' }]}
+          >
+            <Select>
+              <Select.Option value="LOW">低</Select.Option>
+              <Select.Option value="MEDIUM">中</Select.Option>
+              <Select.Option value="HIGH">高</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="status"
+            label="状态"
+            rules={[{ required: true, message: '请选择状态' }]}
+          >
+            <Select>
+              <Select.Option value="TODO">待处理</Select.Option>
+              <Select.Option value="IN_PROGRESS">进行中</Select.Option>
+              <Select.Option value="DONE">已完成</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="assigneeId"
+            label="负责人"
+          >
+            <Select allowClear placeholder="请选择负责人">
+              {Array.isArray(users) && users.map(user => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.username}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item>
             <Space>
@@ -414,6 +511,95 @@ const Sprints: React.FC = () => {
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="任务详情"
+        open={isTaskDetailModalVisible}
+        onCancel={() => {
+          setIsTaskDetailModalVisible(false);
+          setSelectedTask(null);
+        }}
+        footer={null}
+      >
+        {selectedTask && (
+          <Form
+            layout="vertical"
+            initialValues={{
+              title: selectedTask.title,
+              description: selectedTask.description,
+              priority: selectedTask.priority,
+              status: selectedTask.status,
+              assigneeId: selectedTask.assignee?.id,
+            }}
+            onFinish={handleTaskUpdate}
+          >
+            <Form.Item
+              name="title"
+              label="标题"
+              rules={[{ required: true, message: '请输入任务标题' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="description"
+              label="描述"
+            >
+              <Input.TextArea rows={4} />
+            </Form.Item>
+            <Form.Item
+              name="priority"
+              label="优先级"
+              rules={[{ required: true, message: '请选择优先级' }]}
+            >
+              <Select>
+                <Select.Option value="LOW">低</Select.Option>
+                <Select.Option value="MEDIUM">中</Select.Option>
+                <Select.Option value="HIGH">高</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="status"
+              label="状态"
+            >
+              <Select disabled>
+                <Select.Option value="TODO">待处理</Select.Option>
+                <Select.Option value="IN_PROGRESS">进行中</Select.Option>
+                <Select.Option value="DONE">已完成</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="assigneeId"
+              label="负责人"
+            >
+              <Select allowClear>
+                {Array.isArray(users) && users.map(user => (
+                  <Select.Option key={user.id} value={user.id}>
+                    {user.username}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  保存
+                </Button>
+                {user?.role === 'ADMIN' && (
+                  <Button type="primary" danger onClick={() => handleDeleteTask(selectedTask.id)}>
+                    删除
+                  </Button>
+                )}
+                <Button onClick={() => {
+                  setIsTaskDetailModalVisible(false);
+                  setSelectedTask(null);
+                }}>
+                  取消
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        )}
       </Modal>
     </div>
   );

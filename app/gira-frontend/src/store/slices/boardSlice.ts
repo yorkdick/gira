@@ -3,11 +3,23 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface Task {
   id: string;
   title: string;
-  description: string;
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  description?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  assigneeId?: string;
+  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  assignee?: {
+    id: string;
+    username: string;
+    fullName: string;
+    email: string;
+  };
+  reporter?: {
+    id: string;
+    username: string;
+    fullName: string;
+    email: string;
+  };
   sprintId?: string;
+  sprintName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,9 +47,12 @@ export interface Board {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'archived';
+  status: 'ACTIVE' | 'ARCHIVED';
+  createdBy: {
+    id: string;
+    name: string;
+  };
   createdAt: string;
-  updatedAt: string;
 }
 
 interface BoardState {

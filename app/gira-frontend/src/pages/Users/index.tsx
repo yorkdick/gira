@@ -1,35 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { Table, Tag, Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Table,
-  Button,
-  Space,
-  Tag,
-  Modal,
-  message,
-  Typography,
-} from 'antd';
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons';
-import { AppDispatch, RootState } from '@/store';
-import { UserInfo } from '@/store/slices/authSlice';
-import { fetchUsers, deleteUser } from '@/store/slices/userSlice';
+import type { RootState, AppDispatch } from '@/store';
+import { fetchUsers } from '@/store/slices/userSlice';
+import type { UserInfo } from '@/store/slices/authSlice';
 import UserForm from './components/UserForm';
-import styles from './index.module.less';
-
-const { Title } = Typography;
-const { confirm } = Modal;
 
 const UsersPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, loading } = useSelector((state: RootState) => state.auth);
-  const { list: users } = useSelector((state: RootState) => state.user);
-  const isAdmin = user?.role === 'ADMIN';
-
+  const { list: users, loading } = useSelector((state: RootState) => state.users);
   const [formVisible, setFormVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<UserInfo | null>(null);
 
@@ -37,36 +17,14 @@ const UsersPage: React.FC = () => {
     dispatch(fetchUsers());
   }, [dispatch]);
 
-  const handleCreateUser = () => {
+  const handleRowClick = (record: UserInfo) => {
+    setEditingUser(record);
+    setFormVisible(true);
+  };
+
+  const handleFormClose = () => {
+    setFormVisible(false);
     setEditingUser(null);
-    setFormVisible(true);
-  };
-
-  const handleEditUser = (user: UserInfo) => {
-    setEditingUser(user);
-    setFormVisible(true);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    confirm({
-      title: '确认删除',
-      icon: <ExclamationCircleOutlined />,
-      content: '确定要删除这个用户吗？删除后无法恢复。',
-      okText: '确定',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await dispatch(deleteUser(userId)).unwrap();
-        } catch (error) {
-          if (error instanceof Error) {
-            message.error(error.message);
-          } else {
-            message.error('删除用户失败');
-          }
-        }
-      },
-    });
   };
 
   const columns = [
@@ -85,78 +43,44 @@ const UsersPage: React.FC = () => {
       dataIndex: 'role',
       key: 'role',
       render: (role: UserInfo['role']) => (
-        <Tag color={role === 'ADMIN' ? 'red' : 'blue'}>
-          {role === 'ADMIN' ? '管理员' : '普通用户'}
-        </Tag>
+        <Tag color={role === 'ADMIN' ? 'red' : 'blue'}>{role}</Tag>
       ),
     },
     {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date: string) => new Date(date).toLocaleDateString(),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (_: unknown, record: UserInfo) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEditUser(record)}
-          >
-            编辑
-          </Button>
-          {isAdmin && record.id !== user?.id && (
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDeleteUser(record.id)}
-            >
-              删除
-            </Button>
-          )}
-        </Space>
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: UserInfo['status']) => (
+        <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag>
       ),
     },
   ];
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Title level={2}>用户管理</Title>
-        {isAdmin && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreateUser}
-          >
-            创建用户
-          </Button>
-        )}
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '16px', textAlign: 'right' }}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setFormVisible(true)}
+        >
+          创建用户
+        </Button>
       </div>
-
       <Table
         columns={columns}
         dataSource={users}
         loading={loading}
         rowKey="id"
-        pagination={{
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
-        }}
+        onRow={(record) => ({
+          onClick: () => handleRowClick(record),
+          style: { cursor: 'pointer' },
+        })}
       />
-
       <UserForm
         visible={formVisible}
         initialValues={editingUser}
-        onCancel={() => {
-          setFormVisible(false);
-          setEditingUser(null);
-        }}
+        onCancel={handleFormClose}
       />
     </div>
   );

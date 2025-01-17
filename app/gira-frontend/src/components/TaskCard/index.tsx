@@ -27,7 +27,6 @@ import {
   EditOutlined,
   DeleteOutlined,
   MoreOutlined,
-  ClockCircleOutlined,
 } from '@ant-design/icons';
 import { Task } from '@/store/slices/boardSlice';
 import styles from './index.module.less';
@@ -122,16 +121,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
       <div className={styles.description}>{task.description}</div>
       <div className={styles.footer}>
         <Tag color={getStatusColor(task.status)}>{task.status}</Tag>
-        {task.dueDate && (
-          <Tooltip title={task.dueDate}>
-            <ClockCircleOutlined className={styles.clock} />
-          </Tooltip>
-        )}
         {task.assignee && (
-          <Tooltip title={task.assignee.name}>
+          <Tooltip title={task.assignee.username}>
             <Avatar
               size="small"
-              src={task.assignee.avatar}
               icon={<EditOutlined />}
               className={styles.avatar}
             />

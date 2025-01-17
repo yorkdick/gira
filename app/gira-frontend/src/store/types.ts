@@ -11,6 +11,7 @@ import { store } from './index';
 import type { UserInfo } from './slices/authSlice';
 import type { Board, Task } from './slices/boardSlice';
 import type { Sprint } from './slices/sprintSlice';
+import type { UserState } from './slices/userSlice';
 
 /**
  * 根状态接口
@@ -62,6 +63,7 @@ export interface RootState {
     /** 错误信息 */
     error: string | null;
   };
+  users: UserState;
 }
 
 /**

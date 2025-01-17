@@ -46,7 +46,7 @@ const Login: React.FC = () => {
       const loginResponse = await authService.login(values);
       
       // 保存token
-      dispatch(setToken(loginResponse.accessToken));
+      dispatch(setToken(loginResponse.data.accessToken));
       
       try {
         // 获取用户信息

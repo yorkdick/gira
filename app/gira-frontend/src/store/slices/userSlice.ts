@@ -2,31 +2,53 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { message } from 'antd';
 import { AxiosError } from 'axios';
 import userService from '@/services/userService';
-import { UserInfo } from './authSlice';
+import type { UserInfo } from './authSlice';
 
 export interface UserCreateDTO {
   username: string;
-  email: string;
   password: string;
+  email: string;
+  fullName: string;
   role: UserInfo['role'];
 }
 
 export interface UserUpdateDTO {
   username?: string;
   email?: string;
+  fullName?: string;
   role?: UserInfo['role'];
 }
 
-interface UserState {
+interface PageResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface UserState {
   list: UserInfo[];
   loading: boolean;
   error: string | null;
+  pagination: {
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 const initialState: UserState = {
   list: [],
   loading: false,
   error: null,
+  pagination: {
+    pageNumber: 0,
+    pageSize: 10,
+    totalElements: 0,
+    totalPages: 0,
+  },
 };
 
 export const fetchUsers = createAsyncThunk(
@@ -34,25 +56,19 @@ export const fetchUsers = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await userService.getUsers();
-      return response.data;
+      if (Array.isArray(response.data)) {
+        return {
+          content: response.data,
+          pageNumber: 0,
+          pageSize: response.data.length,
+          totalElements: response.data.length,
+          totalPages: 1,
+        } as PageResponse<UserInfo>;
+      }
+      return response.data as PageResponse<UserInfo>;
     } catch (error) {
       const err = error as AxiosError;
       message.error('获取用户列表失败');
-      return rejectWithValue(err.message);
-    }
-  }
-);
-
-export const createUser = createAsyncThunk(
-  'users/createUser',
-  async (data: UserCreateDTO, { rejectWithValue }) => {
-    try {
-      const response = await userService.createUser(data);
-      message.success('创建用户成功');
-      return response.data;
-    } catch (error) {
-      const err = error as AxiosError;
-      message.error('创建用户失败');
       return rejectWithValue(err.message);
     }
   }
@@ -68,6 +84,21 @@ export const updateUser = createAsyncThunk(
     } catch (error) {
       const err = error as AxiosError;
       message.error('更新用户失败');
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const createUser = createAsyncThunk(
+  'users/createUser',
+  async (data: UserCreateDTO, { rejectWithValue }) => {
+    try {
+      const response = await userService.createUser(data);
+      message.success('创建用户成功');
+      return response.data;
+    } catch (error) {
+      const err = error as AxiosError;
+      message.error('创建用户失败');
       return rejectWithValue(err.message);
     }
   }
@@ -94,33 +125,26 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // fetchUsers
       .addCase(fetchUsers.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload;
+        if (action.payload) {
+          state.list = action.payload.content;
+          state.pagination = {
+            pageNumber: action.payload.pageNumber,
+            pageSize: action.payload.pageSize,
+            totalElements: action.payload.totalElements,
+            totalPages: action.payload.totalPages,
+          };
+        }
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      // createUser
-      .addCase(createUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.list.push(action.payload);
-      })
-      .addCase(createUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // updateUser
       .addCase(updateUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -136,7 +160,18 @@ const userSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // deleteUser
+      .addCase(createUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list.push(action.payload);
+      })
+      .addCase(createUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(deleteUser.pending, (state) => {
         state.loading = true;
         state.error = null;

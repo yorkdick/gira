@@ -163,20 +163,10 @@ const TaskList: React.FC<TaskListProps> = ({ sprintId, tasks }) => {
                                 <div className={styles.taskFooter}>
                                   <Space size={4}>
                                     {task.assignee && (
-                                      <Tag>
-                                        {task.assignee.avatar ? (
-                                          <img
-                                            src={task.assignee.avatar}
-                                            alt={task.assignee.name}
-                                            className={styles.avatar}
-                                          />
-                                        ) : (
-                                          task.assignee.name.charAt(0)
-                                        )}
-                                        {task.assignee.name}
+                                      <Tag icon={<UserOutlined />}>
+                                        {task.assignee.username}
                                       </Tag>
                                     )}
-                                    {task.dueDate && <Tag>{task.dueDate}</Tag>}
                                   </Space>
                                 </div>
                               </Card>

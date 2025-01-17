@@ -10,18 +10,18 @@
  */
 
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, message } from 'antd';
+import { Modal, Form, Input, Select, message } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { Task, updateTask, setTasks } from '@/store/slices/boardSlice';
-import { RootState } from '@/store/types';
+import { RootState, AppDispatch } from '@/store/types';
 import boardService from '@/services/boardService';
+import { fetchUsers } from '@/store/slices/userSlice';
 
 interface TaskFormData {
   title: string;
   description?: string;
   priority: Task['priority'];
   assigneeId?: string;
-  dueDate?: Date;
 }
 
 interface TaskFormModalProps {
@@ -36,16 +36,21 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   onClose,
 }) => {
   const [form] = Form.useForm<TaskFormData>();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { tasks } = useSelector((state: RootState) => state.board);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { list: users } = useSelector((state: RootState) => state.users);
+
+  useEffect(() => {
+    if (visible) {
+      dispatch(fetchUsers());
+    }
+  }, [visible, dispatch]);
 
   // 处理表单提交
   const handleSubmit = async (values: TaskFormData) => {
     try {
       const formData = {
         ...values,
-        dueDate: values.dueDate?.toISOString(),
       };
 
       if (task) {
@@ -82,7 +87,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
         description: task.description,
         priority: task.priority,
         assigneeId: task.assignee?.id,
-        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
       });
     } else {
       form.resetFields();
@@ -139,15 +143,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
           label="经办人"
         >
           <Select allowClear placeholder="请选择经办人">
-            <Select.Option value={user?.id}>{user?.username}</Select.Option>
+            {users.map(user => (
+              <Select.Option key={user.id} value={user.id}>
+                {user.username}
+              </Select.Option>
+            ))}
           </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="dueDate"
-          label="截止日期"
-        >
-          <DatePicker style={{ width: '100%' }} />
         </Form.Item>
       </Form>
     </Modal>

@@ -9,8 +9,20 @@ export interface UserStatus {
   lastActivityAt?: string;
 }
 
+interface PageResponse<T> {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+  };
+  totalElements: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
 const userService = {
-  getUsers: () => request.get<UserInfo[]>('/users'),
+  getUsers: () => request.get<PageResponse<UserInfo>>('/users'),
   getUser: (id: string) => request.get<UserInfo>(`/users/${id}`),
   createUser: (data: UserCreateDTO) => request.post<UserInfo>('/users', data),
   updateUser: (id: string, data: Partial<UserInfo>) => request.put<UserInfo>(`/users/${id}`, data),

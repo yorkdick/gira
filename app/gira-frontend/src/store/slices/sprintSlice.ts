@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Task } from './boardSlice';
-import sprintService from '@/services/sprintService';
+import sprintService, { SprintUpdateDTO } from '@/services/sprintService';
 
 export interface Sprint {
   id: string;
@@ -50,15 +50,19 @@ export const fetchSprints = createAsyncThunk(
 
 export const createSprint = createAsyncThunk(
   'sprint/createSprint',
-  async (data: Omit<Sprint, 'id' | 'tasks' | 'createdAt' | 'updatedAt'>) => {
+  async (data: {
+    name: string;
+    startDate: string;
+    endDate: string;
+  }) => {
     const response = await sprintService.createSprint(data);
     return response.data;
   }
 );
 
 export const updateSprint = createAsyncThunk(
-  'sprint/updateSprint',
-  async ({ id, data }: { id: string; data: Partial<Sprint> }) => {
+  'sprints/updateSprint',
+  async ({ id, data }: { id: string; data: SprintUpdateDTO }) => {
     const response = await sprintService.updateSprint(id, data);
     return response.data;
   }

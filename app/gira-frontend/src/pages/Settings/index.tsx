@@ -20,7 +20,7 @@ const { Title } = Typography;
 interface ProfileFormData {
   username: string;
   email: string;
-  avatar?: string;
+  fullName: string;
 }
 
 interface PasswordFormData {
@@ -77,7 +77,6 @@ const SettingsPage: React.FC = () => {
           <Avatar
             size={80}
             icon={<UserOutlined />}
-            src={user?.avatar}
             className={styles.avatar}
           />
           <div className={styles.info}>
@@ -95,7 +94,7 @@ const SettingsPage: React.FC = () => {
           initialValues={{
             username: user?.username,
             email: user?.email,
-            avatar: user?.avatar,
+            fullName: user?.fullName,
           }}
           onFinish={handleUpdateProfile}
         >
@@ -122,10 +121,11 @@ const SettingsPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="avatar"
-            label="头像URL"
+            name="fullName"
+            label="姓名"
+            rules={[{ required: true, message: '请输入姓名' }]}
           >
-            <Input placeholder="请输入头像URL" />
+            <Input placeholder="请输入姓名" />
           </Form.Item>
 
           <Form.Item>
