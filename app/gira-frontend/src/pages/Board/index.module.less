@@ -54,12 +54,21 @@
 
 .taskItem {
   margin-bottom: 8px;
-  width: 100% !important;
   background: #fff;
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
   
   &:last-child {
     margin-bottom: 0;
+  }
+}
+
+:global {
+  // 只保留必要的拖动样式
+  [data-rbd-draggable-dragging] {
+    > * {
+      transform: none !important;
+    }
   }
 } 

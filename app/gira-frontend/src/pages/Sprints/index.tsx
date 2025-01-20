@@ -140,6 +140,20 @@ const Sprints: React.FC = () => {
     void fetchUsers();
   }, []);
 
+  // 设置默认展开的 Sprint
+  useEffect(() => {
+    if (sprints.length > 0) {
+      // 查找进行中的 Sprint
+      const activeSprint = sprints.find(sprint => sprint.status === 'ACTIVE');
+      if (activeSprint) {
+        setExpandedSprints([activeSprint.id]);
+      } else {
+        // 如果没有进行中的 Sprint，展开第一个
+        setExpandedSprints([sprints[0].id]);
+      }
+    }
+  }, [sprints]);
+
   /**
    * 处理Sprint表单提交
    * @param values - 表单数据
@@ -274,6 +288,11 @@ const Sprints: React.FC = () => {
     }
   };
 
+  // 处理面板展开/折叠
+  const handlePanelChange = (keys: string | string[]) => {
+    setExpandedSprints(typeof keys === 'string' ? [keys] : keys);
+  };
+
   if (error) {
     return <div className={styles.error}>{error}</div>;
   }
@@ -297,10 +316,8 @@ const Sprints: React.FC = () => {
         <Collapse
           ghost
           activeKey={expandedSprints}
-          onChange={(keys) => setExpandedSprints(keys as string[])}
-          expandIcon={({ isActive }) => (
-            <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ fontSize: '12px' }} />
-          )}
+          onChange={handlePanelChange}
+          expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
           className={styles.sprintList}
         >
           {Array.isArray(sprints) && sprints.map((sprint) => (

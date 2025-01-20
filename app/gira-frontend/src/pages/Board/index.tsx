@@ -14,7 +14,7 @@
 import React, { useEffect } from 'react';
 import { Row, Col, Card, Space, Typography } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableStyle } from '@hello-pangea/dnd';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -45,6 +45,13 @@ const COLUMNS = [
     icon: <CheckCircleOutlined style={{ color: '#389e0d' }} />,
   },
 ];
+
+const getDraggableStyle = (isDragging: boolean, draggableStyle?: DraggableStyle): React.CSSProperties => ({
+  ...draggableStyle,
+  userSelect: 'none',
+  opacity: isDragging ? 0.8 : 1,
+  transform: draggableStyle?.transform
+});
 
 const Board: React.FC = () => {
   const dispatch = useDispatch();
@@ -161,10 +168,7 @@ const Board: React.FC = () => {
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                               className={styles.taskItem}
-                              style={{
-                                ...provided.draggableProps.style,
-                                opacity: snapshot.isDragging ? 0.8 : 1
-                              }}
+                              style={getDraggableStyle(snapshot.isDragging, provided.draggableProps.style)}
                             >
                               <TaskCard task={task} />
                             </div>
