@@ -1,21 +1,28 @@
-import React, { Suspense, useState } from 'react';
-import { Layout, Menu, Spin, Avatar, Dropdown } from 'antd';
+import React, { Suspense } from 'react';
+import { Layout, Menu, Spin, Avatar, Dropdown, Space, Typography, Breadcrumb } from 'antd';
 import type { MenuProps } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   UserOutlined,
   DashboardOutlined,
   TeamOutlined,
-  SettingOutlined,
+  BugOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/store/slices/authSlice';
 import { RootState } from '@/store/types';
 import styles from './BaseLayout.module.less';
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content, Sider } = Layout;
+const { Title } = Typography;
+
+// 菜单配置
+const MENU_CONFIG = {
+  '/board': { icon: <DashboardOutlined />, label: '看板' },
+  '/sprints': { icon: <RightOutlined />, label: 'Sprint' },
+  '/users': { icon: <TeamOutlined />, label: '用户管理' },
+} as const;
 
 /**
  * BaseLayout 组件 - 应用程序的主布局组件
@@ -32,18 +39,15 @@ const BaseLayout: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
-  const [collapsed, setCollapsed] = useState(false);
 
-  /**
-   * 处理侧边栏折叠状态
-   */
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
+  // 获取当前页面标题
+  const getCurrentPageTitle = () => {
+    const path = location.pathname;
+    return MENU_CONFIG[path as keyof typeof MENU_CONFIG]?.label || '';
   };
 
   /**
    * 处理用户登出操作
-   * 清除用户认证信息并跳转到登录页面
    */
   const handleLogout = () => {
     dispatch(logout());
@@ -52,7 +56,6 @@ const BaseLayout: React.FC = () => {
 
   /**
    * 导航菜单配置
-   * 根据用户角色显示不同的菜单项
    */
   const menuItems: MenuProps['items'] = [
     {
@@ -62,7 +65,7 @@ const BaseLayout: React.FC = () => {
     },
     {
       key: '/sprints',
-      icon: <MenuUnfoldOutlined />,
+      icon: <RightOutlined />,
       label: 'Sprint',
     },
     user?.role === 'ADMIN' ? {
@@ -70,11 +73,6 @@ const BaseLayout: React.FC = () => {
       icon: <TeamOutlined />,
       label: '用户管理',
     } : null,
-    {
-      key: '/settings',
-      icon: <SettingOutlined />,
-      label: '设置',
-    },
   ].filter(Boolean);
 
   /**
@@ -95,44 +93,52 @@ const BaseLayout: React.FC = () => {
 
   return (
     <Layout className={styles.layout}>
-      <Sider 
-        trigger={null} 
-        collapsible 
-        collapsed={collapsed}
-        className={styles.sider}
-      >
-        <div className={styles.logo} />
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-        />
-      </Sider>
+      <Header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <Space size="middle">
+            <BugOutlined className={styles.logo} />
+            <Title level={4} style={{ margin: 0, color: '#fff' }}>GIRA</Title>
+          </Space>
+        </div>
+        <div className={styles.headerNav}>
+          <Breadcrumb
+            items={[
+              { title: 'GIRA' },
+              { title: getCurrentPageTitle() }
+            ]}
+          />
+        </div>
+        <div className={styles.userInfo}>
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <span className={styles.userAvatar}>
+              <Avatar icon={<UserOutlined />} />
+              <span className={styles.username}>{user?.username}</span>
+            </span>
+          </Dropdown>
+        </div>
+      </Header>
       <Layout>
-        <Header className={styles.header}>
-          {React.createElement(
-            collapsed ? MenuUnfoldOutlined : MenuFoldOutlined,
-            {
-              className: styles.trigger,
-              onClick: toggleCollapsed,
-            }
-          )}
-          <div className={styles.userInfo}>
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <span className={styles.userAvatar}>
-                <Avatar icon={<UserOutlined />} />
-                <span className={styles.username}>{user?.username}</span>
-              </span>
-            </Dropdown>
-          </div>
-        </Header>
-        <Content className={styles.content}>
-          <Suspense fallback={<Spin size="large" className={styles.spin} />}>
-            <Outlet />
-          </Suspense>
-        </Content>
+        <Sider width={200} className={styles.sider}>
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={({ key }) => navigate(key)}
+            className={styles.menu}
+          />
+        </Sider>
+        <Layout>
+          <Content className={styles.content}>
+            <div className={styles.pageHeader}>
+              <Title level={3}>{getCurrentPageTitle()}</Title>
+            </div>
+            <div className={styles.pageContent}>
+              <Suspense fallback={<Spin size="large" className={styles.spin} />}>
+                <Outlet />
+              </Suspense>
+            </div>
+          </Content>
+        </Layout>
       </Layout>
     </Layout>
   );

@@ -11,8 +11,8 @@
  * @component
  */
 
-import React, { useEffect } from 'react';
-import { Row, Col, Card, Space, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Row, Col, Card, Space, Typography, Modal, Form, Input, Select, Button, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableStyle } from '@hello-pangea/dnd';
 import {
@@ -24,6 +24,9 @@ import { Task, updateTask, setTasks, setCurrentBoard } from '@/store/slices/boar
 import { RootState } from '@/store/types';
 import TaskCard from '@/components/TaskCard';
 import boardService from '@/services/boardService';
+import taskService from '@/services/taskService';
+import userService from '@/services/userService';
+import type { UserInfo } from '@/store/slices/authSlice';
 import styles from './index.module.less';
 
 const { Text } = Typography;
@@ -56,6 +59,10 @@ const getDraggableStyle = (isDragging: boolean, draggableStyle?: DraggableStyle)
 const Board: React.FC = () => {
   const dispatch = useDispatch();
   const { tasks = [], currentBoard } = useSelector((state: RootState) => state.board);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isTaskDetailModalVisible, setIsTaskDetailModalVisible] = useState(false);
+  const [users, setUsers] = useState<UserInfo[]>([]);
 
   useEffect(() => {
     const fetchActiveBoard = async () => {
@@ -81,6 +88,21 @@ const Board: React.FC = () => {
     };
     fetchTasks();
   }, [dispatch, currentBoard]);
+
+  useEffect(() => {
+    // 获取用户列表
+    const fetchUsers = async () => {
+      try {
+        const response = await userService.getUsers();
+        setUsers(response.data.content || []);
+      } catch (error) {
+        console.error('获取用户列表失败:', error);
+        setUsers([]);
+      }
+    };
+
+    void fetchUsers();
+  }, []);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -112,6 +134,49 @@ const Board: React.FC = () => {
   const todoTasks = getColumnTasks('TODO').length;
   const inProgressTasks = getColumnTasks('IN_PROGRESS').length;
   const doneTasks = getColumnTasks('DONE').length;
+
+  /**
+   * 处理任务更新
+   */
+  const handleTaskUpdate = async (values: {
+    title: string;
+    description: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    assigneeId?: string;
+  }) => {
+    if (!selectedTask) return;
+    try {
+      await taskService.updateTask(selectedTask.id, {
+        ...values,
+        description: values.description || '',
+      });
+      // 重新获取任务列表
+      const response = await boardService.getTasks();
+      dispatch(setTasks(response.data));
+      message.success('更新任务成功');
+      setIsTaskDetailModalVisible(false);
+      setSelectedTask(null);
+    } catch (error) {
+      console.error('更新任务失败:', error);
+    }
+  };
+
+  /**
+   * 处理删除任务
+   */
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await taskService.deleteTask(taskId);
+      // 重新获取任务列表
+      const response = await boardService.getTasks();
+      dispatch(setTasks(response.data));
+      message.success('删除任务成功');
+      setIsTaskDetailModalVisible(false);
+      setSelectedTask(null);
+    } catch (error) {
+      console.error('删除任务失败:', error);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -169,6 +234,10 @@ const Board: React.FC = () => {
                               {...provided.dragHandleProps}
                               className={styles.taskItem}
                               style={getDraggableStyle(snapshot.isDragging, provided.draggableProps.style)}
+                              onClick={() => {
+                                setSelectedTask(task);
+                                setIsTaskDetailModalVisible(true);
+                              }}
                             >
                               <TaskCard task={task} />
                             </div>
@@ -184,6 +253,96 @@ const Board: React.FC = () => {
           ))}
         </Row>
       </DragDropContext>
+
+      {/* 任务详情模态框 */}
+      <Modal
+        title="任务详情"
+        open={isTaskDetailModalVisible}
+        onCancel={() => {
+          setIsTaskDetailModalVisible(false);
+          setSelectedTask(null);
+        }}
+        footer={null}
+      >
+        {selectedTask && (
+          <Form
+            layout="vertical"
+            initialValues={{
+              title: selectedTask.title,
+              description: selectedTask.description,
+              priority: selectedTask.priority,
+              status: selectedTask.status,
+              assigneeId: selectedTask.assignee?.id,
+            }}
+            onFinish={handleTaskUpdate}
+          >
+            <Form.Item
+              name="title"
+              label="标题"
+              rules={[{ required: true, message: '请输入任务标题' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="description"
+              label="描述"
+            >
+              <Input.TextArea rows={4} />
+            </Form.Item>
+            <Form.Item
+              name="priority"
+              label="优先级"
+              rules={[{ required: true, message: '请选择优先级' }]}
+            >
+              <Select>
+                <Select.Option value="LOW">低</Select.Option>
+                <Select.Option value="MEDIUM">中</Select.Option>
+                <Select.Option value="HIGH">高</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="status"
+              label="状态"
+            >
+              <Select disabled>
+                <Select.Option value="TODO">待处理</Select.Option>
+                <Select.Option value="IN_PROGRESS">进行中</Select.Option>
+                <Select.Option value="DONE">已完成</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="assigneeId"
+              label="负责人"
+            >
+              <Select allowClear>
+                {Array.isArray(users) && users.map(user => (
+                  <Select.Option key={user.id} value={user.id}>
+                    {user.username}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  保存
+                </Button>
+                {user?.role === 'ADMIN' && (
+                  <Button type="primary" danger onClick={() => handleDeleteTask(selectedTask.id)}>
+                    删除
+                  </Button>
+                )}
+                <Button onClick={() => {
+                  setIsTaskDetailModalVisible(false);
+                  setSelectedTask(null);
+                }}>
+                  取消
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        )}
+      </Modal>
     </div>
   );
 };
