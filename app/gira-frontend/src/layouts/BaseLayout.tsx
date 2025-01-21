@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Layout, Menu, Spin, Avatar, Dropdown, Space, Typography, Breadcrumb } from 'antd';
 import type { MenuProps } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -45,6 +45,12 @@ const BaseLayout: React.FC = () => {
     const path = location.pathname;
     return MENU_CONFIG[path as keyof typeof MENU_CONFIG]?.label || '';
   };
+
+  // 更新浏览器标签页标题
+  useEffect(() => {
+    const pageTitle = getCurrentPageTitle();
+    document.title = pageTitle ? `${pageTitle} - Gira` : 'Gira';
+  }, [location.pathname]);
 
   /**
    * 处理用户登出操作
